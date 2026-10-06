@@ -1,0 +1,36 @@
+{
+  "$comment": "Camera director (spec: Core loop and camera director).",
+  "loop": [
+    {
+      "shot": "map",
+      "seconds": 15
+    },
+    {
+      "shot": "quarry",
+      "seconds": 10
+    },
+    {
+      "shot": "river",
+      "seconds": 15
+    },
+    {
+      "shot": "hauling",
+      "seconds": 10
+    },
+    {
+      "shot": "site",
+      "seconds": 10
+    }
+  ],
+  "cut": {
+    "seconds": 6,
+    "cooldownSec": 8,
+    "queueMax": 4
+  },
+  "pip": {
+    "seconds": 4,
+    "myStoneSeconds": 5
+  },
+  "idleAfterSec": 60,
+  "historyCardEverySec": 90
+}

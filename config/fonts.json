@@ -1,0 +1,38 @@
+{
+  "$comment": "PK: Moulpali for the title, temple names and big moments; Kantumruy Pro for everything else (bold for viewer names); Bokor only for the developer's name in the credits (PK, 2026-10-02). Khmer + English only.",
+  "families": {
+    "Moulpali": {
+      "file": "moulpali",
+      "weights": [400],
+      "covers": ["khmer", "latin"],
+      "author": "Danh Hong"
+    },
+    "Kantumruy Pro": {
+      "file": "kantumruy-pro",
+      "weights": [400, 500, 700],
+      "covers": ["khmer", "latin"],
+      "author": "Sovichet Tep"
+    },
+    "Bokor": {
+      "file": "bokor",
+      "weights": [400],
+      "covers": ["khmer", "latin"],
+      "author": "Danh Hong"
+    }
+  },
+  "roles": {
+    "title": "Moulpali",
+    "bigMoment": "Moulpali",
+    "names": "Kantumruy Pro",
+    "small": "Kantumruy Pro",
+    "credit": "Bokor"
+  },
+  "fallbacks": ["Kantumruy Pro"],
+  "weights": {
+    "title": 400,
+    "bigMoment": 400,
+    "names": 700,
+    "small": 400,
+    "credit": 400
+  }
+}

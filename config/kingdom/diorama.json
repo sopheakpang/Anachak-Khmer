@@ -1,0 +1,108 @@
+{
+  "$comment": "PK 1.7.0: the Angkor Cel-Diorama look (docs/VISUAL_BIBLE.md). The land, buildings and water are stylised PBR (real light, material weight); people and animals are flat NPR toon (a stepped light ramp, an ink outline, a rim). Everything here is a tuning knob, the three.js twin of Godot's inspector. Colours are sRGB hex. on = the preset uses it (config/quality.json kingdom.diorama).",
+  "camera": {
+    "$comment": "HD-2D: a long lens (low field of view) from further away flattens the view like a model village. fov in degrees; the framing stays as it was at the old 32 degrees.",
+    "fov": 18,
+    "far": 2400
+  },
+  "post": {
+    "$comment": "Tilt-shift: the band of sharp focus across the middle (share of the screen height) and how strong the blur grows toward the top and bottom (px). Grade: warm golden highlights against cool blue shadows; contrast around mid grey; saturation.",
+    "focusBand": 0.16,
+    "blur": 3.2,
+    "blurClose": 5.5,
+    "highlight": "#ffe2a0",
+    "shadow": "#5f86c8",
+    "split": 0.08,
+    "contrast": 1.1,
+    "saturation": 1.16,
+    "vignette": 0.12
+  },
+  "units": {
+    "$comment": "NPR toon for people, animals and the court. ramp = the light steps from dark to lit (0-1 light falling on the surface) and the brightness of each band; shadowTint colours the dark band (cool, Genshin-like); outlinePx = ink line width in screen pixels; rim = edge light strength.",
+    "ramp": [
+      {
+        "from": 0.0,
+        "level": 0.42
+      },
+      {
+        "from": 0.38,
+        "level": 0.78
+      },
+      {
+        "from": 0.62,
+        "level": 1.0
+      }
+    ],
+    "shadowTint": "#8fa0d8",
+    "outlinePx": 1.6,
+    "outline": "#2a1c1c",
+    "rim": 0.45,
+    "rimPower": 3.0,
+    "saturation": 1.12
+  },
+  "terrain": {
+    "$comment": "Splat by slope and height: laterite red on inclines and banks, bright emerald on flat lowland, dry paddy earth in patches. slope: 0 = flat, 1 = a wall; the red comes in between slopeFrom and slopeTo. aoSteps: the block shadows in hollows and at the foot of slopes come in this many hard steps, aoStrength how dark the deepest step is.",
+    "laterite": "#9c5a3c",
+    "emerald": "#3f9550",
+    "lowland": "#8dbf5c",
+    "earth": "#c39a63",
+    "slopeFrom": 0.08,
+    "slopeTo": 0.32,
+    "patches": 0.5,
+    "aoSteps": 3,
+    "aoStrength": 0.32
+  },
+  "water": {
+    "$comment": "Prek canal water: no mirrors. Depth fade from shallow jade over the silt bed to deep teal (m); the sky is faked by Fresnel (power) with a stepped sky colour by time of day; the sun glints in a sharp 2-step cel highlight; a crisp foam line where water meets the bank (m of depth); two slow ripple layers drift against each other (speed m/s, scale m).",
+    "shallow": "#3aa597",
+    "deep": "#1d3557",
+    "silt": "#8a7349",
+    "shallowDepth": 0.05,
+    "deepDepth": 1.2,
+    "fresnelPower": 3.0,
+    "skyDawn": "#f2b37a",
+    "skyNoon": "#a9dcea",
+    "skyDusk": "#e58a6a",
+    "skyNight": "#3a3f7a",
+    "specSize": 0.965,
+    "specBand": 0.012,
+    "specStrength": 1.4,
+    "foamDepth": 0.018,
+    "foam": "#f4f1e4",
+    "rippleSpeed": 0.35,
+    "rippleScale": 2.4,
+    "rippleStrength": 0.55
+  },
+  "detail": {
+    "$comment": "Ground detail near the camera: undergrowth in the forest, a few wild flowers, pebbles, reeds and lotus pads at the water. The open meadow is drawn by the ground itself (no scattered tufts: PK 1.7.0). Counts are the most drawn at once.",
+    "tufts": 2600,
+    "flowers": 500,
+    "pebbles": 700,
+    "lotus": 220,
+    "reach": 1.2
+  },
+  "ground": {
+    "$comment": "PK 1.7.0 (reference: a Manor Lords-like settlement): the ground follows life. Bare brown earth where people live and work (round buildings, yardTiles wide) and where they walk (each step wears the grass: walkWear per second on the tile, workWear while working); it grows back slowly (regrow per 10 s) where nobody goes. soilFrom/soilTo: how worn (0-1) before the earth shows through and is all earth. Meadow: a fine natural lawn of several greens; forest floor darker. Colours sRGB.",
+    "meadowDark": "#459a44",
+    "meadowLight": "#86cc66",
+    "meadowDry": "#a3b067",
+    "forestFloor": "#56692f",
+    "soil": "#8a6646",
+    "soilDark": "#664a32",
+    "soilLight": "#ab8a62",
+    "yardTiles": 2,
+    "walkWear": 0.05,
+    "workWear": 0.02,
+    "regrow": 0.012,
+    "soilFrom": 0.2,
+    "soilTo": 0.55
+  },
+  "light": {
+    "$comment": "Sun and shadow for the diorama: a lower afternoon sun (elevation in degrees) gives long, readable shadows; shadowMap px; fill = the sky's soft fill light (lower = deeper shadows); sun = sunlight strength. foliage multiplies the trees' colours (deeper, natural greens), each tree a little different.",
+    "elevation": 32,
+    "shadowMap": 2048,
+    "fill": 0.6,
+    "sun": 4.2,
+    "foliage": "#9fb886"
+  }
+}

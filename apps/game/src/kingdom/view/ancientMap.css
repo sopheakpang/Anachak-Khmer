@@ -1,0 +1,248 @@
+/* The ancient map popup (Kingdom tab): an old parchment sheet over the 1920×1080 stage.
+   Every text ≥ 26 px (hard rule, e2e). */
+.am-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: auto;
+  background: radial-gradient(ellipse at center, rgb(20 12 4 / 0.45), rgb(10 6 2 / 0.72));
+  font-family: 'Kantumruy Pro', sans-serif;
+  color: #3b2414;
+  text-shadow: none;
+}
+.am-backdrop[hidden] {
+  display: none !important;
+}
+
+.am-panel {
+  position: absolute;
+  left: 210px;
+  top: 90px;
+  width: 1500px;
+  height: 900px;
+  border-radius: 10px 14px 9px 16px;
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 0.6),
+    0 0 0 2px rgb(60 30 10 / 0.6);
+  animation: am-in 0.18s ease-out;
+}
+@keyframes am-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.am-paper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+/* Double ink-and-gold border. */
+.am-frame {
+  position: absolute;
+  inset: 16px;
+  border: 3px solid #5a3616;
+  border-radius: 4px;
+  box-shadow:
+    inset 0 0 0 5px rgb(233 214 168 / 0.6),
+    inset 0 0 0 7px #a07a3a,
+    inset 0 0 0 8px rgb(233 214 168 / 0.4),
+    inset 0 0 0 9px #5a3616;
+  pointer-events: none;
+}
+.am-corner {
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  color: #5a3616;
+  pointer-events: none;
+}
+.am-tl {
+  left: 10px;
+  top: 10px;
+}
+.am-tr {
+  right: 10px;
+  top: 10px;
+  transform: scaleX(-1);
+}
+.am-bl {
+  left: 10px;
+  bottom: 10px;
+  transform: scaleY(-1);
+}
+.am-br {
+  right: 10px;
+  bottom: 10px;
+  transform: scale(-1, -1);
+}
+
+.am-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 22px;
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  gap: 18px;
+  pointer-events: none;
+}
+.am-title .am-km {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 42px;
+  line-height: 1.5;
+  color: #4a2a10;
+  letter-spacing: 1px;
+}
+.am-title .am-dot {
+  font-size: 34px;
+  color: #a8241a;
+}
+.am-title .am-en {
+  font-size: 32px;
+  color: #5a3a1c;
+  font-variant: small-caps;
+  letter-spacing: 3px;
+}
+
+.am-close {
+  position: absolute;
+  top: 30px;
+  right: 40px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid #5a3616;
+  background: rgb(240 225 185 / 0.9);
+  color: #5a3616;
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+}
+.am-close:hover {
+  background: #a8241a;
+  color: #f6e8c4;
+}
+
+.am-viewport {
+  position: absolute;
+  left: 40px;
+  right: 40px;
+  top: 102px;
+  bottom: 72px;
+  overflow: hidden;
+}
+.am-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+  touch-action: none;
+}
+.am-map.grabbing {
+  cursor: grabbing;
+}
+
+/* Legend cartouche (left) and compass rose (right): above the map, transparent to input. */
+.am-legend {
+  position: absolute;
+  left: 58px;
+  top: 128px;
+  padding: 10px 18px 12px;
+  border: 2px solid #5a3616;
+  border-radius: 6px;
+  background: rgb(236 220 178 / 0.82);
+  box-shadow:
+    inset 0 0 0 4px rgb(236 220 178 / 0.8),
+    inset 0 0 0 5px #a07a3a;
+  pointer-events: none;
+}
+.am-leg-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.5;
+}
+.am-leg-row svg {
+  width: 40px;
+  height: 28px;
+  flex: none;
+}
+.am-leg-row .am-km {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 28px;
+}
+.am-leg-row .am-en {
+  font-size: 26px;
+  color: #5a3a1c;
+}
+
+.am-compass {
+  position: absolute;
+  right: 64px;
+  bottom: 92px;
+  width: 250px;
+  height: 250px;
+  pointer-events: none;
+}
+.am-rose {
+  position: absolute;
+  left: 45px;
+  top: 45px;
+  width: 160px;
+  height: 160px;
+}
+.am-compass span {
+  position: absolute;
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 28px;
+  line-height: 1.3;
+  color: #3b2414;
+  text-shadow:
+    0 0 4px rgb(236 220 178),
+    0 0 2px rgb(236 220 178);
+}
+.am-compass .am-n {
+  left: 50%;
+  top: 8px;
+  transform: translateX(-50%);
+  color: #a8241a;
+}
+.am-compass .am-s {
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+}
+.am-compass .am-e {
+  right: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.am-compass .am-w {
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.am-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  text-align: center;
+  font-size: 26px;
+  line-height: 1.4;
+  color: #5a3a1c;
+  pointer-events: none;
+}
+.am-hint b {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-weight: 400;
+  color: #3b2414;
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">នគរខ្មែរ</string>
+    <string name="title_activity_main">នគរខ្មែរ</string>
+    <string name="package_name">com.sopheakpang.khmerkingdoms</string>
+    <string name="custom_url_scheme">com.sopheakpang.khmerkingdoms</string>
+</resources>

@@ -1,0 +1,546 @@
+{
+  "$comment": "Anachak Khmer (អាណាចក្រខ្មែរ), PK's second Kingdom tab (D92): the whole Kingdom game plus the king's levy (workers become soldiers, paying each army type's price), his battle order and overview, the Angkorian royal roads, and a third-person 3D play mode for any character. Every number for these lives here.",
+  "look": "build",
+  "tab": {
+    "km": "អាណាចក្រខ្មែរ",
+    "en": "Anachak Khmer",
+    "savePrefix": "anachak."
+  },
+  "levy": {
+    "$comment": "The king calls villagers to arms where they stand. Each recruit costs the army type's full price (units.json cost), the same as training one; population is the type's pop. Idle villagers go first, then gatherers, then builders, farmers last (keepFarmers keeps them in the fields). Recruits gather rallyTiles south of the royal hall.",
+    "roles": ["infantry", "ranged", "cavalry", "elephant", "commander"],
+    "steps": [1, 5, 10],
+    "keepFarmers": true,
+    "rallyTiles": 7,
+    "note": {
+      "km": "កងទ័ពខ្មែរ​ត្រូវបាន​កេណ្ឌ​ពី​ប្រជាជន​ក្នុង​ពេល​សង្គ្រាម ដូច​ដែល​ឆ្លាក់​នៅ​ប្រាសាទ​បាយ័ន ដែល​ពល​ទាហាន​ដើរ​ជាមួយ​អ្នក​ស្រុក។",
+      "en": "Khmer armies were raised from the people for each war; the Bayon reliefs show soldiers marching with villagers and carts."
+    },
+    "confidence": "HISTORICALLY_SUPPORTED",
+    "sources": ["coedes1968", "jacques1997"],
+    "rallySpread": 2.5
+  },
+  "battle": {
+    "$comment": "The king's order to fight: every soldier attack-moves to the nearest known enemy (raiders first, then rival buildings); with none, they gather at the hall. searchTiles = how far the king looks for an enemy.",
+    "searchTiles": 220
+  },
+  "roads": {
+    "$comment": "The Angkorian royal roads (Hendrickson 2010): raised laterite-and-earth causeways from the capital to Phimai (north-west), Sdok Kok Thom (west), Beng Mealea and Preah Khan of Kompong Svay (east), Koh Ker and Wat Phu (north-east), and toward Champa past Sambor Prei Kuk (south-east). Waypoints are tiles on the not-to-scale world map; the line between them is drawn by the game. People walk faster on a road (speed) and path-finding prefers them (cost). Water on a road gets a corbelled laterite bridge (Spean Praptos at Kampong Kdei is a large surviving one). Jayavarman VII's Preah Khan stele (1191) lists 121 rest houses with fire (vahnigṛha) on these roads; from his era they stand every restEvery tiles and heal people nearby. When the place at a road's end is discovered, a caravan brings its goods to the hall every caravanSec.",
+    "width": 3,
+    "speed": 1.35,
+    "cost": 0.7,
+    "restEvery": 70,
+    "restEra": "jayavarman7",
+    "restHealPerSec": 1.5,
+    "restRadiusTiles": 6,
+    "caravanSec": 150,
+    "routes": [
+      {
+        "id": "phimai",
+        "km": "ផ្លូវ​រាជ​ទៅ​ភិម៉ាយ",
+        "en": "Royal road to Phimai",
+        "dest": "phimai",
+        "caravan": {
+          "gold": 40,
+          "food": 40
+        },
+        "points": [
+          [440, 395],
+          [400, 352],
+          [356, 312],
+          [320, 282],
+          [298, 252],
+          [284, 214],
+          [268, 178],
+          [252, 146]
+        ],
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["hendrickson2010", "coedes1941"]
+      },
+      {
+        "id": "west",
+        "km": "ផ្លូវ​រាជ​ទៅ​ស្ដុក​កក់​ធំ",
+        "en": "Royal road west to Sdok Kok Thom",
+        "dest": "sdokKokThom",
+        "caravan": {
+          "wood": 40,
+          "food": 40
+        },
+        "points": [
+          [425, 412],
+          [380, 420],
+          [330, 430],
+          [280, 440],
+          [232, 448],
+          [192, 455]
+        ],
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["hendrickson2010"]
+      },
+      {
+        "id": "east",
+        "km": "ផ្លូវ​រាជ​ទៅ​បឹង​មាលា និង​ព្រះ​ខ័ន​កំពង់​ស្វាយ",
+        "en": "Royal road east to Beng Mealea and Preah Khan of Kompong Svay",
+        "dest": "preahKhanKS",
+        "caravan": {
+          "stone": 50,
+          "gold": 20
+        },
+        "points": [
+          [484, 410],
+          [520, 440],
+          [548, 462],
+          [576, 474],
+          [620, 480],
+          [665, 486],
+          [705, 492],
+          [742, 500]
+        ],
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["hendrickson2010"]
+      },
+      {
+        "id": "northeast",
+        "km": "ផ្លូវ​រាជ​ទៅ​កោះកេរ្ដិ៍ និង​វត្ត​ភូ",
+        "en": "Royal road to Koh Ker and Wat Phu",
+        "dest": "watPhu",
+        "caravan": {
+          "gold": 50
+        },
+        "points": [
+          [576, 474],
+          [612, 440],
+          [646, 405],
+          [690, 360],
+          [730, 312],
+          [764, 262],
+          [800, 228],
+          [840, 205],
+          [868, 194]
+        ],
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["hendrickson2010"]
+      },
+      {
+        "id": "southeast",
+        "km": "ផ្លូវ​រាជ​ឆ្ពោះ​ទៅ​ចាម្ប៉ា",
+        "en": "Royal road south-east toward Champa",
+        "dest": "samborPreiKuk",
+        "caravan": {
+          "food": 60,
+          "gold": 20
+        },
+        "points": [
+          [540, 566],
+          [585, 576],
+          [626, 584],
+          [664, 592],
+          [698, 598]
+        ],
+        "bridge": {
+          "at": [626, 584],
+          "id": "speanPraptos",
+          "km": "ស្ពាន​កំពង់ក្ដី",
+          "en": "Spean Praptos, Kampong Kdei",
+          "streamTiles": 26
+        },
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["hendrickson2010", "jacques1997"]
+      }
+    ],
+    "places": [
+      {
+        "id": "sdokKokThom",
+        "km": "ប្រាសាទស្ដុកកក់ធំ",
+        "en": "Sdok Kok Thom",
+        "at": [192, 455],
+        "kind": "temple",
+        "note": {
+          "km": "ប្រាសាទ​ដែល​សិលាចារឹក​ឆ្នាំ ១០៥២ ប្រាប់​រឿង​ព្រះបាទ​ជ័យវរ្ម័ន​ទី២ និង​ពិធី​ទេវរាជ​លើ​ភ្នំ​គូលែន។",
+          "en": "Temple whose 1052 inscription tells of Jayavarman II and the devaraja rite on Phnom Kulen."
+        },
+        "reward": {
+          "gold": 80
+        },
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["coedes1968"]
+      },
+      {
+        "id": "preahKhanKS",
+        "km": "ព្រះខ័នកំពង់ស្វាយ",
+        "en": "Preah Khan of Kompong Svay",
+        "at": [742, 500],
+        "kind": "temple",
+        "note": {
+          "km": "ទីតាំង​មាន​កំពែង​ធំ​បំផុត​ក្រៅ​អង្គរ នៅ​ចុង​ផ្លូវ​រាជ​ខាង​កើត។",
+          "en": "The largest walled site outside Angkor, at the end of the eastern royal road."
+        },
+        "reward": {
+          "gold": 100,
+          "stone": 60
+        },
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["hendrickson2010", "jacques1997"]
+      }
+    ],
+    "note": {
+      "km": "ផ្លូវ​រាជ​ខ្មែរ​លើក​ខ្ពស់​ពី​ដី​និង​បាយក្រៀម មាន​ស្ពាន​ថ្ម និង​ផ្ទះ​សំណាក់ ១២១ (ផ្ទះ​មាន​ភ្លើង) ក្នុង​រជ្ជកាល​ព្រះបាទ​ជ័យវរ្ម័ន​ទី៧។",
+      "en": "Khmer royal roads were raised earth-and-laterite causeways with stone bridges; under Jayavarman VII, 121 rest houses with fire stood along them."
+    },
+    "uncertain": {
+      "km": "ផ្លូវ​នៅ​លើ​ផែនទី​នេះ​មិន​តាម​ខ្នាត​ទេ។ ផ្លូវ​ឆ្ពោះ​ទៅ​ចាម្ប៉ា​ហួស​កំពង់ធំ​មិន​ទាន់​ច្បាស់ ហើយ​បង្ហាញ​ថា​បញ្ចប់​នៅ​សំបូរព្រៃគុក​សម្រាប់​ការ​លេង។ ស្ពាន​ថ្ម​បាយក្រៀម​ភាគ​ច្រើន​ជា​សម័យ​ក្រោយ (ប្រហែល​សម័យ​ព្រះបាទ​ជ័យវរ្ម័ន​ទី៧) ប៉ុន្តែ​ក្នុង​ហ្គេម​វា​មាន​តាំង​ពី​ដើម។",
+      "en": "Lines on this map are not to scale. The road toward Champa beyond Kampong Thom is not certain and is shown ending at Sambor Prei Kuk for play. Most corbelled laterite bridges are thought to be later (around Jayavarman VII); in the game they stand from the start."
+    }
+  },
+  "overview": {
+    "$comment": "The king's book (PK): resources, people by work, soldiers by kind, houses, stores, buildings going up and the plan. lowRes marks a resource red."
+  },
+  "hero": {
+    "$comment": "3D hero mode (PK): any character (and the king) is played from behind in the live world, anime cel-shaded. Distances in metres, times in seconds. The unit stays in the sim (its HP, its carry); the AI lets go of it while it is played. Damage = the unit's attack × attackMul (the king uses king.attack).",
+    "camera": {
+      "dist": 5.6,
+      "height": 1.9,
+      "fov": 55,
+      "minDist": 3.5,
+      "maxDist": 16,
+      "pitchMin": -0.25,
+      "pitchMax": 1.1,
+      "lookHeight": 1.9,
+      "fogNear": 60,
+      "fogFar": 190,
+      "pitch": 0.14
+    },
+    "move": {
+      "walk": 4.2,
+      "run": 7.2,
+      "jump": 7,
+      "gravity": 20,
+      "dash": 9,
+      "dashSec": 0.28,
+      "dashCd": 0.9,
+      "turn": 12,
+      "staminaMax": 100,
+      "staminaRun": 14,
+      "staminaDash": 22,
+      "staminaRegen": 20
+    },
+    "combo": {
+      "steps": 3,
+      "window": 0.55,
+      "sec": [0.32, 0.32, 0.5],
+      "mul": [1, 1.15, 1.7],
+      "hitAt": 0.45
+    },
+    "attackMul": 2.2,
+    "armorBonus": 2,
+    "interactRange": 2.8,
+    "vision": 70,
+    "chopPerSwing": 4,
+    "buildPerSwing": 0.02,
+    "king": {
+      "hp": 600,
+      "attack": 26,
+      "armor": 6
+    },
+    "kits": [
+      {
+        "id": "worker",
+        "units": ["villager"],
+        "weapon": "axe",
+        "reach": 2.0,
+        "arc": 1.6,
+        "skill": {
+          "id": "mightyChop",
+          "km": "កាប់​ខ្លាំង",
+          "en": "Mighty chop",
+          "cd": 8,
+          "radius": 3.2,
+          "power": 3,
+          "kind": "chop"
+        }
+      },
+      {
+        "id": "spear",
+        "units": ["spearman"],
+        "weapon": "spear",
+        "reach": 2.8,
+        "arc": 0.9,
+        "skill": {
+          "id": "spearSweep",
+          "km": "វាយ​លំពែង​ជុំវិញ",
+          "en": "Spear sweep",
+          "cd": 6,
+          "radius": 3.6,
+          "power": 2.2,
+          "kind": "spin"
+        }
+      },
+      {
+        "id": "sword",
+        "units": ["swordsman"],
+        "weapon": "sword",
+        "reach": 2.1,
+        "arc": 1.7,
+        "skill": {
+          "id": "bokator",
+          "km": "ក្បាច់​ល្បុក្កតោ",
+          "en": "Bokator-style elbow and knee",
+          "cd": 5,
+          "radius": 2.6,
+          "power": 3.2,
+          "kind": "dash"
+        }
+      },
+      {
+        "id": "bow",
+        "units": ["archer"],
+        "weapon": "bow",
+        "reach": 22,
+        "arc": 0.25,
+        "skill": {
+          "id": "arrowRain",
+          "km": "ភ្លៀង​ព្រួញ",
+          "en": "Rain of arrows",
+          "cd": 9,
+          "radius": 5,
+          "power": 2,
+          "kind": "volley"
+        }
+      },
+      {
+        "id": "rider",
+        "units": ["horseman", "buffaloRider"],
+        "weapon": "lance",
+        "reach": 2.8,
+        "arc": 1.0,
+        "skill": {
+          "id": "charge",
+          "km": "សម្រុក",
+          "en": "Charge",
+          "cd": 7,
+          "radius": 2.8,
+          "power": 2.6,
+          "kind": "dash"
+        }
+      },
+      {
+        "id": "elephant",
+        "units": ["warElephant"],
+        "weapon": "goad",
+        "reach": 3.4,
+        "arc": 1.8,
+        "skill": {
+          "id": "stomp",
+          "km": "ដំរី​ជាន់",
+          "en": "Elephant stomp",
+          "cd": 8,
+          "radius": 6,
+          "power": 2.5,
+          "kind": "spin"
+        }
+      },
+      {
+        "id": "commander",
+        "units": ["commander"],
+        "weapon": "sword",
+        "reach": 2.2,
+        "arc": 1.7,
+        "skill": {
+          "id": "warCry",
+          "km": "សម្រែក​ចម្បាំង",
+          "en": "War cry",
+          "cd": 12,
+          "radius": 12,
+          "power": 0.25,
+          "kind": "heal"
+        }
+      },
+      {
+        "id": "hunter",
+        "units": ["watchman"],
+        "weapon": "bow",
+        "reach": 20,
+        "arc": 0.25,
+        "skill": {
+          "id": "dog",
+          "km": "ឆ្កែ​វាយ",
+          "en": "Set the dog on",
+          "cd": 6,
+          "radius": 18,
+          "power": 4,
+          "kind": "dog"
+        }
+      },
+      {
+        "id": "cart",
+        "units": ["oxCart"],
+        "weapon": "staff",
+        "reach": 1.8,
+        "arc": 1.4,
+        "skill": {
+          "id": "supplies",
+          "km": "ចែក​ស្បៀង",
+          "en": "Share supplies",
+          "cd": 10,
+          "radius": 10,
+          "power": 0.3,
+          "kind": "heal"
+        }
+      },
+      {
+        "id": "king",
+        "units": [],
+        "weapon": "preahKhan",
+        "reach": 2.4,
+        "arc": 1.9,
+        "skill": {
+          "id": "royalBlessing",
+          "km": "ព្រះរាជ​ទាន​ពរ",
+          "en": "King's blessing",
+          "cd": 14,
+          "radius": 14,
+          "power": 0.4,
+          "kind": "heal"
+        }
+      }
+    ],
+    "kingNote": {
+      "km": "ព្រះខ័នរាជ្យ ជា​ដាវ​ពិសិដ្ឋ​របស់​ព្រះមហាក្សត្រ​ខ្មែរ។ ប្រពៃណី​តភ្ជាប់​វា​ទៅ​អង្គរ ហើយ​ក្នុង​ហ្គេម​វា​ជា​អាវុធ​របស់​ស្ដេច​សម្រាប់​ការ​លេង។",
+      "en": "The Preah Khan, the sacred sword of the Khmer kings; tradition traces it to Angkor, and it is shown here as the king's weapon for play."
+    },
+    "confidence": "GAMEPLAY_ABSTRACTION",
+    "quests": {
+      "$comment": "The king's small tasks in hero mode (PK: more ideas): one at a time for the played character's kit; done, they pay the reward and the next one comes, a little bigger (grow).",
+      "grow": 1.5,
+      "list": [
+        {
+          "kits": ["worker", "cart"],
+          "kind": "gather",
+          "n": 20,
+          "km": "ប្រមូលធនធាន",
+          "en": "Gather goods",
+          "reward": {
+            "gold": 15
+          }
+        },
+        {
+          "kits": ["worker", "cart"],
+          "kind": "store",
+          "n": 2,
+          "km": "ដឹកចូលឃ្លាំង",
+          "en": "Bring loads to a store",
+          "reward": {
+            "gold": 15
+          }
+        },
+        {
+          "kits": ["spear", "sword", "rider", "elephant", "commander", "king"],
+          "kind": "defeat",
+          "n": 3,
+          "km": "កម្ចាត់សត្រូវ",
+          "en": "Defeat raiders",
+          "reward": {
+            "gold": 30
+          }
+        },
+        {
+          "kits": ["bow", "hunter"],
+          "kind": "hunt",
+          "n": 2,
+          "km": "បរបាញ់សត្វ",
+          "en": "Hunt game",
+          "reward": {
+            "food": 60
+          }
+        },
+        {
+          "kits": ["commander", "king", "cart"],
+          "kind": "heal",
+          "n": 5,
+          "km": "ថែទាំប្រជាជន",
+          "en": "Heal your people",
+          "reward": {
+            "gold": 20
+          }
+        },
+        {
+          "kits": ["worker", "king"],
+          "kind": "build",
+          "n": 10,
+          "km": "ជួយសាងសង់",
+          "en": "Help build",
+          "reward": {
+            "stone": 30
+          }
+        }
+      ]
+    },
+    "tuning": {
+      "$comment": "Smaller hero rules (UI review: no numbers in code): the third blow's extra reach (m), a bare work swing's power when nothing is there to work, the bow's aim cone (rad), how far ahead the rain of arrows falls (m) and how many it hits, how many works a Mighty chop does and its knock-back power.",
+      "thirdReach": 0.6,
+      "bareWork": 0.6,
+      "aimCone": 0.9,
+      "volleyAhead": 10,
+      "volleyMax": 10,
+      "chopTimes": 3,
+      "chopKnock": 1.2
+    },
+    "models": {
+      "$comment": "PK: real 3D model files (rigged .glb) made from the concept sheets replace the built-in figure in the 3D mode and on the sheet; put them in apps/game/public-mobile/models/. hips = the hip height (m) the model is scaled to. A kit with no file keeps the built-in figure.",
+      "king": {
+        "file": "models/king-guardian.glb",
+        "hips": 0.94
+      }
+    }
+  },
+  "night": {
+    "$comment": "A day and night in Anachak Khmer (PK: the rest houses' fires glow at night). daySec = one whole day in game seconds; the light falls between dusk[0] and dusk[1] of the day and comes back between dawn[0] and dawn[1]. sun/sky = how much light is left at full night; colours are the night sky and haze. fire: the rest houses' glow by day and by night.",
+    "daySec": 480,
+    "dusk": [0.55, 0.65],
+    "dawn": [0.9, 1.0],
+    "sun": 0.2,
+    "sky": 0.42,
+    "zenith": "#0a1230",
+    "horizon": "#2b3b6b",
+    "fog": "#1b2747",
+    "fire": {
+      "day": 0.12,
+      "night": 1.0,
+      "radius": 3.2
+    },
+    "confidence": "GAMEPLAY_ABSTRACTION"
+  },
+  "danger": {
+    "$comment": "PK: when danger comes (raiders, a tiger), the camera flies to the person in danger and the player chooses: play them in 3D, watch them in 3D while the story goes on by itself, or let it be. askSec = how long the choice waits before it lets life go on; everySec = at most one call this often; watchDist = the watching camera's distance (m).",
+    "askSec": 14,
+    "everySec": 40,
+    "watchDist": 6.5
+  },
+  "tiger": {
+    "$comment": "A tiger encounter in the 3D hero mode (PK). In or near the forest, now and then a tiger comes out of the trees 16-26 m away and stalks the hero (the sim's own predator rules); everySec = how often one may come, chance = the odds each time; kingBite = seconds between the tiger's bites on the king (who is not a sim unit). Tigers lived in Angkor's forests (hunting scenes on the reliefs).",
+    "everySec": 70,
+    "chance": 0.65,
+    "dist": [16, 26],
+    "kingBite": 1.4,
+    "confidence": "HISTORICALLY_SUPPORTED",
+    "sources": ["jacques1997"]
+  },
+  "market": {
+    "$comment": "PK: a market to exchange goods. Zhou Daguan (1296-97): the trading is done by women; there are no shops, each lays a mat on the ground at her place and pays the officials for it; small trades use rice, cereals and Chinese goods, large ones gold and silver. Here: give a lot of one good, get another at today's rate; fee = the stall rent to the officials; each trade makes what you sell cheaper and what you buy dearer (step per 100 goods), and prices drift back to value (recoverPerSec). min/max bound the price against its value.",
+    "building": "market",
+    "lots": [20, 50, 100, 200],
+    "value": {
+      "food": 1,
+      "wood": 1,
+      "stone": 1.5,
+      "gold": 3
+    },
+    "fee": 0.1,
+    "step": 0.04,
+    "min": 0.5,
+    "max": 2.5,
+    "recoverPerSec": 0.006,
+    "confidence": "HISTORICALLY_SUPPORTED",
+    "sources": ["harris2007"]
+  }
+}

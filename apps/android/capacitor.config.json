@@ -1,0 +1,11 @@
+{
+  "appId": "com.sopheakpang.khmerkingdoms",
+  "appName": "នគរខ្មែរ",
+  "webDir": "../game/dist-mobile",
+  "android": {
+    "backgroundColor": "#1b1006",
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  }
+}

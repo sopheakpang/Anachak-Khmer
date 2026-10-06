@@ -1,0 +1,236 @@
+{
+  "$comment": "Historical eras (Khmer Kingdoms). Each era lists what it ADDS (buildings, units, techs); earlier eras' content stays available. The campaign (campaign.json) moves through the eras as temples are completed. The Koh Ker interlude (921–944) and the late and post-Angkor periods are not playable yet and are not faked. confidence: HISTORICALLY_CONFIRMED | HISTORICALLY_SUPPORTED | HISTORICALLY_UNCERTAIN | GAMEPLAY_ABSTRACTION | FICTIONAL. Source ids refer to sources.json.",
+  "eras": [
+    {
+      "id": "roluos",
+      "km": "ហរិហរាល័យ · សម័យរលួស",
+      "en": "Hariharalaya · Roluos period",
+      "startYear": 877,
+      "endYear": 889,
+      "startingYear": 879,
+      "ruler": {
+        "km": "ព្រះបាទឥន្ទ្រវរ្ម័នទី១",
+        "en": "Indravarman I",
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["coedes1968", "jacques1997"]
+      },
+      "summary": {
+        "km": "រាជធានីហរិហរាល័យ ជិតភូមិរលួសសព្វថ្ងៃ។ ព្រះបាទឥន្ទ្រវរ្ម័នទី១ សាងប្រាសាទព្រះគោ (៨៧៩) និងជីកបារាយណ៍ឥន្ទ្រតដាក។",
+        "en": "The royal centre of Hariharalaya, near today's Roluos. Indravarman I dedicated Preah Ko (879 CE) and had the Indratataka reservoir dug."
+      },
+      "religion": {
+        "en": "Shaiva Hindu royal cult alongside local traditions",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["coedes1968", "jacques1997"]
+      },
+      "architecture": {
+        "en": "Brick towers with stucco and sandstone door frames and lintels on laterite platforms; wooden halls and stilt houses (none survive)",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["jacques1997"]
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968", "jacques1997", "evans2007"],
+      "buildings": [
+        "townCentre",
+        "house",
+        "storehouse",
+        "lumberCamp",
+        "riceField",
+        "barracks",
+        "monument",
+        "port",
+        "market"
+      ],
+      "units": [
+        "villager",
+        "spearman",
+        "swordsman",
+        "archer",
+        "warElephant",
+        "watchman",
+        "oxCart",
+        "buffaloRider",
+        "commander"
+      ],
+      "techs": [
+        "irrigatedRice",
+        "indratataka",
+        "brickKilns",
+        "sandstoneCarving",
+        "bronzeSpearheads",
+        "elephantTraining"
+      ],
+      "monuments": ["preah-ko", "bakong"]
+    },
+    {
+      "id": "yasovarman",
+      "km": "យសោធរបុរៈ",
+      "en": "Yasodharapura",
+      "startYear": 889,
+      "endYear": 910,
+      "startingYear": 893,
+      "ruler": {
+        "km": "ព្រះបាទយសោវរ្ម័នទី១",
+        "en": "Yasovarman I",
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["coedes1968"]
+      },
+      "summary": {
+        "km": "ព្រះបាទយសោវរ្ម័នទី១ សាងប្រាសាទលោលៃ ហើយផ្លាស់រាជធានីទៅយសោធរបុរៈ ជុំវិញភ្នំបាខែង។",
+        "en": "Yasovarman I built Lolei, then moved the capital to Yasodharapura, centred on Phnom Bakheng."
+      },
+      "religion": {
+        "en": "Shaiva royal cult; the king also founded hermitages for Vaishnava and Buddhist ascetics",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["coedes1968", "jacques1997"]
+      },
+      "architecture": {
+        "en": "Temple mountain on a natural hill (Phnom Bakheng); brick towers on islands in reservoirs (Lolei)",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["jacques1997"]
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968", "jacques1997"],
+      "buildings": [],
+      "units": [],
+      "techs": ["yasodharatataka"],
+      "monuments": ["lolei", "phnom-bakheng"]
+    },
+    {
+      "id": "tenth",
+      "km": "សតវត្សទី១០",
+      "en": "Tenth century",
+      "startYear": 944,
+      "endYear": 1001,
+      "startingYear": 953,
+      "ruler": {
+        "km": "ព្រះបាទរាជេន្ទ្រវរ្ម័នទី២ · ព្រះបាទជ័យវរ្ម័នទី៥",
+        "en": "Rajendravarman II · Jayavarman V",
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["coedes1968"]
+      },
+      "summary": {
+        "km": "រាជធានីត្រឡប់មកអង្គរវិញ។ មេបុណខាងកើត ប្រែរូប បន្ទាយស្រី និងតាកែវ ត្រូវបានសាងសង់។",
+        "en": "The court returned to Angkor. East Mebon, Pre Rup, Banteay Srei and Ta Keo were built."
+      },
+      "religion": {
+        "en": "Shaiva royal cult; Mahayana Buddhism also present",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["coedes1968", "jacques1997"]
+      },
+      "architecture": {
+        "en": "Laterite and brick temple mountains; the first large sandstone temple (Ta Keo, left unfinished)",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["jacques1997"]
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968", "jacques1997"],
+      "buildings": [],
+      "units": [],
+      "techs": ["lateriteWorks"],
+      "monuments": ["east-mebon", "pre-rup", "banteay-srei", "ta-keo"]
+    },
+    {
+      "id": "eleventh",
+      "km": "សតវត្សទី១១",
+      "en": "Eleventh century",
+      "startYear": 1002,
+      "endYear": 1080,
+      "startingYear": 1060,
+      "ruler": {
+        "km": "ព្រះបាទសូរ្យវរ្ម័នទី១ · ព្រះបាទឧទយាទិត្យវរ្ម័នទី២",
+        "en": "Suryavarman I · Udayadityavarman II",
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["coedes1968"]
+      },
+      "summary": {
+        "km": "បន្ទាប់ពីសង្គ្រាមដណ្ដើមរាជ្យ នគរពង្រីកធំ។ ប្រាសាទបាពួន និងបារាយណ៍ខាងលិចត្រូវបានសាងសង់។",
+        "en": "After a war of succession the kingdom grew; the Baphuon and the West Baray were built."
+      },
+      "religion": {
+        "en": "Shaiva royal cult",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["coedes1968", "jacques1997"]
+      },
+      "architecture": {
+        "en": "Tall sandstone temple mountain with long galleries (Baphuon)",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["jacques1997"]
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968", "jacques1997"],
+      "buildings": [],
+      "units": [],
+      "techs": ["westBaray"],
+      "monuments": ["baphuon"]
+    },
+    {
+      "id": "suryavarman2",
+      "km": "សម័យអង្គរវត្ត",
+      "en": "Age of Angkor Wat",
+      "startYear": 1113,
+      "endYear": 1150,
+      "startingYear": 1122,
+      "ruler": {
+        "km": "ព្រះបាទសូរ្យវរ្ម័នទី២",
+        "en": "Suryavarman II",
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["coedes1968"]
+      },
+      "summary": {
+        "km": "ព្រះបាទសូរ្យវរ្ម័នទី២ សាងអង្គរវត្ត ឧទ្ទិសដល់ព្រះវិស្ណុ ហើយធ្វើសង្គ្រាមជាមួយដាយវៀត និងចាម្ប៉ា។",
+        "en": "Suryavarman II built Angkor Wat, dedicated to Vishnu, and fought Đại Việt and Champa."
+      },
+      "religion": {
+        "en": "Vaishnava: Angkor Wat was dedicated to Vishnu",
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["coedes1968", "jacques1997"]
+      },
+      "architecture": {
+        "en": "Galleried sandstone temple with five towers and long bas-reliefs",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["jacques1997"]
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968", "jacques1997", "dvsktt"],
+      "buildings": ["nobleHouse"],
+      "units": ["horseman"],
+      "techs": ["galleryReliefs"],
+      "monuments": ["angkor-wat"]
+    },
+    {
+      "id": "jayavarman7",
+      "km": "សម័យបាយ័ន",
+      "en": "Age of the Bayon",
+      "startYear": 1181,
+      "endYear": 1218,
+      "startingYear": 1186,
+      "ruler": {
+        "km": "ព្រះបាទជ័យវរ្ម័នទី៧",
+        "en": "Jayavarman VII",
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["coedes1968"]
+      },
+      "summary": {
+        "km": "បន្ទាប់ពីចាម្ប៉ាវាយយកអង្គរ (១១៧៧) ព្រះបាទជ័យវរ្ម័នទី៧ រំដោះនគរ ហើយសាងតាព្រហ្ម ព្រះខ័ន បាយ័ន ផ្ទះសំណាក់ និងមន្ទីរពេទ្យ។",
+        "en": "After Champa sacked Angkor (1177), Jayavarman VII freed the kingdom and built Ta Prohm, Preah Khan, the Bayon, rest houses and hospitals."
+      },
+      "religion": {
+        "en": "Mahayana Buddhism as the royal religion",
+        "confidence": "HISTORICALLY_CONFIRMED",
+        "sources": ["coedes1968", "jacques1997"]
+      },
+      "architecture": {
+        "en": "Flat temple complexes with many galleries; face towers (Bayon)",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["jacques1997"]
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968", "jacques1997"],
+      "buildings": [],
+      "units": [],
+      "techs": ["restHouses", "hospitals"],
+      "monuments": ["ta-prohm", "preah-khan", "bayon"]
+    }
+  ]
+}

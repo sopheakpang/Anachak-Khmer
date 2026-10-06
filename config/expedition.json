@@ -1,0 +1,254 @@
+{
+  "$comment": "Kulen Expedition (spec tab 'Kulen Expedition'). Skill numbers are first guesses; prompt E07 tunes them. range 0 = cast around the hero. Chaos gift names live in gift-map.json (chaosGifts). trainingPosts = practice targets at camp until the real enemies arrive (E06). quarry: at the Old Quarry the hero cuts a block from a rock face (click it in reach, or F), carries it on the head (slower) and brings it to the camp stone pile.",
+  "expeditionsPerTemple": 4,
+  "heroes": [
+    {
+      "id": "warrior",
+      "km": "វីរៈ",
+      "en": "Vireak",
+      "roleKm": "យោធា",
+      "roleEn": "Warrior",
+      "speed": 5.2,
+      "health": 600,
+      "energy": 100,
+      "skills": ["vajra", "garudaDash", "nagaShield", "ramaArrows"],
+      "attack": {
+        "range": 2.8,
+        "damage": 40,
+        "cooldownSec": 0.8,
+        "kind": "melee"
+      },
+      "dash": {
+        "distance": 6,
+        "cooldownSec": 4
+      }
+    },
+    {
+      "id": "sage",
+      "km": "ពិសិដ្ឋ",
+      "en": "Piseth",
+      "roleKm": "ព្រាហ្មណ៍",
+      "roleEn": "Brahmin sage",
+      "speed": 4.8,
+      "health": 380,
+      "energy": 160,
+      "skills": ["agniFire", "chakra", "varunaRain", "shivaEye"],
+      "attack": {
+        "range": 11,
+        "damage": 30,
+        "cooldownSec": 1.1,
+        "kind": "ranged"
+      },
+      "dash": {
+        "distance": 6,
+        "cooldownSec": 4
+      }
+    },
+    {
+      "id": "rider",
+      "km": "គិរី",
+      "en": "Kiri",
+      "roleKm": "អ្នកជិះដំរី",
+      "roleEn": "Elephant rider",
+      "speed": 3.8,
+      "health": 900,
+      "energy": 90,
+      "skills": ["tuskSweep", "warTrumpet", "airavata", "stampede"],
+      "attack": {
+        "range": 4.8,
+        "damage": 55,
+        "cooldownSec": 1.4,
+        "kind": "melee"
+      },
+      "dash": {
+        "distance": 4,
+        "cooldownSec": 4
+      }
+    }
+  ],
+  "skills": {
+    "vajra": {
+      "km": "វជ្ររបស់ព្រះឥន្ទ",
+      "en": "Indra's Vajra",
+      "key": "Q",
+      "colors": ["#f3eaff", "#9b6bff"],
+      "cooldownSec": 6,
+      "energy": 20,
+      "radius": 6,
+      "damage": 60,
+      "range": 9,
+      "effect": "blast"
+    },
+    "garudaDash": {
+      "km": "គ្រុឌហោះ",
+      "en": "Garuda Dash",
+      "key": "W",
+      "colors": ["#ff5a2a", "#ffc84a"],
+      "cooldownSec": 9,
+      "energy": 25,
+      "radius": 3,
+      "damage": 40,
+      "range": 8,
+      "effect": "dashStrike"
+    },
+    "nagaShield": {
+      "km": "ខែលនាគ",
+      "en": "Naga Shield",
+      "key": "E",
+      "colors": ["#2fbf9a", "#7fe3e0"],
+      "cooldownSec": 16,
+      "energy": 35,
+      "radius": 5,
+      "damage": 0,
+      "range": 0,
+      "effect": "heal"
+    },
+    "ramaArrows": {
+      "km": "ព្រួញព្រះរាម",
+      "en": "Arrows of Preah Ream",
+      "key": "R",
+      "colors": ["#ffd166", "#2f5dab"],
+      "cooldownSec": 45,
+      "energy": 60,
+      "radius": 9,
+      "damage": 160,
+      "range": 14,
+      "effect": "blast"
+    },
+    "agniFire": {
+      "km": "ភ្លើងព្រះអគ្និ",
+      "en": "Agni's Fire",
+      "key": "Q",
+      "colors": ["#ff9f1c", "#ffd166"],
+      "cooldownSec": 3,
+      "energy": 15,
+      "radius": 2,
+      "damage": 45,
+      "range": 12,
+      "effect": "blast"
+    },
+    "chakra": {
+      "km": "ចក្រព្រះនារាយណ៍",
+      "en": "Sudarshana Chakra",
+      "key": "W",
+      "colors": ["#ffd166", "#1f4e9e"],
+      "cooldownSec": 8,
+      "energy": 30,
+      "radius": 10,
+      "damage": 55,
+      "range": 12,
+      "effect": "blast"
+    },
+    "varunaRain": {
+      "km": "ភ្លៀងព្រះវរុណ",
+      "en": "Varuna's Rain",
+      "key": "E",
+      "colors": ["#b8d8ff", "#e9f2ff"],
+      "cooldownSec": 18,
+      "energy": 45,
+      "radius": 7,
+      "damage": 0,
+      "range": 0,
+      "effect": "heal"
+    },
+    "shivaEye": {
+      "km": "ភ្នែកទីបីព្រះឥសូរ",
+      "en": "Third Eye of Shiva",
+      "key": "R",
+      "colors": ["#ff9f1c", "#c1121f"],
+      "cooldownSec": 50,
+      "energy": 80,
+      "radius": 12,
+      "damage": 220,
+      "range": 13,
+      "effect": "blast"
+    },
+    "tuskSweep": {
+      "km": "ភ្លុកបោស",
+      "en": "Tusk Sweep",
+      "key": "Q",
+      "colors": ["#f1e6cc"],
+      "cooldownSec": 5,
+      "energy": 15,
+      "radius": 4,
+      "damage": 50,
+      "range": 0,
+      "effect": "selfBlast"
+    },
+    "warTrumpet": {
+      "km": "ស្រែកដំរីសឹក",
+      "en": "War Trumpet",
+      "key": "W",
+      "colors": ["#c08a3e", "#e7c38a"],
+      "cooldownSec": 12,
+      "energy": 25,
+      "radius": 8,
+      "damage": 0,
+      "range": 0,
+      "effect": "selfBlast"
+    },
+    "airavata": {
+      "km": "ពរព្រះឯរាវ័ណ",
+      "en": "Airavata's Blessing",
+      "key": "E",
+      "colors": ["#f4f6ff", "#e8d9a8"],
+      "cooldownSec": 20,
+      "energy": 40,
+      "radius": 8,
+      "damage": 0,
+      "range": 0,
+      "effect": "heal"
+    },
+    "stampede": {
+      "km": "ហ្វូងដំរីបោល",
+      "en": "Stampede",
+      "key": "R",
+      "colors": ["#d9a646", "#8a6a3a"],
+      "cooldownSec": 55,
+      "energy": 70,
+      "radius": 14,
+      "damage": 200,
+      "range": 12,
+      "effect": "blast"
+    }
+  },
+  "chaos": {
+    "maxAlive": 3,
+    "globalCooldownSec": 15,
+    "perViewerCooldownSec": 60,
+    "graceSec": 60
+  },
+  "camera": {
+    "minDistance": 14,
+    "maxDistance": 46,
+    "startDistance": 32,
+    "pitchDeg": 52,
+    "panLimit": 70
+  },
+  "world": {
+    "size": 180
+  },
+  "trainingPosts": {
+    "health": 300,
+    "respawnSec": 6,
+    "at": [
+      [-9.5, 23],
+      [1.5, 23],
+      [-9, 17.5],
+      [1, 17.5]
+    ]
+  },
+  "quarry": {
+    "reach": 4.2,
+    "cutSec": 3,
+    "carrySpeed": 0.8,
+    "deliverRadius": 6,
+    "pile": [-13, 27],
+    "faces": [
+      [42, -39],
+      [53, -41],
+      [58, -31],
+      [39, -28]
+    ]
+  }
+}

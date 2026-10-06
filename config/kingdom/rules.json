@@ -1,0 +1,586 @@
+{
+  "$comment": "Khmer Kingdoms rules. start.maxPop = the most people the kingdom can feed and house (PK 1.7.0: 150, was 60; the phone build: mobileMaxPop). The map and the chapters are in campaign.json. The opponents follow recorded history where it exists (campaign.json → opponents, each labelled); their raids on the building site are gameplay. tiktok: what LIVE support gives the kingdom (per stone of each tier). council: the viewer vote every intervalSec (!1 !2 !3).",
+  "scenario": {
+    "id": "campaign",
+    "km": "នគរខ្មែរ · យុទ្ធនាការ",
+    "en": "Khmer Kingdoms · Campaign",
+    "era": "roluos",
+    "year": 879,
+    "label": "HISTORICALLY_INSPIRED_SCENARIO",
+    "objective": {
+      "km": "សាងប្រាសាទនៃជំពូកនេះឲ្យរួច ហើយការពាររាជធានី",
+      "en": "Complete this chapter's temple and defend the capital"
+    },
+    "note": {
+      "km": "ប្រាសាទ ស្ដេច និងឆ្នាំ ជាប្រវត្តិសាស្ត្រ។ ការវាយប្រហារលើការដ្ឋាន ជាការរៀបចំសម្រាប់ហ្គេម។",
+      "en": "Temples, kings and years are historical. Raids on the building sites are gameplay."
+    }
+  },
+  "start": {
+    "resources": {
+      "food": 200,
+      "wood": 220,
+      "stone": 120,
+      "gold": 60
+    },
+    "villagers": 6,
+    "maxPop": 150,
+    "mobileMaxPop": 100
+  },
+  "economy": {
+    "refundShare": 0.75,
+    "dropOffRange": 1.5,
+    "gatherRange": 1.2,
+    "treeWood": 120,
+    "stoneRock": 400,
+    "goldRock": 300,
+    "fruitBush": 120,
+    "gemRock": 200,
+    "gemValue": 2
+  },
+  "ai": {
+    "difficulty": "normal",
+    "levels": {
+      "easy": {
+        "firstRaidSec": 420,
+        "everySec": 260,
+        "wave": 3,
+        "growEvery": 2,
+        "retreatAt": 0.2
+      },
+      "normal": {
+        "firstRaidSec": 300,
+        "everySec": 200,
+        "wave": 4,
+        "growEvery": 2,
+        "retreatAt": 0.25
+      },
+      "hard": {
+        "firstRaidSec": 220,
+        "everySec": 160,
+        "wave": 5,
+        "growEvery": 1,
+        "retreatAt": 0.3
+      },
+      "expert": {
+        "firstRaidSec": 180,
+        "everySec": 130,
+        "wave": 6,
+        "growEvery": 1,
+        "retreatAt": 0.35
+      }
+    },
+    "camp": {
+      "hp": 1800,
+      "armor": 3,
+      "guards": 5
+    },
+    "raiders": ["spearman", "archer"]
+  },
+  "victory": {
+    "monumentHoldSec": 20,
+    "destroyCamp": false
+  },
+  "fog": {
+    "cell": 2,
+    "updateSec": 0.25
+  },
+  "tiktok": {
+    "perStone": {
+      "small": {
+        "food": 3
+      },
+      "medium": {
+        "wood": 15,
+        "food": 10
+      },
+      "large": {
+        "stone": 40,
+        "wood": 20
+      },
+      "huge": {
+        "stone": 120,
+        "gold": 40
+      }
+    }
+  },
+  "council": {
+    "intervalSec": 120,
+    "voteSec": 30,
+    "choices": [
+      {
+        "id": "harvest",
+        "km": "បុណ្យច្រូតស្រូវ",
+        "en": "Harvest festival",
+        "give": {
+          "food": 150
+        }
+      },
+      {
+        "id": "quarry",
+        "km": "ហៅកម្មករយកថ្ម",
+        "en": "Call the stone cutters",
+        "give": {
+          "stone": 100
+        }
+      },
+      {
+        "id": "levy",
+        "km": "កេណ្ឌពល",
+        "en": "Levy of spearmen",
+        "units": {
+          "spearman": 3
+        }
+      }
+    ]
+  },
+  "save": {
+    "autosaveSec": 60,
+    "backups": 3
+  },
+  "raids": {
+    "requireBarracks": true,
+    "graceSec": 60
+  },
+  "automation": {
+    "autoWork": true,
+    "idleSec": 5,
+    "searchTiles": 45,
+    "guardTiles": 40,
+    "huntRange": 6
+  },
+  "weather": {
+    "cycleMin": 30,
+    "kinds": [
+      {
+        "id": "clear",
+        "km": "មេឃស្រឡះ",
+        "en": "Clear",
+        "weight": 4,
+        "gather": 1,
+        "speed": 1,
+        "farm": 1
+      },
+      {
+        "id": "cloudy",
+        "km": "មេឃស្រទំ",
+        "en": "Cloudy",
+        "weight": 3,
+        "gather": 1,
+        "speed": 1,
+        "farm": 1.05
+      },
+      {
+        "id": "rain",
+        "km": "ភ្លៀង",
+        "en": "Rain",
+        "weight": 3,
+        "gather": 0.9,
+        "speed": 0.9,
+        "farm": 1.25
+      },
+      {
+        "id": "storm",
+        "km": "ព្យុះភ្លៀង",
+        "en": "Storm",
+        "weight": 1,
+        "gather": 0.75,
+        "speed": 0.8,
+        "farm": 1.1
+      },
+      {
+        "id": "mist",
+        "km": "អ័ព្ទ",
+        "en": "Mist",
+        "weight": 2,
+        "gather": 1,
+        "speed": 0.95,
+        "farm": 1
+      },
+      {
+        "id": "windy",
+        "km": "ខ្យល់បក់ខ្លាំង",
+        "en": "Windy",
+        "weight": 2,
+        "gather": 0.95,
+        "speed": 1,
+        "farm": 1
+      }
+    ]
+  },
+  "army": {
+    "$comment": "Commander aura, supply cart and watchman (D69).",
+    "commander": {
+      "auraTiles": 7,
+      "attack": 1.25,
+      "armor": 1
+    },
+    "supply": {
+      "radiusTiles": 5,
+      "healPerSec": 2.5
+    },
+    "watchman": {
+      "exploreStepTiles": 18,
+      "reportKinds": ["stone", "gold", "gems", "fruit"],
+      "reportAtM": 10,
+      "huntTiles": 8,
+      "$comment": "PK: the hunter-scout walks with his dog to find stone, gold, gems and fruit; when he sees a source he goes back to tell the king (reportAtM in front of the hall). On the way he and the dog take game they meet within huntTiles; the kill is meat for the villagers. He keeps the hides of what he kills (hideShare of the meat, in gold) and sells them at a store when he has hidesCap or more, or when he reports to the king; hides as trade goods are a gameplay abstraction. Hidden places (Kbal Spean, Mahendraparvata, Beng Mealea, Banteay Chhmar) are not marked on the map until found; the hunter heads for one within seekPlacesTiles.",
+      "hideShare": 0.25,
+      "hidesCap": 60,
+      "seekPlacesTiles": 220
+    }
+  },
+  "commanders": [
+    {
+      "era": "roluos",
+      "km": "មហាសេនាបតី",
+      "en": "Mahāsenāpati (high commander)",
+      "names": [],
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "notes": "The title is attested in inscriptions; no general of Indravarman I is known by name, so he is shown by title only.",
+      "sources": ["coedes-ic"]
+    },
+    {
+      "era": "eleventh",
+      "km": "សេនាបតីសង្គ្រាម",
+      "en": "Senāpati Saṅgrāma",
+      "names": [
+        {
+          "km": "សង្គ្រាម",
+          "en": "Saṅgrāma"
+        }
+      ],
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "notes": "Udayādityavarman II's general; the Baphuon stele records his victories over Aravindahrada (1051) and Kamvau (1065).",
+      "sources": ["coedes-ic", "coedes1968"]
+    },
+    {
+      "era": "suryavarman2",
+      "km": "ព្រះកម្រតេងអញ ស្រីវីរេន្ទ្រាធិបតិវរ្ម",
+      "en": "Vraḥ Kamrateṅ Añ Śrī Vīrendrādhipativarman",
+      "names": [
+        {
+          "km": "ស្រីវីរេន្ទ្រាធិបតិវរ្ម",
+          "en": "Śrī Vīrendrādhipativarman"
+        },
+        {
+          "km": "ធនញ្ជ័យ",
+          "en": "Dhanañjaya"
+        },
+        {
+          "km": "ស្រីជ័យសិង្ហវរ្ម",
+          "en": "Śrī Jayasiṃhavarman"
+        }
+      ],
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "notes": "Generals labelled by short inscriptions in the historic procession of Suryavarman II at Angkor Wat, each under his parasols; PK's reference statues carry the same names. Their deeds are not recorded.",
+      "sources": ["coedes1911", "pk-generals"]
+    },
+    {
+      "era": "jayavarman7",
+      "km": "ព្រះរាជបុត្រ ស្រីន្ទ្រកុមារ",
+      "en": "Prince Śrīndrakumāra",
+      "names": [
+        {
+          "km": "ស្រីន្ទ្រកុមារ",
+          "en": "Śrīndrakumāra"
+        },
+        {
+          "km": "អនកសញ្ជក់ អជ៌ុន",
+          "en": "Anak sañjak Arjuna"
+        },
+        {
+          "km": "អនកសញ្ជក់ ស្រីធរទេវបុរ",
+          "en": "Anak sañjak Śrī Dharadevapura"
+        },
+        {
+          "km": "អនកសញ្ជក់ ស្រីទេវ",
+          "en": "Anak sañjak Śrī Deva"
+        },
+        {
+          "km": "អនកសញ្ជក់ ស្រីវទ្ធន",
+          "en": "Anak sañjak Śrī Vardhana"
+        }
+      ],
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "notes": "The Banteay Chhmar inscription K.227 tells how the prince's sworn companions (anak sañjak) fell defending him against Bharata Rāhu and the Cham.",
+      "sources": ["coedes-ic", "pk-generals"]
+    }
+  ],
+  "livestock": {
+    "$comment": "Village animals round houses and fields (PK, D70); decoration only.",
+    "perHouse": {
+      "chicken": 2,
+      "pig": 1
+    },
+    "perField": {
+      "cow": 1
+    },
+    "perHall": {
+      "chicken": 3,
+      "pig": 1
+    },
+    "wanderM": 4,
+    "produce": {
+      "$comment": "Hay Day-style collecting (PK): the chickens and pigs at houses and the hall fill a basket (eggs, a piglet's worth) every everySec; click the basket over the house to take the food. On a live stream nobody may click, so it is taken in by itself autoSec later.",
+      "everySec": 90,
+      "food": 12,
+      "autoSec": 45,
+      "types": ["house", "nobleHouse", "townCentre"]
+    }
+  },
+  "calendar": {
+    "secPerYear": 120,
+    "extraYearsAfterLast": 30
+  },
+  "speed": {
+    "options": [1, 2, 3, 5],
+    "start": 1
+  },
+  "alarm": {
+    "radiusTiles": 6,
+    "safeSec": 6,
+    "repeatSec": 12,
+    "soldierTiles": 40
+  },
+  "edgeScroll": {
+    "enabled": true,
+    "marginPx": 14,
+    "minSpeed": 0.35
+  },
+  "moveBuilding": {
+    "enabled": true,
+    "fixed": ["monument"],
+    "costShare": 0
+  },
+  "haul": {
+    "capacity": 60,
+    "loadSec": 3,
+    "minLoad": 20
+  },
+  "court": {
+    "$comment": "PK: the king is active and happy when the city grows. A finished building or new people make him bless the city (arms raised, the Brahmins with him), at most once per blessEverySec; every milestone people a toast says so.",
+    "blessSec": 6,
+    "blessEverySec": 20,
+    "milestone": 10
+  },
+  "orders": {
+    "$comment": "Hay Day-style order board (PK: features like Hay Day). Buyers ask for a few of the kingdom's goods and pay in gold; a filled or thrown-away slot gets a new buyer after a wait. Now and then a Chinese junk comes up the river with a big order and leaves if it is not filled. Zhou Daguan (1296): Chinese merchants traded at Angkor and the women kept the market; the buyers and amounts here are gameplay.",
+    "slots": 3,
+    "firstSec": 20,
+    "refillSec": 40,
+    "discardSec": 120,
+    "amount": {
+      "min": 20,
+      "max": 60,
+      "perChapter": 0.15
+    },
+    "value": {
+      "food": 1,
+      "wood": 1,
+      "stone": 1.6,
+      "gold": 0
+    },
+    "goldPerValue": 0.3,
+    "multiItemBonus": 0.2,
+    "buyers": [
+      {
+        "id": "market",
+        "km": "ស្ត្រីលក់ដូរនៅផ្សារ",
+        "en": "The market women",
+        "wants": ["food", "wood"]
+      },
+      {
+        "id": "chinese",
+        "km": "ឈ្មួញចិន",
+        "en": "Chinese merchants",
+        "wants": ["food", "wood"]
+      },
+      {
+        "id": "ashrama",
+        "km": "អាស្រម",
+        "en": "The ashrama",
+        "wants": ["food"]
+      },
+      {
+        "id": "works",
+        "km": "ការដ្ឋានប្រាសាទ",
+        "en": "The temple works",
+        "wants": ["stone", "wood", "food"]
+      },
+      {
+        "id": "village",
+        "km": "ភូមិជិតខាង",
+        "en": "A nearby village",
+        "wants": ["wood", "stone"]
+      }
+    ],
+    "boat": {
+      "everySec": 480,
+      "staySec": 240,
+      "items": 3,
+      "bonus": 0.6,
+      "km": "សំពៅចិន",
+      "en": "Chinese junk"
+    },
+    "confidence": "GAMEPLAY",
+    "sources": ["harris2007"]
+  },
+  "rice": {
+    "$comment": "The rice year in a field (PK, history first): the farmer sows the seed on a seedling bed (ព្រោះស្រូវ), brings water in with the rahat, a treadle water wheel still used in Cambodia (ដាក់ទឹកស្រែ ដោយរហាត់ទឹក), transplants the seedlings into rows (ស្ទូងស្រូវ), tends the rice and reaps it with a sickle (ច្រូតស្រូវ). Seedbed and transplanting are the traditional Khmer way; Zhou Daguan (1296) writes that fields gave three or four harvests a year. The rahat is known from later centuries (no Angkor-period depiction): HISTORICALLY_UNCERTAIN. The year moves on while a farmer works the field (cycleSec of work); the harvest brings in harvestFood more on top of the food gathered as before. Times are gameplay.",
+    "cycleSec": 150,
+    "harvestFood": 20,
+    "stages": [
+      {
+        "id": "sow",
+        "km": "ព្រោះស្រូវ",
+        "en": "Sowing the seed",
+        "until": 0.12
+      },
+      {
+        "id": "water",
+        "km": "ដាក់ទឹកស្រែ ដោយរហាត់ទឹក",
+        "en": "Bringing water with the rahat wheel",
+        "until": 0.27
+      },
+      {
+        "id": "transplant",
+        "km": "ស្ទូងស្រូវ",
+        "en": "Transplanting the seedlings",
+        "until": 0.45
+      },
+      {
+        "id": "grow",
+        "km": "ស្រូវលូតលាស់",
+        "en": "The rice grows",
+        "until": 0.85
+      },
+      {
+        "id": "harvest",
+        "km": "ច្រូតស្រូវ",
+        "en": "Reaping the harvest",
+        "until": 1
+      }
+    ],
+    "confidence": "HISTORICALLY_UNCERTAIN",
+    "sources": ["harris2007"]
+  },
+  "rafts": {
+    "$comment": "PK: people cross rivers, moats and the lake on boats or bamboo rafts (ក្បូនឬស្សី) instead of walking round. Boats on the Tonle Sap (fishing boats, the naval battle) are carved on the Bayon; Zhou Daguan describes boats of planks and dug-out canoes. Rafts for one person are a game abstraction. A water tile costs `cost` times a land tile when paths are planned; people move at `speed` of their walking pace on it.",
+    "enabled": true,
+    "cost": 2.5,
+    "speed": 0.55
+  },
+  "alerts": {
+    "$comment": "PK: light alerts. A soft blue light over work in progress (building, training, research), a gold flash when it is finished, a red pulse on a resource that is running out (below lowRes) and on what a build or order still needs, an amber light over a lumber camp holding campFull timber or more (waiting for a cart).",
+    "lowRes": 50,
+    "campFull": 180,
+    "flashSec": 2.5,
+    "needSec": 1.8
+  },
+  "decree": {
+    "$comment": "PK: the king's decree to build the temple. Every everySec seconds the villagers are set to work: before the foundation they gather what the temple still lacks (in proportion), then the foundation is laid on the temple's site and up to maxBuilders build it; farmers stay on their fields when keepFarmers. It ends when the temple stands.",
+    "everySec": 5,
+    "maxBuilders": 14,
+    "keepFarmers": true
+  },
+  "ceremonies": {
+    "$comment": "PK: the king holds religious ceremonies by himself to build his royal power (ព្រះបារមី). One comes every everySec game seconds, the next of those allowed in the era; while it lasts (durSec) the people gather and build faster (buff), and the royal power grows. The ceremonies are taken from the record: the devaraja rite of 802 (Sdok Kok Thom inscription), royal consecration by the purohita and the consecration of a temple's image (inscriptions), and the yearly festivals Zhou Daguan saw at Angkor in 1296–97. Effects are gameplay. Zhou Daguan saw his festivals in 1296–97; showing them in earlier eras is likely but not attested.",
+    "everySec": 360,
+    "firstSec": 180,
+    "durSec": 90,
+    "buff": {
+      "gather": 1.1,
+      "build": 1.15
+    },
+    "list": [
+      {
+        "id": "devaraja",
+        "km": "ពិធីទេវរាជ",
+        "en": "The devaraja rite",
+        "note": {
+          "km": "ព្រះរាជាត្រូវបានប្រកាសជាចក្រពត្តិ នៅលើភ្នំគូលែន (គ.ស. ៨០២) ដោយព្រាហ្មណ៍ហិរណ្យទាម។",
+          "en": "As Jayavarman II was proclaimed universal monarch on Phnom Kulen in 802 by the Brahmin Hiranyadama (Sdok Kok Thom inscription)."
+        },
+        "prestige": 12,
+        "eras": ["roluos", "yasovarman", "tenth", "eleventh"],
+        "fx": "gold",
+        "confidence": "HISTORICALLY_CONFIRMED"
+      },
+      {
+        "id": "abhiseka",
+        "km": "ពិធីអភិសេក",
+        "en": "Royal consecration (abhiseka)",
+        "note": {
+          "km": "ព្រះបុរោហិតស្រោចទឹកមន្ត និងថ្វាយព្រះនាមរាជាភិសេក។",
+          "en": "The royal purohita anoints the king with holy water and gives his consecration name, as the inscriptions record."
+        },
+        "prestige": 10,
+        "fx": "water",
+        "confidence": "HISTORICALLY_CONFIRMED"
+      },
+      {
+        "id": "consecration",
+        "km": "ពិធីតម្កល់ព្រះ",
+        "en": "Consecrating the temple's image",
+        "note": {
+          "km": "តម្កល់លិង្គ ឬព្រះបដិមា ក្នុងប្រាសាទ ដូចសិលាចារឹកនៃប្រាសាទនីមួយៗ។",
+          "en": "A linga or image is installed in the temple's sanctuary, as each temple's foundation inscription records."
+        },
+        "prestige": 10,
+        "fx": "gold",
+        "confidence": "HISTORICALLY_CONFIRMED"
+      },
+      {
+        "id": "newYear",
+        "km": "ពិធីចូលឆ្នាំ",
+        "en": "New Year before the palace",
+        "note": {
+          "km": "ជីវ តាក្វាន់ (១២៩៦) ៖ វេទិកាធំមុខព្រះរាជវាំង មានចង្កៀង និងកាំជ្រួច ព្រះរាជាយាងទតពិធី។",
+          "en": "Zhou Daguan (1296): a great stand before the palace hung with lanterns and fireworks, which the king comes out to watch."
+        },
+        "prestige": 8,
+        "fx": "fireworks",
+        "confidence": "HISTORICALLY_SUPPORTED"
+      },
+      {
+        "id": "newRice",
+        "km": "ពិធីបូជាស្រូវថ្មី",
+        "en": "Offering the new rice",
+        "note": {
+          "km": "ជីវ តាក្វាន់ ៖ ក្នុងខែទីប្រាំពីរ គេដុតស្រូវថ្មីបូជា។",
+          "en": "Zhou Daguan: in the seventh month the new rice is burnt as an offering."
+        },
+        "prestige": 8,
+        "fx": "gold",
+        "confidence": "HISTORICALLY_SUPPORTED"
+      },
+      {
+        "id": "census",
+        "km": "ពិធីរាប់ប្រជាជន",
+        "en": "Counting the people",
+        "note": {
+          "km": "ជីវ តាក្វាន់ ៖ ក្នុងខែទីប្រាំបួន ប្រជាជនពីគ្រប់ទីកន្លែងមកជួបជុំមុខព្រះរាជវាំង។",
+          "en": "Zhou Daguan: in the ninth month people from all over gather before the palace to be counted."
+        },
+        "prestige": 8,
+        "fx": "gold",
+        "confidence": "HISTORICALLY_SUPPORTED"
+      },
+      {
+        "id": "buddhaWater",
+        "km": "ពិធីស្រង់ព្រះ",
+        "en": "Bathing the Buddha images",
+        "note": {
+          "km": "ជីវ តាក្វាន់ ៖ គេនាំព្រះពុទ្ធរូបមកស្រង់ទឹក ព្រះរាជាយាងចូលរួម។ (សម័យព្រះបាទជ័យវរ្ម័នទី៧ និងក្រោយ)",
+          "en": "Zhou Daguan: Buddha images are brought out and bathed with water, the king taking part (Buddhist, from Jayavarman VII on)."
+        },
+        "prestige": 10,
+        "eras": ["jayavarman7"],
+        "fx": "water",
+        "confidence": "HISTORICALLY_SUPPORTED"
+      }
+    ],
+    "sources": ["coedes1968", "harris2007"]
+  }
+}

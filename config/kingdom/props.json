@@ -1,0 +1,87 @@
+{
+  "$comment": "PK (1.6.0): real 3D models (.glb, made in Meshy) for the world's props. Each slot replaces one built-in shape when the graphics preset has props on; a slot with no file keeps the built-in shape. file = under apps/game/public-mobile/; source = PK's raw download (C:\\Users\\ASUS\\Downloads\\3D model), shrunk by scripts/models/props.mjs to `tris` triangles and a `tex` px WebP colour map. fit: 'height' scales the model to the built-in shape's height, 'width' to its widest side. tint multiplies the model's colours; sway = the crown moves in the wind; sink = share of the height set into the ground; bake 'vertex' paints the colour map into the vertices (plants: no texture, cut far down); light / sat brighten and saturate baked plants (applied in the game, no rebuild). diorama: false = the slot keeps the built-in shape in the Angkor Cel-Diorama look (PK 1.7.0: the Meshy broadleaf and mango read crumpled at RTS distance).",
+  "slots": {
+    "tree.common": {
+      "file": "models/props/tree-broadleaf.glb",
+      "source": "Meshy_AI_tree_1003153231_texture.glb",
+      "tris": 1500,
+      "tex": 512,
+      "fit": "height",
+      "sway": true,
+      "en": "Common forest tree (broadleaf)",
+      "bake": "vertex",
+      "light": 1.2,
+      "sat": 1.0,
+      "diorama": false
+    },
+    "tree.palm": {
+      "file": "models/props/palm-forest.glb",
+      "source": "Meshy_AI_Palm_Tree_1003153523_texture.glb",
+      "tris": 1500,
+      "tex": 512,
+      "fit": "height",
+      "sway": true,
+      "en": "Forest palm",
+      "bake": "vertex",
+      "light": 1.1,
+      "sat": 0.95
+    },
+    "tree.mango": {
+      "file": "models/props/tree-mango.glb",
+      "source": "Meshy_AI_tree__1002205912_texture.glb",
+      "tris": 1500,
+      "tex": 512,
+      "fit": "height",
+      "sway": true,
+      "en": "Mango tree (round dense crown)",
+      "bake": "vertex",
+      "light": 1.25,
+      "sat": 1.0,
+      "diorama": false
+    },
+    "dikePalm": {
+      "file": "models/props/palm-sugar.glb",
+      "source": "Meshy_AI_palm_tree_1003153541_texture.glb",
+      "tris": 1200,
+      "tex": 512,
+      "fit": "height",
+      "sway": true,
+      "en": "Sugar palm on the paddy dikes (thnot)",
+      "bake": "vertex",
+      "light": 1.15,
+      "sat": 0.95
+    },
+    "rock.stone": {
+      "file": "models/props/rock-sandstone.glb",
+      "source": "Meshy_AI_Cracked_Granite_Bould_1003151924_texture.glb",
+      "tris": 900,
+      "tex": 512,
+      "fit": "width",
+      "sink": 0.08,
+      "tint": "#e6d3b0",
+      "en": "Stone quarry boulder (sandstone tint)"
+    },
+    "rock.gold": {
+      "file": "models/props/rock-gold.glb",
+      "source": "Meshy_AI_Cracked_Gray_Rock_Sta_1003151858_texture.glb",
+      "tris": 900,
+      "tex": 512,
+      "fit": "width",
+      "sink": 0.08,
+      "tint": "#ffd27a",
+      "en": "Gold-bearing rock"
+    },
+    "fruit": {
+      "file": "models/props/banana.glb",
+      "source": "Meshy_AI_Banana_Plant_1003151914_texture.glb",
+      "tris": 1500,
+      "tex": 512,
+      "fit": "height",
+      "sway": true,
+      "en": "Banana plant (food to gather)",
+      "bake": "vertex",
+      "light": 1.0,
+      "sat": 0.9
+    }
+  }
+}

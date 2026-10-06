@@ -1,0 +1,8 @@
+{
+  "$comment": "Electron game window (apps/desktop). contentHeight 'auto' = as tall as the monitor's work area allows; width follows 9:16. preset: low (default), high (strong PC) or lite (no shadows, if low drops below 30 FPS).",
+  "title": "The Temples",
+  "contentHeight": "auto",
+  "alwaysOnTop": false,
+  "url": "http://localhost:5173",
+  "preset": "low"
+}

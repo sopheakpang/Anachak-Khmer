@@ -1,0 +1,13 @@
+@echo off
+title The Temples - starter
+cd /d "%~dp0"
+echo Checking packages (fast when nothing changed)...
+call npm install --no-audit --no-fund --loglevel=error
+echo Starting game server, bridge and host panel...
+start "The Temples - server (keep open)" cmd /k "npm run dev"
+echo Waiting for the game server...
+timeout /t 8 /nobreak >nul
+echo Opening the game window and the host panel...
+start "The Temples - window" cmd /k "npm run desktop"
+start "" http://localhost:7421
+exit

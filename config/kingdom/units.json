@@ -1,0 +1,269 @@
+{
+  "$comment": "Units (v0.1, Roluos era). speed m/s; range m (0.9 = melee); attack per hit, cooldownSec between hits; armor removes damage (never below 1); vision m; carry = resources per trip; gather = units per second by resource; build = work rate (1 = one villager).",
+  "units": [
+    {
+      "id": "villager",
+      "km": "អ្នកស្រុក",
+      "en": "Villager",
+      "role": "worker",
+      "hp": 40,
+      "armor": 0,
+      "speed": 2.2,
+      "range": 0.9,
+      "attack": 3,
+      "cooldownSec": 1.5,
+      "vision": 11,
+      "cost": {
+        "food": 50
+      },
+      "trainSec": 16,
+      "pop": 1,
+      "trainedAt": "townCentre",
+      "requires": [],
+      "carry": 10,
+      "gather": {
+        "food": 0.55,
+        "wood": 0.5,
+        "stone": 0.4,
+        "gold": 0.4
+      },
+      "build": 1,
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "notes": "Farmers and labourers; one villager doing every job is a gameplay abstraction.",
+      "sources": ["higham2001"]
+    },
+    {
+      "id": "spearman",
+      "km": "ពលលំពែង",
+      "en": "Spearman",
+      "role": "infantry",
+      "hp": 70,
+      "armor": 1,
+      "speed": 2.1,
+      "range": 1.2,
+      "attack": 7,
+      "cooldownSec": 1.6,
+      "vision": 9,
+      "cost": {
+        "food": 45,
+        "wood": 20
+      },
+      "trainSec": 18,
+      "pop": 1,
+      "trainedAt": "barracks",
+      "requires": [],
+      "bonusVs": {
+        "warElephant": 8
+      },
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "notes": "Spear and shield infantry are shown on 12th-century reliefs; their exact 9th-century kit is uncertain.",
+      "sources": ["jacq-hergoualch2007"]
+    },
+    {
+      "id": "swordsman",
+      "km": "ពលដាវ",
+      "en": "Swordsman (Bokator)",
+      "role": "infantry",
+      "hp": 65,
+      "armor": 1,
+      "speed": 2.3,
+      "range": 1.0,
+      "attack": 9,
+      "cooldownSec": 1.2,
+      "vision": 9,
+      "cost": {
+        "food": 55,
+        "gold": 20
+      },
+      "trainSec": 20,
+      "pop": 1,
+      "trainedAt": "barracks",
+      "requires": [],
+      "bonusVs": {
+        "archer": 4
+      },
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "notes": "Soldiers with short swords and shields fight hand to hand on the Angkor Wat and Bayon reliefs; Kun Lbokator is the Khmer fighting art (UNESCO 2022). Its moves here (guard, sword cut, elbow and knee) are a gameplay rendering.",
+      "sources": ["jacq-hergoualch2007"]
+    },
+    {
+      "id": "archer",
+      "km": "ពលធ្នូ",
+      "en": "Archer",
+      "role": "ranged",
+      "hp": 45,
+      "armor": 0,
+      "speed": 2.2,
+      "range": 12,
+      "attack": 5,
+      "cooldownSec": 2.0,
+      "vision": 13,
+      "cost": {
+        "food": 30,
+        "wood": 40
+      },
+      "trainSec": 20,
+      "pop": 1,
+      "trainedAt": "barracks",
+      "requires": [],
+      "confidence": "HISTORICALLY_UNCERTAIN",
+      "notes": "Bows appear on later reliefs; how common archers were in the 9th century is not known.",
+      "sources": ["jacq-hergoualch2007"]
+    },
+    {
+      "id": "warElephant",
+      "km": "ដំរីចម្បាំង",
+      "en": "War elephant",
+      "role": "elephant",
+      "hp": 420,
+      "armor": 3,
+      "speed": 1.5,
+      "range": 1.8,
+      "attack": 18,
+      "cooldownSec": 2.4,
+      "vision": 10,
+      "cost": {
+        "food": 160,
+        "gold": 90
+      },
+      "trainSec": 40,
+      "pop": 3,
+      "trainedAt": "barracks",
+      "requires": ["elephantTraining"],
+      "radius": 1.6,
+      "splash": 1.8,
+      "confidence": "HISTORICALLY_UNCERTAIN",
+      "notes": "War elephants are well shown in the 12th century (Angkor Wat, Bayon); their use under Indravarman I is probable but not documented.",
+      "sources": ["jacq-hergoualch2007"]
+    },
+    {
+      "id": "horseman",
+      "km": "ទ័ពសេះ",
+      "en": "Horseman",
+      "role": "cavalry",
+      "hp": 95,
+      "armor": 1,
+      "speed": 3.6,
+      "range": 1.3,
+      "attack": 9,
+      "cooldownSec": 1.5,
+      "vision": 11,
+      "cost": {
+        "food": 70,
+        "gold": 45
+      },
+      "trainSec": 26,
+      "pop": 2,
+      "trainedAt": "barracks",
+      "requires": [],
+      "bonusVs": {
+        "archer": 6
+      },
+      "radius": 0.9,
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "notes": "Horsemen ride bareback without stirrups with lance and small shield on the Angkor Wat and Bayon reliefs; cavalry was a small part of the army. Offered from the Angkor Wat era, when the reliefs show it.",
+      "sources": ["jacq-hergoualch2007", "coedes1911"]
+    },
+    {
+      "id": "buffaloRider",
+      "km": "ទ័ពក្របី",
+      "en": "Buffalo rider",
+      "role": "cavalry",
+      "hp": 150,
+      "armor": 2,
+      "speed": 2.2,
+      "range": 1.4,
+      "attack": 10,
+      "cooldownSec": 2.0,
+      "vision": 9,
+      "cost": {
+        "food": 90,
+        "wood": 30
+      },
+      "trainSec": 30,
+      "pop": 2,
+      "trainedAt": "barracks",
+      "requires": [],
+      "bonusVs": {
+        "spearman": 4
+      },
+      "radius": 1.0,
+      "confidence": "GAMEPLAY_ABSTRACTION",
+      "notes": "Water buffalo were the draught animals of the rice fields; there is no record of buffalo cavalry at Angkor. A game unit added at PK's request.",
+      "sources": ["higham2001"]
+    },
+    {
+      "id": "oxCart",
+      "km": "រទេះគោស្បៀង",
+      "en": "Supply ox-cart",
+      "role": "support",
+      "hp": 120,
+      "armor": 1,
+      "speed": 1.6,
+      "range": 1,
+      "attack": 0.1,
+      "cooldownSec": 3,
+      "vision": 8,
+      "cost": {
+        "food": 60,
+        "wood": 60
+      },
+      "trainSec": 24,
+      "pop": 1,
+      "trainedAt": "storehouse",
+      "requires": [],
+      "radius": 1.4,
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "notes": "Ox-carts with arched woven roofs carry provisions behind the army on the Bayon reliefs. In the game the cart feeds soldiers near it (they heal); the healing is a game rule.",
+      "sources": ["jacq-hergoualch2007", "roveda2005"]
+    },
+    {
+      "id": "commander",
+      "km": "មេទ័ព",
+      "en": "Commander",
+      "role": "commander",
+      "hp": 220,
+      "armor": 3,
+      "speed": 2.2,
+      "range": 1.2,
+      "attack": 12,
+      "cooldownSec": 1.4,
+      "vision": 12,
+      "cost": {
+        "food": 120,
+        "gold": 80
+      },
+      "trainSec": 35,
+      "pop": 2,
+      "trainedAt": "barracks",
+      "requires": [],
+      "max": 1,
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "notes": "Commanders (senāpati) are named in inscriptions and on the Angkor Wat procession, where parasols over them mark their rank. One at a time; soldiers near him fight harder (a game rule). His name follows the era (rules.json commanders). Dress after PK's reference statues and the reliefs.",
+      "sources": ["coedes1911", "coedes-ic", "jacq-hergoualch2007", "pk-generals"]
+    },
+    {
+      "id": "watchman",
+      "km": "ព្រាន និងឆ្កែ",
+      "en": "Hunter-scout and dog",
+      "role": "scout",
+      "hp": 55,
+      "armor": 0,
+      "speed": 3.2,
+      "range": 1.0,
+      "attack": 3,
+      "cooldownSec": 1.5,
+      "vision": 16,
+      "cost": {
+        "food": 60
+      },
+      "trainSec": 20,
+      "pop": 1,
+      "trainedAt": "townCentre",
+      "requires": [],
+      "confidence": "GAMEPLAY_ABSTRACTION",
+      "notes": "PK: the hunter walks the land with his dog looking for unexplored ground, stone, gold, gems and fruit; when he sees a source he goes back to tell the king, and he hunts the game he meets. Hunters and dogs appear in scenes of daily life on the reliefs; no relief shows a scout reporting.",
+      "sources": ["pk-characters", "roveda2005"]
+    }
+  ]
+}

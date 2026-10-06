@@ -1,0 +1,162 @@
+{
+  "$comment": "Campaign in historical order (spec: Campaign). target = baseTarget x size. 'check: verify' years must be checked before that temple is built. kitReady = a 3D kit exists.",
+  "baseTarget": 3000,
+  "temples": [
+    {
+      "order": 1,
+      "id": "preah-ko",
+      "km": "ព្រះគោ",
+      "en": "Preah Ko",
+      "year": "879",
+      "king": "Indravarman I",
+      "material": "brick",
+      "size": 1,
+      "check": "sourced",
+      "kitReady": true
+    },
+    {
+      "order": 2,
+      "id": "bakong",
+      "km": "បាគង",
+      "en": "Bakong",
+      "year": "881",
+      "king": "Indravarman I",
+      "material": "sandstone",
+      "size": 2,
+      "check": "sourced",
+      "kitReady": false
+    },
+    {
+      "order": 3,
+      "id": "lolei",
+      "km": "លោលៃ",
+      "en": "Lolei",
+      "year": "893",
+      "king": "Yasovarman I",
+      "material": "brick",
+      "size": 1,
+      "check": "verify",
+      "kitReady": false
+    },
+    {
+      "order": 4,
+      "id": "phnom-bakheng",
+      "km": "ភ្នំបាខែង",
+      "en": "Phnom Bakheng",
+      "year": "~900",
+      "king": "Yasovarman I",
+      "material": "sandstone",
+      "size": 3,
+      "check": "sourced",
+      "kitReady": false
+    },
+    {
+      "order": 5,
+      "id": "east-mebon",
+      "km": "មេបុណខាងកើត",
+      "en": "East Mebon",
+      "year": "953",
+      "king": "Rajendravarman",
+      "material": "brick",
+      "size": 2,
+      "check": "verify",
+      "kitReady": false
+    },
+    {
+      "order": 6,
+      "id": "pre-rup",
+      "km": "ប្រែរូប",
+      "en": "Pre Rup",
+      "year": "961",
+      "king": "Rajendravarman",
+      "material": "brick",
+      "size": 3,
+      "check": "sourced",
+      "kitReady": false
+    },
+    {
+      "order": 7,
+      "id": "banteay-srei",
+      "km": "បន្ទាយស្រី",
+      "en": "Banteay Srei",
+      "year": "967",
+      "king": "A courtier, not a king",
+      "material": "sandstone",
+      "size": 1,
+      "check": "sourced",
+      "kitReady": false
+    },
+    {
+      "order": 8,
+      "id": "ta-keo",
+      "km": "តាកែវ",
+      "en": "Ta Keo",
+      "year": "~1000",
+      "king": "Jayavarman V",
+      "material": "sandstone",
+      "size": 4,
+      "check": "sourced",
+      "kitReady": false
+    },
+    {
+      "order": 9,
+      "id": "baphuon",
+      "km": "បាពួន",
+      "en": "Baphuon",
+      "year": "~1060",
+      "king": "Udayadityavarman II",
+      "material": "sandstone",
+      "size": 5,
+      "check": "sourced",
+      "kitReady": false
+    },
+    {
+      "order": 10,
+      "id": "angkor-wat",
+      "km": "អង្គរវត្ត",
+      "en": "Angkor Wat",
+      "year": "early 1100s",
+      "king": "Suryavarman II",
+      "material": "sandstone",
+      "size": 10,
+      "check": "sourced",
+      "kitReady": false
+    },
+    {
+      "order": 11,
+      "id": "ta-prohm",
+      "km": "តាព្រហ្ម",
+      "en": "Ta Prohm",
+      "year": "1186",
+      "king": "Jayavarman VII",
+      "material": "sandstone",
+      "size": 5,
+      "check": "verify",
+      "kitReady": false
+    },
+    {
+      "order": 12,
+      "id": "preah-khan",
+      "km": "ព្រះខ័ន",
+      "en": "Preah Khan",
+      "year": "1191",
+      "king": "Jayavarman VII",
+      "material": "sandstone",
+      "size": 5,
+      "check": "verify",
+      "kitReady": false
+    },
+    {
+      "order": 13,
+      "id": "bayon",
+      "km": "បាយ័ន",
+      "en": "Bayon",
+      "year": "late 1100s–early 1200s",
+      "king": "Jayavarman VII",
+      "material": "sandstone",
+      "size": 8,
+      "check": "sourced",
+      "kitReady": false
+    }
+  ]
+}

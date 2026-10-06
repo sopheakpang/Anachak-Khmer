@@ -1,0 +1,14 @@
+{
+  "name": "@temples/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron window that shows the game for TikTok LIVE Studio Game Capture",
+  "main": "src/main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "start:built": "electron . --built"
+  },
+  "devDependencies": {
+    "electron": "^44.4.5"
+  }
+}

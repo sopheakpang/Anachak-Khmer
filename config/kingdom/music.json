@@ -1,0 +1,53 @@
+{
+  "note": "Kingdom tab background music (D76). Original music generated in the browser, in the style of the pinpeat (tense) and mahori (calm) ensembles; no recording is copied. PK's own files go in apps/game/public/music/ and are listed in tracks.",
+  "level": 0.25,
+  "defaultVolume": 0.8,
+  "mobileVolume": 0.5,
+  "tonicHz": 261.63,
+  "scales": [
+    { "id": "pentatonic", "en": "C D E G A (anhemitonic pentatonic)", "semitones": [0, 2, 4, 7, 9] },
+    { "id": "sus", "en": "C D F G A (pentatonic on the fourth)", "semitones": [0, 2, 5, 7, 9] },
+    { "id": "minor", "en": "C Eb F G Bb (pentatonic on the sixth)", "semitones": [0, 3, 5, 7, 10] }
+  ],
+  "modalShift": 0.2,
+  "phraseBeats": [8, 12, 16],
+  "phrasesPerPiece": 6,
+  "lookaheadSec": 0.4,
+  "crossfadeSec": 2.5,
+  "volumeSteps": [0.2, 0.4, 0.6, 0.8, 1],
+  "moods": {
+    "calm": {
+      "tempo": [62, 88],
+      "chhingPerBeat": 1,
+      "roneatDensity": 2,
+      "rollChance": 0.15,
+      "levels": {
+        "roneatEk": 0.5,
+        "roneatThung": 0.35,
+        "kongVong": 0.35,
+        "sralai": 0.18,
+        "sampho": 0.25,
+        "skorThom": 0,
+        "chhing": 0.12
+      }
+    },
+    "tense": {
+      "tempo": [116, 156],
+      "chhingPerBeat": 2,
+      "roneatDensity": 4,
+      "rollChance": 0.3,
+      "levels": {
+        "roneatEk": 0.55,
+        "roneatThung": 0.35,
+        "kongVong": 0.4,
+        "sralai": 0.3,
+        "sampho": 0.45,
+        "skorThom": 0.6,
+        "chhing": 0.16
+      }
+    }
+  },
+  "moodRules": { "raidWarnSec": 30, "nearMetres": 40, "calmAfterSec": 8 },
+  "tracks": [],
+  "tracksOnMobile": false
+}

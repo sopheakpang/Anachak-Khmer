@@ -1,0 +1,117 @@
+/* The Android start screen (D72): the game's name and its developer over the kingdom. */
+body.mobile {
+  background: #1b1006;
+  overscroll-behavior: none;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.m-splash {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  pointer-events: auto;
+  text-align: center;
+  color: #fff3c4;
+  background: radial-gradient(ellipse at center, rgb(60 36 14 / 0.82), rgb(20 10 2 / 0.95));
+  text-shadow: 0 3px 8px #000;
+}
+.m-splash h1 {
+  margin: 0;
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 110px;
+  font-weight: 400;
+  color: #f1cd78;
+}
+.m-en {
+  margin: 0;
+  font-size: 52px;
+}
+.m-dev {
+  margin: 30px 0 10px;
+  font-size: 42px;
+  line-height: 1.5;
+}
+.m-dev b {
+  font-size: 60px;
+  color: #f1cd78;
+}
+.m-start {
+  margin-top: 20px;
+  font-family: inherit;
+  font-size: 48px;
+  padding: 22px 60px;
+  border-radius: 40px;
+  border: 3px solid #f1cd78;
+  background: linear-gradient(#7a4e24, #4c2f16);
+  color: #fff8ea;
+  animation: m-pulse 1.6s ease-in-out infinite;
+}
+@keyframes m-pulse {
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* iPhone web app (D73): how to install, and "turn the phone" when it is upright. */
+.m-install {
+  margin: 10px 0 0;
+  max-width: 1500px;
+  font-size: 34px;
+  line-height: 1.5;
+  color: #ffe9b8;
+}
+.m-install b {
+  color: #f1cd78;
+}
+.m-rotate {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  font-family: 'Kantumruy Pro', sans-serif;
+  font-size: 22px;
+  line-height: 1.6;
+  color: #fff3c4;
+  background: #1b1006;
+}
+.m-rotate[hidden] {
+  display: none;
+}
+.m-rotate span {
+  font-size: 17px;
+  opacity: 0.85;
+}
+.m-rotate-phone {
+  font-size: 64px;
+  animation: m-turn 2s ease-in-out infinite;
+}
+@keyframes m-turn {
+  40%,
+  100% {
+    transform: rotate(-90deg);
+  }
+}
+.m-starts {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.m-start-a {
+  background: linear-gradient(#8a3a2c, #4c1a16);
+}
+.m-start small {
+  font-size: 34px;
+  opacity: 0.85;
+}

@@ -1,0 +1,224 @@
+{
+  "$comment": "Technologies (v0.1, Roluos era). effect: what changes in the game (a gameplay abstraction of a real development). The historical note says what is actually known.",
+  "techs": [
+    {
+      "id": "irrigatedRice",
+      "km": "ស្រែទំនប់",
+      "en": "Bunded paddies",
+      "cost": {
+        "food": 120,
+        "wood": 80
+      },
+      "researchSec": 40,
+      "requires": [],
+      "effect": {
+        "gatherRate": {
+          "food": 1.25
+        }
+      },
+      "history": "Rice fields divided by low earth banks that hold rain and flood water.",
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "sources": ["evans2007", "higham2001"]
+    },
+    {
+      "id": "indratataka",
+      "km": "បារាយណ៍ឥន្ទ្រតដាក",
+      "en": "Indratataka reservoir",
+      "cost": {
+        "food": 200,
+        "wood": 150,
+        "stone": 80
+      },
+      "researchSec": 70,
+      "requires": ["irrigatedRice"],
+      "effect": {
+        "gatherRate": {
+          "food": 1.2
+        },
+        "fieldFood": 1.5
+      },
+      "history": "A large reservoir north of Hariharalaya dug under Indravarman I. Whether it mainly served irrigation, ritual or both is debated.",
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968", "evans2007"]
+    },
+    {
+      "id": "brickKilns",
+      "km": "ឡដុតឥដ្ឋ",
+      "en": "Brick kilns",
+      "cost": {
+        "wood": 150,
+        "food": 50
+      },
+      "researchSec": 45,
+      "requires": [],
+      "effect": {
+        "buildRate": 1.2
+      },
+      "history": "Roluos towers are of fired brick with stucco; the kilns themselves have not been found at Roluos.",
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "sources": ["jacques1997"]
+    },
+    {
+      "id": "sandstoneCarving",
+      "km": "ចម្លាក់ថ្មភក់",
+      "en": "Sandstone carving",
+      "cost": {
+        "stone": 120,
+        "gold": 40
+      },
+      "researchSec": 50,
+      "requires": ["brickKilns"],
+      "effect": {
+        "monumentRate": 1.3
+      },
+      "history": "Preah Ko's door frames, colonnettes and lintels are finely carved sandstone.",
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["jacques1997"]
+    },
+    {
+      "id": "bronzeSpearheads",
+      "km": "ចុងលំពែងលង្ហិន",
+      "en": "Metal spearheads",
+      "cost": {
+        "food": 100,
+        "gold": 50
+      },
+      "researchSec": 45,
+      "requires": [],
+      "effect": {
+        "attack": {
+          "spearman": 2
+        }
+      },
+      "history": "Iron and bronze were both worked in the region; which metal armed 9th-century spears is uncertain.",
+      "confidence": "HISTORICALLY_UNCERTAIN",
+      "sources": ["higham2001"]
+    },
+    {
+      "id": "elephantTraining",
+      "km": "បង្ហាត់ដំរី",
+      "en": "Elephant training",
+      "cost": {
+        "food": 150,
+        "gold": 100
+      },
+      "researchSec": 60,
+      "requires": ["bronzeSpearheads"],
+      "effect": {
+        "unlock": ["warElephant"]
+      },
+      "history": "Elephants were captured and trained in the region for work and war; their military use before the 12th century is probable but not documented.",
+      "confidence": "HISTORICALLY_UNCERTAIN",
+      "sources": ["jacq-hergoualch2007"]
+    },
+    {
+      "id": "yasodharatataka",
+      "km": "បារាយណ៍យសោធរតដាក",
+      "en": "Yasodharatataka (East Baray)",
+      "cost": {
+        "food": 200,
+        "wood": 150,
+        "stone": 120
+      },
+      "researchSec": 70,
+      "requires": ["indratataka"],
+      "effect": {
+        "gatherRate": {
+          "food": 1.15
+        }
+      },
+      "history": "The great eastern reservoir of Yasodharapura, dug under Yasovarman I; its exact uses are debated.",
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968", "evans2007"]
+    },
+    {
+      "id": "lateriteWorks",
+      "km": "ការងារថ្មបាយក្រៀម",
+      "en": "Laterite platforms",
+      "cost": {
+        "stone": 150,
+        "wood": 80
+      },
+      "researchSec": 50,
+      "requires": [],
+      "effect": {
+        "buildRate": 1.15
+      },
+      "history": "Tenth-century temple mountains such as Pre Rup and East Mebon stand on laterite platforms.",
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "sources": ["jacques1997"]
+    },
+    {
+      "id": "westBaray",
+      "km": "បារាយណ៍ខាងលិច",
+      "en": "West Baray",
+      "cost": {
+        "food": 250,
+        "wood": 150,
+        "stone": 150
+      },
+      "researchSec": 80,
+      "requires": ["yasodharatataka"],
+      "effect": {
+        "gatherRate": {
+          "food": 1.2
+        }
+      },
+      "history": "The largest reservoir at Angkor, 11th century; which king began it is uncertain.",
+      "confidence": "HISTORICALLY_UNCERTAIN",
+      "sources": ["evans2007"]
+    },
+    {
+      "id": "galleryReliefs",
+      "km": "រោងចម្លាក់",
+      "en": "Galleries and bas-reliefs",
+      "cost": {
+        "stone": 220,
+        "gold": 90
+      },
+      "researchSec": 70,
+      "requires": ["sandstoneCarving"],
+      "effect": {
+        "monumentRate": 1.25
+      },
+      "history": "Angkor Wat's galleries carry some of the longest bas-reliefs in the world.",
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["jacques1997"]
+    },
+    {
+      "id": "restHouses",
+      "km": "ផ្ទះសំណាក់",
+      "en": "Rest houses",
+      "cost": {
+        "wood": 200,
+        "stone": 120
+      },
+      "researchSec": 60,
+      "requires": [],
+      "effect": {
+        "speed": 1.1
+      },
+      "history": "Jayavarman VII's inscriptions list rest houses along the royal roads.",
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968"]
+    },
+    {
+      "id": "hospitals",
+      "km": "អារោគ្យសាលា",
+      "en": "Hospitals",
+      "cost": {
+        "food": 200,
+        "stone": 150,
+        "gold": 60
+      },
+      "researchSec": 70,
+      "requires": [],
+      "effect": {
+        "regen": 0.6
+      },
+      "history": "Jayavarman VII's inscriptions record over a hundred hospitals (arogyasala).",
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968"]
+    }
+  ]
+}

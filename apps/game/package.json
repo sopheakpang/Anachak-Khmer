@@ -1,0 +1,22 @@
+{
+  "name": "@temples/game",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5173 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "build": "vite build",
+    "preview": "vite preview --port 5173 --strictPort",
+    "build:mobile": "vite build -c vite.mobile.config.ts",
+    "serve:local": "tsx tools/serve-local.ts",
+    "ipad": "npm run build:mobile && npm run serve:local"
+  },
+  "dependencies": {
+    "@temples/shared": "0.1.0",
+    "three": "^0.180.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.180.0"
+  }
+}

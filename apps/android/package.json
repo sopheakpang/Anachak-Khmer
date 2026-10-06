@@ -1,0 +1,19 @@
+{
+  "name": "@temples/android",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Khmer Kingdoms (នគរខ្មែរ) for Android: the Kingdom tab as a phone app, wrapped with Capacitor (D72). Developer: Mr. Sopheak Pang.",
+  "author": "Mr. Sopheak Pang",
+  "type": "module",
+  "scripts": {
+    "sync": "npm run build:mobile -w @temples/game && cap sync android",
+    "open": "cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.2",
+    "@capacitor/core": "8.5.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.2"
+  }
+}

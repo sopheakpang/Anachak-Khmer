@@ -1,0 +1,345 @@
+{
+  "$comment": "Khmer Kingdoms campaign (D53). One big map of Greater Angkor laid out like the Build tab's map (config/map.json, map units x scale metres); every temple from temples.json stands at its site, in order. Completing a chapter's temple ends its era: the next temple, era, year and content unlock. Opponents follow recorded history where it exists; 'from' is where their raids come from (map units). Khmer text drafted by Claude: PK to review.",
+  "map": {
+    "scale": 7,
+    "size": 1080,
+    "tile": 2,
+    "seed": 879,
+    "start": [16, 26],
+    "laterite": [
+      [20, 24],
+      [-10, 8],
+      [-14, -20]
+    ],
+    "sandstone": [[26, -28]],
+    "gold": [
+      [30, 16],
+      [-30, -24]
+    ],
+    "fruit": [
+      [12, 24],
+      [-6, 6]
+    ]
+  },
+  "opponents": [
+    {
+      "id": "chiefdom",
+      "km": "មេកន្ទ្រាញ",
+      "en": "Rival chiefdom",
+      "color": "#b8412f",
+      "look": "rival",
+      "from": [470, 300],
+      "raiders": ["spearman", "archer"],
+      "confidence": "FICTIONAL",
+      "notes": "No war is documented for these years. The raiding chiefdom is invented to give the chapter an opponent.",
+      "sources": []
+    },
+    {
+      "id": "claimant",
+      "km": "អ្នកដណ្ដើមរាជ្យ",
+      "en": "Rival claimant",
+      "color": "#c9642b",
+      "look": "khmer",
+      "from": [200, 430],
+      "raiders": ["spearman", "archer"],
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "notes": "Inscriptions record succession wars (c. 1002–1010) and revolts under Udayadityavarman II. Their raids on the building site here are gameplay.",
+      "sources": ["coedes1968"]
+    },
+    {
+      "id": "champa",
+      "km": "ចាម្ប៉ា",
+      "en": "Champa",
+      "color": "#7a3a8c",
+      "look": "cham",
+      "from": [860, 700],
+      "raiders": ["spearman", "archer", "warElephant"],
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "notes": "Wars with Champa are recorded: Rajendravarman II's campaign (c. 945–946), the Cham sack of Yasodharapura (1177) and Jayavarman VII's wars. Cham soldiers wear the lotus-like headdress shown on the Bayon reliefs. Which side attacked when varied; raids on the building site are gameplay.",
+      "sources": ["coedes1968", "higham2001"]
+    },
+    {
+      "id": "daiviet",
+      "km": "ដាយវៀត",
+      "en": "Đại Việt",
+      "color": "#2f6b5a",
+      "look": "daiviet",
+      "from": [935, 250],
+      "raiders": ["spearman", "archer"],
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "notes": "Vietnamese annals record wars with Suryavarman II (1128–1138). The soldiers' look here is a gameplay abstraction, not a reconstruction; raids on the building site are gameplay.",
+      "sources": ["dvsktt", "coedes1968"]
+    }
+  ],
+  "chapters": [
+    {
+      "temple": "preah-ko",
+      "era": "roluos",
+      "year": 879,
+      "opponent": "chiefdom",
+      "footprint": [15, 11],
+      "form": {
+        "kind": "kit"
+      },
+      "history": {
+        "km": "ប្រាង្គឥដ្ឋ ៦ ឧទ្ទិសដល់ដូនតា និងព្រះរាជវង្ស។",
+        "en": "Six brick towers dedicated to the king's ancestors."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "bakong",
+      "era": "roluos",
+      "year": 881,
+      "opponent": "chiefdom",
+      "footprint": [22, 22],
+      "form": {
+        "kind": "pyramid",
+        "tiers": 5,
+        "tierH": 1.8,
+        "shrink": 0.8,
+        "top": "single",
+        "ringTowers": 8,
+        "material": "sandstone"
+      },
+      "history": {
+        "km": "ប្រាសាទភ្នំធំដំបូងគេ ជាប្រាសាទរដ្ឋរបស់ព្រះបាទឥន្ទ្រវរ្ម័នទី១។",
+        "en": "The first great temple mountain, the state temple of Indravarman I."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "lolei",
+      "era": "yasovarman",
+      "year": 893,
+      "opponent": "chiefdom",
+      "footprint": [12, 12],
+      "island": true,
+      "form": {
+        "kind": "towers",
+        "layout": "grid2",
+        "tiers": 2,
+        "tierH": 1.2,
+        "material": "brick"
+      },
+      "history": {
+        "km": "សាងលើកោះកណ្ដាលបារាយណ៍ឥន្ទ្រតដាក ដោយព្រះបាទយសោវរ្ម័នទី១។",
+        "en": "Built on an island in the Indratataka reservoir by Yasovarman I."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "phnom-bakheng",
+      "era": "yasovarman",
+      "year": 900,
+      "opponent": "chiefdom",
+      "footprint": [24, 24],
+      "form": {
+        "kind": "pyramid",
+        "tiers": 5,
+        "tierH": 1.6,
+        "shrink": 0.82,
+        "top": "quincunx",
+        "tierTowers": 12,
+        "hill": 3,
+        "material": "sandstone"
+      },
+      "event": {
+        "km": "ព្រះបាទយសោវរ្ម័នទី១ ផ្លាស់រាជធានីទៅយសោធរបុរៈ ជុំវិញភ្នំបាខែង។",
+        "en": "Yasovarman I moves the capital to Yasodharapura, around Phnom Bakheng.",
+        "newHall": [-12, 4],
+        "confidence": "HISTORICALLY_CONFIRMED"
+      },
+      "history": {
+        "km": "ប្រាសាទភ្នំលើភ្នំធម្មជាតិ ជាចំណុចកណ្ដាលនៃរាជធានីថ្មីយសោធរបុរៈ។",
+        "en": "A temple mountain on a natural hill, centre of the new capital Yasodharapura."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "east-mebon",
+      "era": "tenth",
+      "year": 953,
+      "opponent": "champa",
+      "footprint": [20, 20],
+      "island": true,
+      "form": {
+        "kind": "pyramid",
+        "tiers": 3,
+        "tierH": 1.6,
+        "shrink": 0.78,
+        "top": "quincunx",
+        "cornerElephants": true,
+        "material": "laterite"
+      },
+      "event": {
+        "km": "រាជធានីនៅកោះកេរ (៩២៨–៩៤៤) រួចត្រឡប់មកអង្គរវិញ ក្នុងរជ្ជកាលព្រះបាទរាជេន្ទ្រវរ្ម័នទី២។",
+        "en": "The capital was at Koh Ker (928–944), then returned to Angkor under Rajendravarman II.",
+        "confidence": "HISTORICALLY_SUPPORTED"
+      },
+      "history": {
+        "km": "សាងលើកោះកណ្ដាលបារាយណ៍ខាងកើត ដោយព្រះបាទរាជេន្ទ្រវរ្ម័នទី២។ ដំរីថ្មឈរនៅជ្រុងៗ។",
+        "en": "Built on an island in the East Baray by Rajendravarman II; stone elephants stand at its corners."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "pre-rup",
+      "era": "tenth",
+      "year": 961,
+      "opponent": "champa",
+      "footprint": [24, 24],
+      "form": {
+        "kind": "pyramid",
+        "tiers": 3,
+        "tierH": 1.8,
+        "shrink": 0.78,
+        "top": "quincunx",
+        "tierTowers": 8,
+        "material": "laterite"
+      },
+      "history": {
+        "km": "ប្រាសាទរដ្ឋរបស់ព្រះបាទរាជេន្ទ្រវរ្ម័នទី២ ធ្វើពីឥដ្ឋ និងថ្មបាយក្រៀម។",
+        "en": "State temple of Rajendravarman II, of brick and laterite."
+      },
+      "sources": ["jacques1997"]
+    },
+    {
+      "temple": "banteay-srei",
+      "era": "tenth",
+      "year": 967,
+      "opponent": "chiefdom",
+      "footprint": [12, 16],
+      "form": {
+        "kind": "row3",
+        "enclosure": true,
+        "material": "pink"
+      },
+      "history": {
+        "km": "សាងដោយមន្ត្រីយជ្ញវរាហៈ មិនមែនស្ដេចទេ។ ល្បីដោយចម្លាក់ថ្មភក់ពណ៌ផ្កាឈូក។",
+        "en": "Built by the courtier Yajnavaraha, not a king; famous for fine carving in pink sandstone."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "ta-keo",
+      "era": "tenth",
+      "year": 1000,
+      "opponent": "claimant",
+      "footprint": [24, 24],
+      "form": {
+        "kind": "pyramid",
+        "tiers": 5,
+        "tierH": 1.9,
+        "shrink": 0.8,
+        "top": "quincunx",
+        "material": "sandstone",
+        "plain": true
+      },
+      "history": {
+        "km": "ប្រាសាទភ្នំធ្វើពីថ្មភក់ទាំងស្រុងដំបូងគេ ប៉ុន្តែសាងមិនទាន់ចប់ (គ្មានចម្លាក់)។",
+        "en": "The first temple mountain built all in sandstone, left unfinished and uncarved."
+      },
+      "sources": ["jacques1997"]
+    },
+    {
+      "temple": "baphuon",
+      "era": "eleventh",
+      "year": 1060,
+      "opponent": "claimant",
+      "footprint": [26, 26],
+      "form": {
+        "kind": "pyramid",
+        "tiers": 3,
+        "tierH": 3.2,
+        "shrink": 0.72,
+        "top": "single",
+        "galleries": true,
+        "material": "sandstone"
+      },
+      "history": {
+        "km": "ប្រាសាទភ្នំខ្ពស់របស់ព្រះបាទឧទយាទិត្យវរ្ម័នទី២។",
+        "en": "The towering temple mountain of Udayadityavarman II."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "angkor-wat",
+      "era": "suryavarman2",
+      "year": 1122,
+      "opponent": "daiviet",
+      "footprint": [40, 40],
+      "moat": true,
+      "form": {
+        "kind": "galleried",
+        "levels": 3,
+        "top": "quincunx",
+        "material": "sandstone"
+      },
+      "history": {
+        "km": "ប្រាសាទធំបំផុតលើលោក ឧទ្ទិសដល់ព្រះវិស្ណុ បែរមុខទៅទិសខាងលិច។",
+        "en": "The world's largest religious monument, dedicated to Vishnu, facing west."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "ta-prohm",
+      "era": "jayavarman7",
+      "year": 1186,
+      "opponent": "champa",
+      "footprint": [30, 30],
+      "form": {
+        "kind": "complex",
+        "rings": 3,
+        "towers": 12,
+        "material": "sandstone"
+      },
+      "event": {
+        "km": "ឆ្នាំ ១១៧៧ ចាម្ប៉ាវាយយកយសោធរបុរៈ។ ឆ្នាំ ១១៨១ ព្រះបាទជ័យវរ្ម័នទី៧ ឡើងគ្រងរាជ្យ។",
+        "en": "In 1177 Champa sacked Yasodharapura. In 1181 Jayavarman VII became king.",
+        "confidence": "HISTORICALLY_CONFIRMED"
+      },
+      "history": {
+        "km": "សាងដោយព្រះបាទជ័យវរ្ម័នទី៧ ឧទ្ទិសដល់ព្រះមាតា។",
+        "en": "Built by Jayavarman VII in honour of his mother."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "preah-khan",
+      "era": "jayavarman7",
+      "year": 1191,
+      "opponent": "champa",
+      "footprint": [32, 32],
+      "form": {
+        "kind": "complex",
+        "rings": 3,
+        "towers": 14,
+        "material": "sandstone"
+      },
+      "history": {
+        "km": "ឧទ្ទិសដល់ព្រះបិតា។ តាមការនិទាន សាងនៅកន្លែងជ័យជម្នះលើចាម្ប៉ា។",
+        "en": "Dedicated to the king's father; by tradition built on the site of a victory over Champa."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    },
+    {
+      "temple": "bayon",
+      "era": "jayavarman7",
+      "year": 1200,
+      "opponent": "champa",
+      "footprint": [30, 30],
+      "form": {
+        "kind": "bayon",
+        "levels": 3,
+        "faceTowers": 16,
+        "material": "sandstone"
+      },
+      "history": {
+        "km": "ប្រាសាទកណ្ដាលអង្គរធំ មានប្រាង្គមុខធំៗជាច្រើន។",
+        "en": "The temple at the centre of Angkor Thom, crowned with many great face towers."
+      },
+      "sources": ["coedes1968", "jacques1997"]
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+{
+  "$comment": "1080x1920 screen zones (spec: Screen layout). Estimates; prompt 20 checks them on a real stream.",
+  "size": {
+    "width": 1080,
+    "height": 1920
+  },
+  "zones": {
+    "tiktokHeader": {
+      "x": 0,
+      "y": 0,
+      "w": 1080,
+      "h": 200,
+      "keepClear": true
+    },
+    "titleBand": {
+      "x": 0,
+      "y": 200,
+      "w": 1080,
+      "h": 280
+    },
+    "infoBand": {
+      "x": 0,
+      "y": 480,
+      "w": 1080,
+      "h": 280
+    },
+    "mainView": {
+      "x": 0,
+      "y": 760,
+      "w": 1080,
+      "h": 510
+    },
+    "faceCam": {
+      "x": 0,
+      "y": 900,
+      "w": 300,
+      "h": 350
+    },
+    "pip": {
+      "x": 320,
+      "y": 780,
+      "w": 330,
+      "h": 440
+    },
+    "tiktokComments": {
+      "x": 0,
+      "y": 1270,
+      "w": 1080,
+      "h": 650,
+      "keepClear": true
+    },
+    "tiktokButtons": {
+      "x": 930,
+      "y": 1000,
+      "w": 150,
+      "h": 920,
+      "keepClear": true
+    },
+    "historyCard": {
+      "x": 40,
+      "y": 490,
+      "w": 1000,
+      "h": 260
+    },
+    "toasts": {
+      "x": 60,
+      "y": 770,
+      "w": 600,
+      "h": 120
+    }
+  },
+  "minTextPx": 26,
+  "helpPopup": {
+    "firstSec": 3,
+    "everySec": 40,
+    "showSec": 10
+  }
+}

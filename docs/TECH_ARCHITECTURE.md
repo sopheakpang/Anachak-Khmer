@@ -1,0 +1,50 @@
+# Technical architecture of the visuals (1.7.0)
+
+This file covers how the Angkor Cel-Diorama look is built. For the whole game (sim, views, host, bridge), see `docs/ARCHITECTURE.md`. For the art rules, see `docs/VISUAL_BIBLE.md`.
+
+The game runs on **three.js**, not Godot. PK's Godot prompts (spatial shaders, WorldEnvironment, Camera3D) were ported technique for technique, as the table shows. Changing engine would throw away the game; every technique has a direct three.js equivalent.
+
+| PK's Godot prompt | three.js implementation | File |
+| --- | --- | --- |
+| Dual-pass pipeline: NPR units, stylised PBR world | The world stays on `MeshStandardMaterial`. Unit meshes are switched to `MeshToonMaterial` plus an outline mesh by `NprUnits` | `kingdom/view/npr.ts` |
+| 1D toon LUT | `toonRamp()`: a 64×1 nearest-filtered `DataTexture`, read in **colour**. three's toon shader reads only `.r`, so the chunk is patched | `npr.ts` |
+| Inverted-hull outline (front-face cull, normal extrusion) | `outlineMaterial()`: `BackSide`, vertices pushed out along their normals by `outlinePx × pxScale × depth`, so the line is constant on screen. The extrusion runs *before* the limb animation, so the hull bends with the body | `npr.ts` |
+| Inspector-exposed ramp, outline, rim | `config/kingdom/diorama.json` → `units` (zod schema `DioramaSchema`) | `packages/shared/src/kingdom.ts` |
+| HD-2D camera (low FOV) | `KingdomScene` uses `camera.fov` 18°. `lensStretch()` moves the camera back so the framing equals the old 32° lens; zoom numbers are unchanged | `kingdom/view/scene.ts` |
+| WorldEnvironment tilt-shift DoF and colour correction | `KingdomPost` grade pass: a tilt-shift band plus a warm-highlight/cool-shadow split tone. Screen-space AO (GTAO) is dropped in the diorama | `kingdom/view/gfx.ts` |
+| Terrain splatmap by slope and elevation | `splatTerrain()` patches the ground material: meadow lawn, forest floor, laterite by slope, block AO in steps (baked per vertex by `blockAo()`) | `kingdom/view/terrain.ts` |
+| Ground that follows life (PK's living-settlement reference) | `WearMap`: one byte per tile in an R8 `DataTexture`. Building yards, feet (walk and work wear), regrowth every 10 s, uploaded at most every 2 s | `kingdom/view/wear.ts` |
+| Prek canal water shader | `makePrekWater()`: height-texture depth fade (steadier than the depth buffer), Fresnel sky in time-of-day steps (`skyStep`), 2-step cel specular, crisp foam, two ripple layers | `kingdom/view/water.ts` |
+| Ground detail | `GroundDetailRts`: forest undergrowth, flowers, pebbles on worn earth, reeds, lotus. Hash-placed on the tile grid near the camera, four draw calls | `kingdom/view/detail.ts` |
+| Rowing, fishing, chopping | Figure shader actions `ACT.chop`, `ACT.fish` and `ACT.row` (GPU limb animation). Dugout boats and paddles (`paddleSwing` keeps them in time); felled trees fall and leave stumps. The sim emits `felled` | `engine/figures.ts`, `kingdom/view/actions.ts`, `sim/sim.ts` |
+
+## Frame order (Kingdom tab, diorama on)
+
+1. The sim steps.
+2. `KingdomScene.update()`:
+   - syncs trees (with the foliage tint per instance), units (choosing the action, boats and paddles), NPR (`syncNpr` turns new figure meshes toon and inks them), detail, and wear;
+   - updates the water's sky step and the fallen trees.
+3. `KingdomPost.render()`:
+   - draws the scene (shadow map from the low sun, its frustum following the view);
+   - adds bloom;
+   - runs the output pass and the grade pass (tilt-shift and split tone).
+
+## Cost
+
+- **Outlines.** Outlines draw each figure mesh twice, a small cost: figures are a few thousand triangles per instanced mesh.
+- **Ground detail.** At most 2,600 + 500 + 700 + 220 small instances. The open meadow carries no tufts.
+- **Wear map.** One float and one byte per tile. A full regrow pass runs every 10 s of game time, and an upload at most every 2 s.
+- **Removed.** Screen-space AO is gone in the diorama, which is cheaper than before. The cel pass (Anachak `look: anime`) is unchanged and still used when chosen.
+
+## Tests
+
+`kingdom/view/diorama.test.ts` covers:
+- the config and presets;
+- the toon ramp, its bands and the cool shadow;
+- the toon and outline shaders (the limb motion is kept, the extrusion comes first, and the outline is screen-constant);
+- that `NprUnits` follows counts and removes the ink with the figures;
+- the lens stretch, the post chain, laterite, block AO and the splat patch;
+- the Prek water, detail placement and the wear map;
+- the boat, the paddle and falling trees.
+
+`sim/felled.test.ts` checks the felled event. `hero/hero.test.ts` checks the camera stopping in front of trees.

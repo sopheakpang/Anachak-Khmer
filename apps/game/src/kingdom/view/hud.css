@@ -1,0 +1,1326 @@
+/* Khmer Kingdoms HUD on the 16:9 stage (1920×1080, D51), laid out like a PC strategy
+   game: resources and year across the top, command bar along the bottom (minimap,
+   selection, buttons). Every text ≥ 26 px so it stays readable on a phone. */
+.ui.mode-kingdom > .title-band,
+.ui.mode-kingdom > .info-band,
+.ui.mode-kingdom > .banner,
+.ui.mode-kingdom > .card,
+.ui.mode-kingdom > .toasts {
+  display: none !important;
+}
+
+.ui.mode-kingdom > .help {
+  /* Just above the command bar in the 16:9 layout, clear of the council vote (D40).
+     Translucent like every Kingdom message box (PK, D55). */
+  top: auto;
+  bottom: 226px;
+  background: rgb(255 255 255 / 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.k-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #fff8ea;
+  font-family: 'Kantumruy Pro', sans-serif;
+  text-shadow: 0 2px 6px rgb(20 10 0 / 0.75);
+  --gold: #f1cd78;
+}
+.k-ui[hidden],
+.k-ui [hidden] {
+  display: none !important;
+}
+
+.k-top {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 20px 6px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 24px;
+  row-gap: 2px;
+  background: linear-gradient(rgb(20 12 4 / 0.8), rgb(20 12 4 / 0.45));
+}
+.k-year {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: right;
+}
+.k-year-km {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 30px;
+  line-height: 1.4;
+  color: var(--gold);
+}
+.k-year-en {
+  grid-column: 2;
+  grid-row: 2;
+  text-align: right;
+  font-size: 26px;
+  opacity: 0.92;
+}
+.k-res {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: center;
+}
+.k-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 14px 4px;
+  border-radius: 999px;
+  background: rgb(20 12 4 / 0.62);
+  border: 2px solid rgb(241 205 120 / 0.35);
+  font-size: 28px;
+}
+.k-pill i {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: var(--c);
+  align-self: center;
+}
+.k-pill b {
+  font-weight: 700;
+  min-width: 1.9em;
+  font-variant-numeric: tabular-nums;
+}
+.k-pill small {
+  font-size: 26px;
+  opacity: 0.85;
+}
+.k-objective {
+  grid-column: 1;
+  grid-row: 2;
+  font-size: 26px;
+  line-height: 1.35;
+}
+.k-objective b {
+  color: var(--gold);
+}
+.k-pill.k-warn {
+  background: rgb(150 30 10 / 0.85);
+  border-color: #ff9a7a;
+}
+.k-pill.k-mon b {
+  min-width: 0;
+}
+
+.k-minibox {
+  /* The minimap is a diamond, turned like the camera's diagonal view (AoE II-like, D67). */
+  position: absolute;
+  left: 8px;
+  bottom: 14px;
+  width: 290px;
+  height: 172px;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.k-minimap {
+  width: 196px;
+  height: 196px;
+  transform: scaleY(0.58) rotate(45deg);
+  border: 3px solid rgb(241 205 120 / 0.85);
+  box-shadow:
+    0 0 0 3px rgb(40 24 10 / 0.9),
+    0 8px 22px rgb(0 0 0 / 0.5);
+  pointer-events: auto;
+  cursor: pointer;
+  image-rendering: pixelated;
+}
+
+/* Era shield and the clock in the resource bar. */
+.k-age {
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 52px;
+  margin-right: 4px;
+  clip-path: polygon(0 0, 100% 0, 100% 62%, 50% 100%, 0 62%);
+  background: linear-gradient(135deg, #b8412f 0 50%, #2f5fa8 50% 100%);
+  border: 3px solid #f1cd78;
+  font-size: 28px;
+  color: #fff3c4;
+  text-shadow: 0 2px 3px #000;
+}
+.k-r i {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 -4px 0 rgb(0 0 0 / 0.3),
+    0 0 0 2px rgb(0 0 0 / 0.35);
+}
+.k-r-wood i {
+  border-radius: 6px 6px 12px 12px;
+}
+.k-r-stone i {
+  border-radius: 6px;
+}
+.k-pill .k-w {
+  font-style: normal;
+  font-size: 26px;
+  padding: 0 8px;
+  border-radius: 8px;
+  background: rgb(0 0 0 / 0.45);
+  color: #fff3c4;
+}
+.k-pill .k-w::before {
+  content: '⚒ ';
+  opacity: 0.8;
+}
+.k-clock b {
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.k-council {
+  position: absolute;
+  right: 20px;
+  top: 190px;
+  width: 600px;
+  padding: 12px 18px;
+  border-radius: 18px;
+  background: rgb(255 255 255 / 0.62);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgb(255 255 255 / 0.7);
+  color: #1a1410;
+  text-shadow: none;
+  font-size: 26px;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+.k-council h3 {
+  margin: 0 0 6px;
+  font-size: 30px;
+  color: #7a2a14;
+}
+.k-council ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+}
+.k-council li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.k-council li b {
+  color: #7a2a14;
+}
+
+.k-toasts {
+  position: absolute;
+  left: 20px;
+  top: 284px;
+  width: 760px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.k-toasts li {
+  font-size: 27px;
+  line-height: 1.3;
+  padding: 6px 14px;
+  border-radius: 12px;
+  background: rgb(20 12 4 / 0.42);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgb(241 205 120 / 0.3);
+  width: fit-content;
+  max-width: 700px;
+}
+.k-toasts li b {
+  color: var(--gold);
+}
+
+.k-panel {
+  /* The command bar along the bottom (PK: menu board at the bottom). Taller now: every
+     button carries its item's 3D icon above the label (D65). */
+  position: absolute;
+  left: 304px;
+  right: 12px;
+  bottom: 12px;
+  height: 176px;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 14px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: rgb(24 14 6 / 0.78);
+  border: 2px solid rgb(241 205 120 / 0.5);
+  pointer-events: auto;
+}
+.k-sel {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  overflow: hidden auto;
+}
+.k-sel-name {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 30px;
+  line-height: 1.35;
+  color: var(--gold);
+}
+.k-sel-en,
+.k-hint {
+  font-size: 26px;
+  opacity: 0.9;
+}
+.k-hp {
+  position: relative;
+  height: 30px;
+  border-radius: 8px;
+  background: rgb(0 0 0 / 0.5);
+  overflow: hidden;
+}
+.k-hp i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #6fbf4a;
+}
+.k-hp span {
+  position: relative;
+  font-size: 26px;
+  line-height: 30px;
+  padding-left: 8px;
+}
+.k-conf {
+  font-size: 26px;
+  width: fit-content;
+  padding: 0 10px;
+  border-radius: 8px;
+}
+.k-conf.c-ok {
+  background: rgb(80 140 70 / 0.8);
+}
+.k-conf.c-unsure {
+  background: rgb(190 130 40 / 0.85);
+}
+.k-conf.c-game {
+  background: rgb(90 90 140 / 0.85);
+}
+.k-queue {
+  display: grid;
+  gap: 2px;
+  font-size: 26px;
+}
+.k-queue i {
+  display: block;
+  height: 10px;
+  border-radius: 5px;
+  background: rgb(0 0 0 / 0.5);
+  overflow: hidden;
+}
+.k-queue b {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+.k-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(122px, 1fr));
+  grid-auto-rows: 118px;
+  overflow-y: auto;
+  padding-top: 34px;
+  margin-top: -34px;
+  gap: 6px;
+}
+.k-btn {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 14px;
+  border: 2px solid rgb(241 205 120 / 0.7);
+  background: linear-gradient(#5a3a1c, #3a2412);
+  color: #fff8ea;
+  font-family: inherit;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.k-btn:hover:not(:disabled):not([aria-disabled='true']) {
+  background: linear-gradient(#7a4e24, #4c2f16);
+}
+.k-btn:is(:disabled, [aria-disabled='true']) {
+  opacity: 0.45;
+  cursor: default;
+}
+.k-btn-km {
+  font-size: 26px;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+}
+.k-btn-cost {
+  display: flex;
+  gap: 8px;
+  font-size: 26px;
+}
+.k-cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.k-cost i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: var(--c);
+}
+
+.k-outcome {
+  position: absolute;
+  left: 510px;
+  top: 250px;
+  width: 900px;
+  padding: 30px;
+  box-sizing: border-box;
+  border-radius: 24px;
+  color: #1a1410;
+  text-shadow: none;
+  text-align: center;
+  font-size: 30px;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.5);
+}
+.k-outcome h2 {
+  margin: 0 0 8px;
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 46px;
+  color: #7a2a14;
+}
+
+.k-drag {
+  position: absolute;
+  border: 2px solid #9dff6a;
+  background: rgb(157 255 106 / 0.12);
+  pointer-events: none;
+}
+.k-cursor-place {
+  cursor: crosshair;
+}
+
+/* Translucent message boxes (PK: "transparency messages box", D55): the kingdom stays
+   visible behind them; a light blur keeps the text readable. */
+.k-glass {
+  background: rgb(255 250 240 / 0.66);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgb(255 255 255 / 0.75);
+  box-shadow: 0 10px 34px rgb(0 0 0 / 0.35);
+  color: #1a1410;
+  text-shadow: none;
+}
+
+.k-year {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: flex-end;
+}
+.k-hist-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 26px;
+  padding: 2px 14px 4px;
+  border-radius: 999px;
+  border: 2px solid rgb(241 205 120 / 0.75);
+  background: rgb(60 36 16 / 0.55);
+  color: #fff8ea;
+}
+.k-hist-btn:hover {
+  background: rgb(110 70 30 / 0.7);
+}
+
+.k-card {
+  position: absolute;
+  left: calc(50% - 500px);
+  top: 150px;
+  width: 1000px;
+  max-height: 640px;
+  overflow-y: auto; /* a long chapter card scrolls; ✕ closes it */
+  box-sizing: border-box;
+  padding: 22px 30px;
+  border-radius: 24px;
+  font-size: 27px;
+  line-height: 1.4;
+  pointer-events: auto;
+}
+.k-card.k-side {
+  /* A visited temple's story sits to the right so the temple stays in view. */
+  left: auto;
+  right: 20px;
+  top: 110px;
+  width: 640px;
+}
+.k-card h2 {
+  margin: 0 0 4px;
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 40px;
+  line-height: 1.45;
+  color: #7a2a14;
+}
+.k-card h3 {
+  margin: 0 0 10px;
+  font-size: 28px;
+  color: #5a3a1c;
+}
+.k-card p {
+  margin: 6px 0;
+}
+.k-card .k-meta {
+  font-size: 26px;
+  color: #4a3a2a;
+}
+.k-card .k-tag {
+  display: inline-block;
+  font-size: 26px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: rgb(122 42 20 / 0.12);
+  margin-right: 8px;
+}
+.k-card .k-btn,
+.k-history .k-btn,
+.k-outcome .k-btn {
+  display: inline-grid;
+  min-width: 220px;
+  padding: 6px 18px;
+  margin-top: 10px;
+}
+
+.k-history {
+  position: absolute;
+  left: 250px;
+  right: 250px;
+  top: 160px;
+  bottom: 226px;
+  box-sizing: border-box;
+  padding: 16px 22px;
+  border-radius: 24px;
+  pointer-events: auto;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 10px;
+}
+.k-history h2 {
+  margin: 0;
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 34px;
+  line-height: 1.45;
+  color: #7a2a14;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.k-history h2 .k-btn {
+  margin: 0;
+  min-width: 0;
+}
+.k-timeline {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  align-content: start;
+  overflow: hidden;
+}
+.k-tl {
+  display: grid;
+  gap: 0;
+  padding: 6px 12px;
+  border-radius: 14px;
+  border: 2px solid rgb(122 42 20 / 0.25);
+  background: rgb(255 255 255 / 0.45);
+  font-family: inherit;
+  text-align: left;
+  color: #1a1410;
+  cursor: pointer;
+  font-size: 26px;
+  line-height: 1.3;
+}
+.k-tl b {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-weight: 400;
+  font-size: 27px;
+  color: #7a2a14;
+}
+.k-tl.done {
+  border-color: #c9962c;
+  background: rgb(241 205 120 / 0.55);
+}
+.k-tl.now {
+  border-color: #2f5fa8;
+  background: rgb(157 200 255 / 0.5);
+}
+.k-tl.locked {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* 3D item icons (D65): the model pops up above its label, bobs gently and turns on hover. */
+.k-btn.has-icon {
+  /* The icon pops up out of the top of the button, above its label (PK: "3D rice field
+     animate popup above the label"); the label and cost keep their full height. */
+  grid-template-rows: auto auto auto;
+  align-content: end;
+  padding-top: 0;
+  overflow: visible;
+}
+.k-btn.has-icon .k-icon-pop {
+  margin-top: -34px;
+}
+/* No command buttons (nothing selected): the text uses the whole bar. */
+.k-panel:has(.k-buttons:empty) {
+  grid-template-columns: 1fr;
+}
+.k-panel:has(.k-buttons:empty) .k-buttons {
+  display: none;
+}
+.k-icon-pop {
+  display: block;
+  width: 84px;
+  height: 84px;
+  animation:
+    k-pop 0.45s cubic-bezier(0.2, 1.6, 0.4, 1) both,
+    k-bob 2.6s ease-in-out 0.45s infinite;
+}
+.k-icon {
+  display: block;
+  width: 84px;
+  height: 84px;
+  background-size: 800% 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  filter: drop-shadow(0 4px 4px rgb(0 0 0 / 0.45));
+}
+.k-btn:hover:not(:disabled):not([aria-disabled='true']) .k-icon {
+  animation: k-spin 1.2s steps(8) infinite;
+}
+.k-btn:is(:disabled, [aria-disabled='true']) .k-icon {
+  filter: grayscale(0.8) drop-shadow(0 4px 4px rgb(0 0 0 / 0.45));
+}
+@keyframes k-pop {
+  from {
+    transform: translateY(24px) scale(0.3);
+    opacity: 0;
+  }
+}
+@keyframes k-bob {
+  50% {
+    transform: translateY(-4px);
+  }
+}
+@keyframes k-spin {
+  to {
+    background-position: -800% 0;
+  }
+}
+
+/* Menu bar at the top right (PK, D66). */
+.k-menubar {
+  position: absolute;
+  right: 16px;
+  top: 118px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  pointer-events: auto;
+}
+.k-mb,
+.k-weather {
+  font-family: inherit;
+  font-size: 26px;
+  line-height: 1.3;
+  padding: 4px 9px 6px;
+  border-radius: 14px;
+  border: 2px solid rgb(241 205 120 / 0.7);
+  background: rgb(40 24 10 / 0.6);
+  backdrop-filter: blur(6px);
+  color: #fff8ea;
+  white-space: nowrap;
+}
+.k-mb {
+  cursor: pointer;
+}
+/* Text stays at the HUD's 26 px minimum; Sound and Music share one button so the bar fits. */
+.k-menubar .k-mb {
+  padding: 4px 6px 6px;
+}
+.k-menubar {
+  gap: 3px;
+}
+.k-mb:hover {
+  background: rgb(110 70 30 / 0.75);
+}
+.k-mb b {
+  color: var(--gold);
+}
+.k-mb.k-off b {
+  color: #ffb4a0;
+}
+.k-weather {
+  border-color: rgb(160 200 255 / 0.7);
+  background: rgb(20 40 70 / 0.5);
+}
+.k-w-rain,
+.k-w-storm {
+  background: rgb(40 60 90 / 0.7);
+}
+
+/* Hints near the pointer: what it is, what it needs, what a right-click does. */
+.k-tip {
+  position: absolute;
+  width: 520px;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  border-radius: 16px;
+  font-size: 26px;
+  line-height: 1.35;
+  pointer-events: none;
+  z-index: 5;
+}
+.k-tip b {
+  color: #7a2a14;
+}
+.k-tip .k-need {
+  color: #a0301a;
+}
+.k-tip .k-do {
+  color: #2f5fa8;
+}
+
+/* Names of empire places and neighbouring kingdoms, and floating words. */
+.k-labels,
+.k-floats {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.k-label {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  font-size: 26px;
+  padding: 0 10px;
+  border-radius: 10px;
+  background: rgb(20 12 4 / 0.5);
+  white-space: nowrap;
+}
+.k-label.found {
+  border: 2px solid var(--gold);
+}
+.k-label.neighbour {
+  font-size: 30px;
+  background: rgb(120 30 20 / 0.55);
+}
+.k-float {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  font-size: 27px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Fold the command bar down to its title line (PK: minimise the bottom bar, D67). */
+.k-panel {
+  transition: height 0.25s ease;
+}
+.k-panel.k-folded {
+  height: 64px;
+}
+/* Auto hide (PK): with nothing selected the bar slides down and fades; the tab stays. */
+.k-panel > .k-sel,
+.k-panel > .k-buttons {
+  transition:
+    opacity 0.25s ease,
+    transform 0.3s ease;
+}
+.k-panel.k-away {
+  background: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  pointer-events: none;
+}
+.k-panel.k-away > .k-sel,
+.k-panel.k-away > .k-buttons {
+  opacity: 0;
+  transform: translateY(70px);
+}
+.k-panel.k-away > .k-min {
+  pointer-events: auto;
+}
+.k-panel.k-folded .k-buttons,
+.k-panel.k-folded .k-sel > :not(.k-sel-name) {
+  display: none;
+}
+.k-min {
+  position: absolute;
+  right: 10px;
+  top: -30px;
+  width: 64px;
+  height: 36px;
+  border-radius: 10px 10px 0 0;
+  border: 2px solid rgb(241 205 120 / 0.6);
+  border-bottom: none;
+  background: rgb(24 14 6 / 0.85);
+  color: #f1cd78;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.k-pop i {
+  width: 24px;
+  height: 26px;
+  border-radius: 50% 50% 6px 6px;
+  background: #e8c89a;
+  align-self: center;
+}
+.k-objective {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+.k-objective .k-pill {
+  font-size: 26px;
+  padding: 0 12px 2px;
+}
+
+/* Credits in the About card (config/credits.json). */
+.k-card .k-credit {
+  font-size: 32px;
+}
+.k-card .k-credit b {
+  font-size: 46px;
+  color: #8a3412;
+  text-shadow: none;
+}
+/* PK 1.7.0: about the developer, the purpose, and the prototype notice. */
+.k-card .k-about {
+  font-size: 26px;
+  line-height: 1.6;
+  text-align: left;
+}
+.k-card .k-about small {
+  font-size: 22px;
+  opacity: 0.8;
+}
+.k-card .k-about-note {
+  padding: 10px 16px;
+  border-left: 5px solid #d08a2c;
+  background: rgb(208 138 44 / 0.12);
+  border-radius: 8px;
+}
+.k-card .k-proto {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 22px;
+  padding: 2px 12px 4px;
+  border-radius: 999px;
+  background: #d08a2c;
+  color: #fff;
+  text-shadow: none;
+}
+
+/* ------------------------------------------------------------------ phones (D72)
+   The Android build shows the stage at about a third of its size, so everything the
+   player reads or taps is larger: text at least 36 px (≈ 12 CSS px on a phone), buttons
+   at least 110 px (≈ 37 CSS px), and the menu bar folds into a ☰ button. */
+.k-mobile .k-stage-touch,
+.k-mobile {
+  touch-action: none;
+}
+.k-mobile .k-pill {
+  font-size: 40px;
+}
+.k-mobile .k-pill .k-w {
+  font-size: 34px;
+}
+.k-mobile .k-age {
+  width: 60px;
+  height: 68px;
+  font-size: 36px;
+}
+.k-mobile .k-year-km {
+  font-size: 38px;
+}
+.k-mobile .k-year-en {
+  display: none;
+}
+.k-mobile .k-objective,
+.k-mobile .k-objective .k-pill {
+  font-size: 34px;
+}
+.k-mobile .k-menubar {
+  top: 150px;
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 10px;
+  z-index: 5;
+}
+.k-mobile .k-mb {
+  font-size: 40px;
+  padding: 16px 30px;
+  border-radius: 20px;
+}
+.k-mobile .k-menubar:not(.k-open) .k-mb:not(.k-menu-toggle) {
+  display: none;
+}
+.k-mobile .k-menu-toggle {
+  grid-column: 2;
+  justify-self: end;
+  width: 130px;
+  font-size: 56px;
+  padding: 6px 0 12px;
+}
+.k-mobile .k-panel {
+  height: 250px;
+  left: 360px;
+  grid-template-columns: 420px 1fr;
+}
+.k-mobile .k-panel.k-folded {
+  height: 90px;
+}
+.k-mobile .k-min {
+  width: 110px;
+  height: 64px;
+  top: -58px;
+  font-size: 40px;
+}
+.k-mobile .k-sel-name {
+  font-size: 40px;
+}
+.k-mobile .k-sel-en,
+.k-mobile .k-hint,
+.k-mobile .k-conf,
+.k-mobile .k-queue {
+  font-size: 34px;
+}
+.k-mobile .k-buttons {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  grid-auto-rows: 172px;
+}
+.k-mobile .k-btn-km,
+.k-mobile .k-btn-cost {
+  font-size: 36px;
+}
+.k-mobile .k-minibox {
+  width: 350px;
+  height: 230px;
+}
+.k-mobile .k-minimap {
+  width: 250px;
+  height: 250px;
+}
+.k-mobile .k-tip {
+  width: 760px;
+  font-size: 38px;
+}
+.k-mobile .k-toasts {
+  top: 170px;
+  width: 1100px;
+  font-size: 36px;
+}
+.k-mobile .k-card {
+  font-size: 38px;
+}
+.k-mobile .k-toasts li {
+  font-size: 36px;
+}
+
+/* The year bar (PK: a timeline that runs with the temple age, speed adjustable, and what
+   happened in the world): 800–1220 CE under the menu bar. Temples are diamonds (gold when
+   built, pulsing for this chapter), world events dots (Khmer ones red), the year now a pin. */
+.k-yearbar {
+  position: absolute;
+  left: 24px;
+  top: 176px;
+  width: 1120px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px;
+  border-radius: 26px;
+  background: rgb(20 12 4 / 0.42);
+  backdrop-filter: blur(6px);
+  pointer-events: auto;
+  font-size: 26px;
+  color: #fff3c4;
+}
+.k-yb-end {
+  opacity: 0.8;
+}
+.k-yb-track {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(255 243 196 / 0.28);
+}
+.k-yb-track i {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.k-yb-span {
+  height: 6px;
+  transform: translateY(-50%) !important;
+  border-radius: 3px;
+  background: rgb(241 205 120 / 0.55);
+}
+.k-yb-t {
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%) rotate(45deg) !important;
+  background: #6b5a3a;
+  border: 2px solid #f1cd78;
+}
+.k-yb-done {
+  background: #f1cd78;
+}
+.k-yb-t.k-yb-now {
+  background: #9fd0ff;
+  animation: k-yb-pulse 1.4s ease-in-out infinite;
+}
+@keyframes k-yb-pulse {
+  50% {
+    box-shadow: 0 0 10px 4px rgb(159 208 255 / 0.8);
+  }
+}
+.k-yb-e {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.45);
+}
+.k-yb-e.k-yb-k {
+  background: #e0704a;
+}
+.k-yb-e.k-yb-past {
+  outline: 2px solid rgb(255 243 196 / 0.7);
+}
+.k-yb-pin {
+  position: absolute;
+  top: -8px;
+  width: 3px;
+  height: 22px;
+  margin-left: -1px;
+  background: #fff3c4;
+  border-radius: 2px;
+}
+.k-yb-pin span {
+  position: absolute;
+  left: 50%;
+  top: -26px;
+  transform: translateX(-50%);
+  font-weight: 700;
+  font-size: 26px;
+  color: var(--gold);
+  text-shadow: 0 2px 4px #000;
+  white-space: nowrap;
+}
+.k-yb-speed {
+  font-family: inherit;
+  font-size: 26px;
+  padding: 4px 14px;
+  border-radius: 16px;
+  border: 2px solid #f1cd78;
+  background: linear-gradient(#7a4e24, #4c2f16);
+  color: #fff8ea;
+  cursor: pointer;
+}
+.k-world .k-tag {
+  font-weight: 700;
+}
+.k-mobile .k-yearbar {
+  display: none;
+}
+
+/* Hay Day-style order board (PK): buyers want goods and pay in gold; a junk now and then. */
+.k-orders {
+  position: absolute;
+  right: 20px;
+  top: 390px;
+  width: 660px;
+  padding: 10px 16px 14px;
+  border-radius: 18px;
+  font-size: 26px;
+  pointer-events: auto;
+}
+.k-council[hidden] ~ .k-orders {
+  top: 190px;
+}
+.k-orders h3 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.k-ord {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 2px 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-top: 1px solid rgb(120 80 30 / 0.25);
+}
+.k-ord-who {
+  grid-column: 1 / -1;
+  font-weight: 700;
+}
+.k-ord-want span {
+  margin-right: 12px;
+  white-space: nowrap;
+}
+.k-ord-want .ok {
+  color: #2f7a1e;
+}
+.k-ord-want .short {
+  color: #b0321e;
+}
+.k-ord-pay {
+  white-space: nowrap;
+  font-weight: 700;
+  color: #8a5a00;
+}
+.k-ord-wait {
+  display: block;
+  color: #5a4a3a;
+}
+.k-orders button {
+  font: inherit;
+  font-size: 26px;
+  border-radius: 12px;
+  border: 2px solid rgb(160 110 40 / 0.8);
+  background: linear-gradient(#ffe9a8, #f0c860);
+  color: #3a2410;
+  padding: 2px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.k-orders button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.k-yb-orders {
+  white-space: nowrap;
+}
+.k-yb-hot {
+  box-shadow:
+    0 0 0 3px #ffd75a,
+    0 0 18px #ffd75a;
+}
+.k-bubbles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.k-bubble {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  font-size: 30px;
+  line-height: 1;
+  padding: 8px 10px 10px;
+  border-radius: 50% 50% 50% 8px;
+  border: 3px solid #fff8ea;
+  background: radial-gradient(circle at 35% 30%, #fffdf3, #f2dca0);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.35);
+  pointer-events: auto;
+  cursor: pointer;
+  animation: k-bob 1.4s ease-in-out infinite;
+}
+@keyframes k-bob {
+  50% {
+    margin-top: -8px;
+  }
+}
+
+/* PK: light alerts on the resource bar. Running out: a soft red pulse; still needed: red flash. */
+.k-r.k-low {
+  animation: k-low 1.6s ease-in-out infinite;
+}
+.k-r.k-need {
+  animation: k-need 0.45s ease-in-out infinite;
+}
+@keyframes k-low {
+  50% {
+    box-shadow:
+      0 0 0 3px rgb(230 70 50 / 0.75),
+      0 0 18px rgb(230 70 50 / 0.6);
+  }
+}
+@keyframes k-need {
+  50% {
+    box-shadow:
+      0 0 0 4px #ff4a3a,
+      0 0 26px #ff4a3a;
+    background: rgb(150 30 20 / 0.75);
+  }
+}
+
+/* PK: Hay Day-style see-through circle menu round the clicked object. */
+.k-radial {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  animation: k-rpop 0.18s ease-out;
+}
+@keyframes k-rpop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+.k-rb-ring {
+  position: absolute;
+  left: -150px;
+  top: -150px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 3px solid rgb(255 255 255 / 0.45);
+  background: radial-gradient(
+    circle,
+    rgb(255 255 255 / 0) 55%,
+    rgb(255 255 255 / 0.14) 70%,
+    rgb(255 255 255 / 0) 72%
+  );
+}
+.k-rb-name {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  font-size: 26px;
+  font-weight: 700;
+  padding: 2px 14px 4px;
+  border-radius: 999px;
+  background: rgb(30 20 10 / 0.45);
+  color: #fff8ea;
+}
+.k-rb {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 118px;
+  height: 118px;
+  border-radius: 50%;
+  border: 3px solid rgb(255 255 255 / 0.75);
+  background: radial-gradient(circle at 35% 30%, rgb(255 255 255 / 0.42), rgb(255 255 255 / 0.12) 70%);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.3);
+  color: #fff;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.8);
+  font-family: inherit;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0;
+  padding: 0;
+  pointer-events: auto;
+  cursor: pointer;
+}
+.k-rb:hover {
+  background: radial-gradient(circle at 35% 30%, rgb(255 240 190 / 0.7), rgb(255 210 120 / 0.3) 70%);
+}
+.k-rb-off {
+  opacity: 0.5;
+}
+.k-rb-icon {
+  width: 64px;
+  height: 52px;
+  background-size: 800% 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+.k-rb-km {
+  font-size: 26px;
+  line-height: 1.05;
+  max-width: 112px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* PK: a close button on every card. */
+.k-card-x {
+  position: sticky;
+  float: right;
+  top: 0;
+  margin: -8px -14px 0 10px;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 2px solid rgb(120 80 30 / 0.5);
+  background: rgb(255 255 255 / 0.7);
+  color: #3a2410;
+  font: inherit;
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+}
+.k-card-x:hover {
+  background: #ffe9a8;
+}
+.k-credit-km {
+  font-family: 'Bokor', 'Kantumruy Pro', sans-serif;
+  font-size: 44px;
+  line-height: 1.5;
+  color: #8a1f12;
+}
+
+.k-card-dev {
+  margin: 8px 0 0;
+  font-size: 26px;
+}
+.k-card-dev .k-credit-km {
+  font-size: 34px;
+}
+
+/* The king's overview (Anachak Khmer, D92): his book of the kingdom, in columns. */
+.k-ov {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 26px;
+  margin: 8px 0 14px;
+}
+.k-ov-sec h4 {
+  margin: 4px 0 2px;
+  font-size: 28px;
+  color: #6a3a10;
+  border-bottom: 2px solid rgb(106 58 16 / 0.3);
+}
+.k-ov-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 26px;
+  line-height: 1.45;
+}
+.k-ov-row em {
+  font-style: normal;
+  font-weight: 700;
+  white-space: nowrap;
+}

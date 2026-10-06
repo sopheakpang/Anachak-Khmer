@@ -1,0 +1,33 @@
+{
+  "$comment": "Credits shown in the game (About card, the Android start screen) and in the Android app (D72). about = the developer, purpose = why the game exists, status = the prototype notice (PK 1.7.0).",
+  "game": {
+    "km": "នគរខ្មែរ · សាងប្រាសាទ",
+    "en": "Khmer Kingdoms · The Temples"
+  },
+  "developer": {
+    "km": "អ្នកអភិវឌ្ឍ",
+    "en": "Developer",
+    "name": "Mr. Sopheak Pang",
+    "nameKm": "លោក ប៉ង់ សុភ័ក្ត្រ"
+  },
+  "note": {
+    "km": "ហ្គេមបំផុសគំនិតពីប្រវត្តិសាស្ត្រ និងវប្បធម៌ខ្មែរសម័យអង្គរ។",
+    "en": "A game inspired by the history and culture of Angkor-era Cambodia."
+  },
+  "about": {
+    "km": "ខ្ញុំឈ្មោះ ប៉ង់ សុភ័ក្ត្រ ជាកូនខ្មែរម្នាក់ដែលស្រឡាញ់ប្រវត្តិសាស្ត្រ និងវប្បធម៌ខ្មែរ។ ហ្គេមនេះ ខ្ញុំបង្កើតឡើងដោយខ្លួនឯង ក្នុងពេលទំនេរ ដោយចិត្តស្រឡាញ់ និងមោទនភាពចំពោះដូនតាខ្មែរ ដែលបានកសាងប្រាសាទដ៏អស្ចារ្យ។",
+    "en": "I am Sopheak Pang, a Khmer who loves Cambodian history and culture. I make this game myself, in my free time, out of love and pride for the ancestors who built the great temples."
+  },
+  "purpose": {
+    "km": "គោលបំណងនៃហ្គេមនេះ គឺចង់ឲ្យកូនខ្មែរ និងមិត្តភក្តិទូទាំងពិភពលោក បានស្គាល់ និងរៀនពីប្រវត្តិសាស្ត្រសម័យអង្គរ តាមរយៈការលេង៖ សាងសង់ប្រាសាទទាំង ១៣ តាមលំដាប់សម័យកាល ការពារនគរ និងរស់នៅជាមួយប្រជាជនសម័យនោះ។ អ្នកទស្សនាក្នុង TikTok LIVE ក៏អាចចូលរួមសាងប្រាសាទជាមួយគ្នាបានដែរ។ ព័ត៌មានប្រវត្តិសាស្ត្រ យោងតាមប្រភពស្រាវជ្រាវ ហើយចំណុចណាដែលជាការរៀបចំសម្រាប់ហ្គេម ត្រូវបានបញ្ជាក់ច្បាស់។",
+    "en": "The purpose of this game is to let Khmer children and friends around the world know and learn the history of the Angkor era by playing: build the 13 temples in the order of their eras, defend the kingdom and live among the people of that time. Viewers on TikTok LIVE can join in and build the temples together. The history follows research sources, and what is arranged for the game is clearly marked."
+  },
+  "status": {
+    "label": {
+      "km": "កំណែសាកល្បង",
+      "en": "Prototype"
+    },
+    "km": "សូមជម្រាបថា នេះជាកំណែសាកល្បង (Prototype) ដែលកំពុងអភិវឌ្ឍនៅឡើយ។ ក្រាហ្វិក មុខងារ និងតុល្យភាពហ្គេម អាចផ្លាស់ប្តូរ ហើយអាចមានកំហុសខ្លះៗ។ រាល់មតិយោបល់ និងការណែនាំរបស់លោកអ្នក គឺជាកម្លាំងចិត្តដ៏ធំសម្រាប់ការអភិវឌ្ឍបន្ត។ សូមអរគុណ!",
+    "en": "Please note: this is a prototype, still in development. The graphics, features and balance may change, and some mistakes may remain. Your feedback and suggestions are a great encouragement to keep building. Thank you!"
+  }
+}

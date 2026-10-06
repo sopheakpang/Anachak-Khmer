@@ -1,0 +1,101 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+.stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1080px;
+  height: 1920px;
+  transform-origin: center center;
+  overflow: hidden;
+}
+
+.stage-canvas canvas {
+  display: block;
+  width: 1080px;
+  height: 1920px;
+}
+
+/* 16:9 for the Kingdom tab (D51). */
+.stage.landscape {
+  width: var(--landscape-w, 1920px);
+  height: var(--landscape-h, 1080px);
+}
+.stage.landscape .stage-canvas canvas {
+  width: var(--landscape-w, 1920px);
+  height: var(--landscape-h, 1080px);
+}
+
+.stage-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: 'Kantumruy Pro', sans-serif;
+  color: #2b2114;
+}
+
+.meter {
+  position: absolute;
+  top: 210px;
+  right: 24px;
+  white-space: pre;
+  font:
+    500 26px/1.35 'Kantumruy Pro',
+    monospace;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  background: rgb(0 0 0 / 0.55);
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.khmer-panel {
+  position: absolute;
+  left: 32px;
+  right: 32px;
+  top: 330px;
+  display: grid;
+  gap: 14px;
+  padding: 22px 26px;
+  background: rgb(255 246 226 / 0.9);
+  border-radius: 18px;
+  pointer-events: auto;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font:
+    700 30px 'Kantumruy Pro',
+    sans-serif;
+}
+
+.panel-head button {
+  font:
+    500 26px 'Kantumruy Pro',
+    sans-serif;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 2px solid #8a6a3a;
+  background: #f4dfb5;
+  cursor: pointer;
+}
+
+.font-label {
+  font:
+    500 24px 'Kantumruy Pro',
+    sans-serif;
+  color: #7a6040;
+}
+
+.font-sample {
+  font-size: 40px;
+  line-height: 1.7;
+}

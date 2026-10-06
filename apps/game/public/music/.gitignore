@@ -1,0 +1,4 @@
+# PK's own audio stays on this PC unless he chooses to commit it (see README.md).
+*.mp3
+*.ogg
+*.m4a

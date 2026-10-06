@@ -1,0 +1,938 @@
+{
+  "$comment": "Khmer Kingdoms world (D60): the Khmer Empire map PK sent, laid out on one 1080 x 1080 tile grid (2 m tiles, ~2.2 km; 10x the area of the Greater Angkor map). Not to scale: Greater Angkor (config/map.json x campaign.map.scale) sits at 'origin'; empire towns and landscape features are placed in the same arrangement as the map (north = up). Tiles: x east, z south.",
+  "size": 1080,
+  "origin": [470, 470],
+  "lake": {
+    "center": [385, 650],
+    "a": 235,
+    "b": 88,
+    "angle": 0.6
+  },
+  "rivers": [
+    {
+      "id": "mekong",
+      "km": "ទន្លេមេគង្គ",
+      "en": "Mekong",
+      "width": 9,
+      "fordEvery": 70,
+      "points": [
+        [925, 0],
+        [905, 110],
+        [893, 190],
+        [905, 290],
+        [902, 380],
+        [880, 520],
+        [858, 620],
+        [805, 725],
+        [765, 850],
+        [800, 960],
+        [845, 1080]
+      ]
+    },
+    {
+      "id": "tonleSapRiver",
+      "km": "ទន្លេសាប",
+      "en": "Tonle Sap river",
+      "width": 7,
+      "fordEvery": 50,
+      "points": [
+        [579, 783],
+        [660, 820],
+        [765, 850]
+      ]
+    },
+    {
+      "id": "mun",
+      "km": "ទន្លេមូល",
+      "en": "Mun river",
+      "width": 4,
+      "fordEvery": 40,
+      "points": [
+        [150, 120],
+        [250, 150],
+        [400, 170],
+        [600, 160],
+        [800, 178],
+        [893, 190]
+      ]
+    }
+  ],
+  "sea": {
+    "westZ": 870,
+    "slope": 0.25,
+    "bendX": 640,
+    "eastSlope": 0.05
+  },
+  "ranges": [
+    {
+      "id": "dangrek",
+      "km": "ជួរភ្នំដងរែក",
+      "en": "Dangrek escarpment",
+      "axis": "x",
+      "from": 140,
+      "to": 880,
+      "line": 250,
+      "wave": 18,
+      "period": 80,
+      "half": 7,
+      "passes": [
+        [290, 306],
+        [556, 572],
+        [760, 776]
+      ]
+    },
+    {
+      "id": "annamite",
+      "km": "ជួរភ្នំអណ្ណាម",
+      "en": "Annamite range",
+      "axis": "z",
+      "from": 0,
+      "to": 820,
+      "line": 990,
+      "wave": 14,
+      "period": 60,
+      "half": 9,
+      "passes": [
+        [320, 336],
+        [600, 616]
+      ]
+    }
+  ],
+  "massifs": [
+    {
+      "id": "cardamom",
+      "km": "ជួរភ្នំក្រវាញ",
+      "en": "Cardamom mountains",
+      "center": [170, 850],
+      "r": [120, 70]
+    }
+  ],
+  "rainforest": [
+    {
+      "center": [170, 800],
+      "r": 190
+    },
+    {
+      "center": [600, 330],
+      "r": 90
+    },
+    {
+      "center": [560, 300],
+      "r": 160
+    },
+    {
+      "center": [950, 520],
+      "r": 150
+    },
+    {
+      "center": [860, 820],
+      "r": 120
+    }
+  ],
+  "places": [
+    {
+      "id": "phimai",
+      "km": "ប្រាសាទភិម៉ាយ",
+      "en": "Phimai",
+      "at": [250, 140],
+      "kind": "temple",
+      "note": {
+        "km": "ប្រាសាទធំនៅខ្ពង់រាបខោរាត តាមផ្លូវពីអង្គរ។",
+        "en": "Great temple on the Khorat plateau, at the end of the royal road from Angkor."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["higham2001"],
+      "reward": {
+        "gold": 120
+      }
+    },
+    {
+      "id": "preahVihear",
+      "km": "ប្រាសាទព្រះវិហារ",
+      "en": "Preah Vihear",
+      "at": [600, 238],
+      "kind": "temple",
+      "note": {
+        "km": "ប្រាសាទលើច្រាំងភ្នំដងរែក។",
+        "en": "Temple on the cliff edge of the Dangrek mountains."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["jacques1997"],
+      "reward": {
+        "stone": 150
+      }
+    },
+    {
+      "id": "watPhu",
+      "km": "វត្តភូ · ចំប៉ាសាក់",
+      "en": "Wat Phu · Champassak",
+      "at": [872, 192],
+      "kind": "temple",
+      "note": {
+        "km": "ប្រាសាទលើភ្នំក្បែរទន្លេមេគង្គ។",
+        "en": "Hillside temple by the Mekong, older than Angkor."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968"],
+      "reward": {
+        "gold": 100
+      }
+    },
+    {
+      "id": "kohKer",
+      "km": "កោះកេរ",
+      "en": "Koh Ker",
+      "at": [660, 395],
+      "kind": "temple",
+      "note": {
+        "km": "រាជធានីរបស់ព្រះបាទជ័យវរ្ម័នទី៤ (៩២៨–៩៤៤)។",
+        "en": "Capital of Jayavarman IV (928–944)."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["jacques1997"],
+      "reward": {
+        "stone": 150
+      }
+    },
+    {
+      "id": "samborPreiKuk",
+      "km": "សំបូរព្រៃគុក",
+      "en": "Sambor Prei Kuk",
+      "at": [700, 600],
+      "kind": "temple",
+      "note": {
+        "km": "ឦសានបុរៈ រាជធានីសម័យចេនឡា។",
+        "en": "Isanapura, a capital of the Chenla period (7th century)."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968"],
+      "reward": {
+        "food": 150
+      }
+    },
+    {
+      "id": "vatNokor",
+      "km": "វត្តនគរ",
+      "en": "Vat Nokor",
+      "at": [775, 715],
+      "kind": "temple",
+      "note": {
+        "km": "ប្រាសាទនៅក្បែរទន្លេមេគង្គ។",
+        "en": "Temple near the Mekong."
+      },
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "sources": ["jacques1997"],
+      "reward": {
+        "wood": 150
+      }
+    },
+    {
+      "id": "stungTreng",
+      "km": "ស្ទឹងត្រែង",
+      "en": "Stung Treng",
+      "at": [925, 380],
+      "kind": "town",
+      "note": {
+        "km": "ទីប្រជុំនៅមាត់ទន្លេមេគង្គ។",
+        "en": "A river town on the Mekong."
+      },
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "sources": ["coedes1968"],
+      "reward": {
+        "food": 120
+      }
+    },
+    {
+      "id": "angkorBorei",
+      "km": "អង្គរបុរី",
+      "en": "Angkor Borei",
+      "at": [610, 975],
+      "kind": "town",
+      "note": {
+        "km": "ទីក្រុងបុរាណសម័យហ្វូណន មានប្រឡាយវែង។",
+        "en": "Old city of the Funan period, linked by long canals."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["higham2001"],
+      "reward": {
+        "food": 150
+      }
+    },
+    {
+      "id": "vyadhapura",
+      "km": "ព្យាធបុរៈ",
+      "en": "Vyadhapura",
+      "at": [745, 945],
+      "kind": "town",
+      "note": {
+        "km": "រាជធានីមួយនៃហ្វូណន (បាភ្នំ)។",
+        "en": "A Funan capital (Ba Phnom)."
+      },
+      "confidence": "HISTORICALLY_UNCERTAIN",
+      "sources": ["coedes1968"],
+      "reward": {
+        "gold": 80
+      }
+    },
+    {
+      "id": "ocEo",
+      "km": "អូរកែវ",
+      "en": "Oc Eo",
+      "at": [700, 1000],
+      "kind": "port",
+      "note": {
+        "km": "កំពង់ផែជួញដូរសមុទ្រសម័យហ្វូណន។",
+        "en": "Sea-trade port of the Funan period."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["higham2001"],
+      "reward": {
+        "gold": 150
+      }
+    },
+    {
+      "id": "sriThep",
+      "km": "ស្រីទេព",
+      "en": "Sri Thep",
+      "at": [110, 250],
+      "kind": "town",
+      "note": {
+        "km": "ទីក្រុងបុរាណខាងលិច។",
+        "en": "Old walled town in the west."
+      },
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "sources": ["higham2001"],
+      "reward": {
+        "wood": 120
+      }
+    },
+    {
+      "id": "lavapura",
+      "km": "លវបុរៈ",
+      "en": "Lavapura (Lopburi)",
+      "at": [70, 440],
+      "kind": "town",
+      "note": {
+        "km": "ទីក្រុងខាងលិចក្រោមឥទ្ធិពលខ្មែរ។",
+        "en": "Western town under Khmer rule in the 11th–12th centuries."
+      },
+      "confidence": "HISTORICALLY_SUPPORTED",
+      "sources": ["coedes1968"],
+      "reward": {
+        "gold": 100
+      }
+    },
+    {
+      "id": "kbalSpean",
+      "km": "ក្បាលស្ពាន",
+      "en": "Kbal Spean",
+      "at": [495, 405],
+      "kind": "temple",
+      "hidden": true,
+      "note": {
+        "km": "ទន្លេនៃលិង្គមួយពាន់ ចម្លាក់លើថ្មក្នុងស្ទឹងលើភ្នំគូលែន (សតវត្សទី១១)។",
+        "en": "The river of a thousand lingas: carvings in the riverbed on Phnom Kulen (11th century)."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["jacques1997"],
+      "reward": {
+        "stone": 120,
+        "gold": 40
+      }
+    },
+    {
+      "id": "mahendraparvata",
+      "km": "មហេន្ទ្របព៌ត",
+      "en": "Mahendraparvata (Phnom Kulen)",
+      "at": [528, 412],
+      "kind": "temple",
+      "hidden": true,
+      "note": {
+        "km": "រាជធានីលើភ្នំគូលែន ដែលព្រះបាទជ័យវរ្ម័នទី២ ប្រកាសខ្លួនជាចក្រពត្តិ (គ.ស. ៨០២)។",
+        "en": "The city on Phnom Kulen where Jayavarman II was proclaimed universal monarch in 802."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["coedes1968"],
+      "reward": {
+        "gold": 80
+      }
+    },
+    {
+      "id": "bengMealea",
+      "km": "ប្រាសាទបឹងមាលា",
+      "en": "Beng Mealea",
+      "at": [565, 470],
+      "kind": "temple",
+      "hidden": true,
+      "note": {
+        "km": "ប្រាសាទធំក្នុងព្រៃ សាងក្នុងសតវត្សទី១២ ដោយគ្មានសិលាចារឹក។",
+        "en": "A great temple hidden in the forest, built in the 12th century, with no inscription found."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["jacques1997"],
+      "reward": {
+        "stone": 150
+      }
+    },
+    {
+      "id": "banteayChhmar",
+      "km": "ប្រាសាទបន្ទាយឆ្មារ",
+      "en": "Banteay Chhmar",
+      "at": [350, 310],
+      "kind": "temple",
+      "hidden": true,
+      "note": {
+        "km": "ប្រាសាទសម័យព្រះបាទជ័យវរ្ម័នទី៧ នៅភាគពាយ័ព្យ មានចម្លាក់អវលោកិតេស្វរ។",
+        "en": "A temple of Jayavarman VII's time in the north-west, with its carved Avalokiteshvaras."
+      },
+      "confidence": "HISTORICALLY_CONFIRMED",
+      "sources": ["jacques1997"],
+      "reward": {
+        "gold": 100
+      }
+    }
+  ],
+  "neighbours": [
+    {
+      "id": "haripunjaya",
+      "km": "ហរិបុញ្ជ័យ",
+      "en": "Haripunjaya",
+      "at": [60, 40]
+    },
+    {
+      "id": "mon",
+      "km": "នគរមន",
+      "en": "Mon states",
+      "at": [25, 640]
+    },
+    {
+      "id": "daiviet",
+      "km": "ដាយវៀត",
+      "en": "Đại Việt",
+      "at": [1040, 60]
+    },
+    {
+      "id": "champa",
+      "km": "ចាម្ប៉ា",
+      "en": "Champa",
+      "at": [1050, 560]
+    },
+    {
+      "id": "srivijaya",
+      "km": "ស្រីវិជ័យ",
+      "en": "Srivijaya",
+      "at": [260, 1060]
+    }
+  ],
+  "discoverRadius": 14,
+  "resources": {
+    "nearStart": {
+      "stone": {
+        "n": 2,
+        "dist": [22, 55],
+        "size": 8
+      },
+      "gold": {
+        "n": 1,
+        "dist": [30, 70],
+        "size": 6
+      },
+      "fruit": {
+        "n": 2,
+        "dist": [14, 36],
+        "size": 6
+      }
+    },
+    "scattered": {
+      "stone": {
+        "n": 16,
+        "size": 8
+      },
+      "gold": {
+        "n": 9,
+        "size": 6
+      },
+      "fruit": {
+        "n": 18,
+        "size": 6
+      },
+      "gems": {
+        "n": 5,
+        "size": 4
+      }
+    },
+    "sandstoneJitter": 14,
+    "forestDensity": 0.2,
+    "rainforestBoost": 0.14,
+    "gemFields": [
+      [150, 735],
+      [175, 760]
+    ],
+    "$commentGems": "Gems (PK): the hunters find sapphires and rubies alongside gold. Pailin, west of the Cardamom mountains, is famous for them; mining there is recorded from the 19th century, and whether it was worked in Angkor's time is not known, so the gem fields are gameplay. Cambodia has no diamond mines, so there are no diamonds. Gem patches pay in gold."
+  },
+  "fish": {
+    "every": 45,
+    "amount": 250,
+    "regrowPerSec": 0.3
+  },
+  "animals": {
+    "respawnSec": 60,
+    "kinds": [
+      {
+        "id": "deer",
+        "km": "ក្ដាន់",
+        "en": "Deer",
+        "count": 40,
+        "herd": [2, 5],
+        "habitat": "forest",
+        "hp": 30,
+        "speed": 5.5,
+        "meat": 120,
+        "attack": 0,
+        "behaviour": "shy",
+        "range": 8
+      },
+      {
+        "id": "boar",
+        "km": "ជ្រូកព្រៃ",
+        "en": "Wild boar",
+        "count": 35,
+        "herd": [2, 4],
+        "habitat": "forest",
+        "hp": 45,
+        "speed": 4.5,
+        "meat": 160,
+        "attack": 4,
+        "behaviour": "defensive"
+      },
+      {
+        "id": "banteng",
+        "km": "ទន្សោង",
+        "en": "Banteng",
+        "count": 24,
+        "herd": [3, 6],
+        "habitat": "grass",
+        "hp": 90,
+        "speed": 4,
+        "meat": 300,
+        "attack": 6,
+        "behaviour": "defensive",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Wild cattle of the dry forest and clearings: white stockings and a white rump. Endangered today."
+      },
+      {
+        "id": "junglefowl",
+        "km": "មាន់ព្រៃ",
+        "en": "Red junglefowl",
+        "count": 35,
+        "herd": [3, 6],
+        "habitat": "forest",
+        "hp": 6,
+        "speed": 4,
+        "meat": 30,
+        "attack": 0,
+        "behaviour": "shy",
+        "range": 5
+      },
+      {
+        "id": "peafowl",
+        "km": "ក្ងោក",
+        "en": "Green peafowl",
+        "count": 20,
+        "herd": [2, 4],
+        "habitat": "grass",
+        "hp": 10,
+        "speed": 4,
+        "meat": 50,
+        "attack": 0,
+        "behaviour": "shy",
+        "range": 6
+      },
+      {
+        "id": "tiger",
+        "km": "ខ្លា",
+        "en": "Indochinese tiger",
+        "count": 6,
+        "herd": [1, 1],
+        "habitat": "forest",
+        "hp": 120,
+        "speed": 6,
+        "meat": 150,
+        "attack": 9,
+        "behaviour": "predator",
+        "range": 7,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist", "jacques1997"],
+        "notes": "Present in Angkor times (hunting scenes on the reliefs); functionally extinct in Cambodia today (no confirmed wild tiger since about 2007). Kept rare."
+      },
+      {
+        "id": "elephant",
+        "km": "ដំរី",
+        "en": "Asian elephant",
+        "count": 18,
+        "herd": [3, 6],
+        "habitat": "forest",
+        "hp": 400,
+        "speed": 3.5,
+        "meat": 1000,
+        "attack": 18,
+        "behaviour": "defensive",
+        "huntable": false,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist", "harris2007"],
+        "notes": "Deep forests of the Cardamoms and the eastern plains. Not hunted in the game: the Khmer captured and tamed elephants (royal and war elephants), they were not food. Defensive: strikes back if harmed."
+      },
+      {
+        "id": "gaur",
+        "km": "ខ្ទីង",
+        "en": "Gaur",
+        "count": 18,
+        "herd": [2, 5],
+        "habitat": "forest",
+        "hp": 160,
+        "speed": 4.2,
+        "meat": 450,
+        "attack": 10,
+        "behaviour": "defensive",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "The largest wild cattle, in deep evergreen forest: dark coat, white stockings, a high shoulder ridge. Vulnerable today."
+      },
+      {
+        "id": "kouprey",
+        "km": "គោព្រៃ",
+        "en": "Kouprey",
+        "count": 2,
+        "herd": [1, 2],
+        "habitat": "grass",
+        "hp": 110,
+        "speed": 4.2,
+        "meat": 320,
+        "attack": 7,
+        "behaviour": "shy",
+        "range": 9,
+        "huntable": false,
+        "region": {
+          "x": [450, 1000],
+          "z": [250, 800]
+        },
+        "confidence": "HISTORICALLY_UNCERTAIN",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Cambodia's national animal, of the open forests of the northern and eastern plains; critically endangered and possibly extinct (last reliable sightings 1960s-80s). Very rare and protected in the game."
+      },
+      {
+        "id": "serow",
+        "km": "ពពែព្រៃ",
+        "en": "Serow",
+        "count": 10,
+        "herd": [1, 1],
+        "habitat": "hill",
+        "hp": 40,
+        "speed": 5,
+        "meat": 100,
+        "attack": 3,
+        "behaviour": "shy",
+        "range": 8,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Solitary goat-antelope (Chinese / mainland serow) of steep rocky karst and hills. Khmer name ពពែព្រៃ (\"wild goat\") is the common name; PK please check."
+      },
+      {
+        "id": "leopard",
+        "km": "ខ្លារខិន",
+        "en": "Indochinese leopard",
+        "count": 8,
+        "herd": [1, 1],
+        "habitat": "forest",
+        "hp": 80,
+        "speed": 6,
+        "meat": 90,
+        "attack": 7,
+        "behaviour": "predator",
+        "range": 6,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Spotted leopard of the dry forests of the east (Eastern Plains); critically endangered in Cambodia today."
+      },
+      {
+        "id": "cloudedLeopard",
+        "km": "ខ្លាពពក",
+        "en": "Clouded leopard",
+        "count": 5,
+        "herd": [1, 1],
+        "habitat": "canopy",
+        "hp": 50,
+        "speed": 5.5,
+        "meat": 60,
+        "attack": 5,
+        "behaviour": "predator",
+        "range": 4,
+        "leash": 20,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Climbs in the canopy; cloud-patterned coat and a very long tail. Khmer ខ្លាពពក (\"cloud tiger\") — PK please confirm. Real clouded leopards rarely attack people: the short attack range is gameplay."
+      },
+      {
+        "id": "sunBear",
+        "km": "ខ្លាឃ្មុំតូច",
+        "en": "Sun bear",
+        "count": 8,
+        "herd": [1, 2],
+        "habitat": "forest",
+        "hp": 70,
+        "speed": 3.8,
+        "meat": 120,
+        "attack": 6,
+        "behaviour": "defensive",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Small black bear with a pale chest patch; climbs for fruit, honey and termites. ខ្លាឃ្មុំ = bear (\"honey tiger\"); ខ្លាឃ្មុំតូច (\"small bear\") is a descriptive name — PK please check the usual Khmer name."
+      },
+      {
+        "id": "moonBear",
+        "km": "ខ្លាឃ្មុំខ្មៅ",
+        "en": "Asiatic black bear (moon bear)",
+        "count": 8,
+        "herd": [1, 1],
+        "habitat": "forest",
+        "hp": 100,
+        "speed": 3.8,
+        "meat": 160,
+        "attack": 8,
+        "behaviour": "defensive",
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Black bear with a pale crescent (\"moon\") on the chest. ខ្លាឃ្មុំខ្មៅ (\"black bear\") is a descriptive name — PK please check."
+      },
+      {
+        "id": "dhole",
+        "km": "ឆ្កែព្រៃ",
+        "en": "Dhole",
+        "count": 15,
+        "herd": [3, 6],
+        "habitat": "forest",
+        "hp": 25,
+        "speed": 6.5,
+        "meat": 40,
+        "attack": 3,
+        "behaviour": "predator",
+        "range": 8,
+        "region": {
+          "x": [650, 1060],
+          "z": [200, 900]
+        },
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Reddish wild dogs that hunt in packs in the dry forests (Eastern Plains today). Endangered."
+      },
+      {
+        "id": "binturong",
+        "km": "ឆ្មាខ្លាឃ្មុំ",
+        "en": "Binturong (bearcat)",
+        "count": 8,
+        "herd": [1, 1],
+        "habitat": "canopy",
+        "hp": 20,
+        "speed": 2.5,
+        "meat": 50,
+        "attack": 2,
+        "behaviour": "calm",
+        "nocturnal": true,
+        "confidence": "HISTORICALLY_UNCERTAIN",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Shaggy black civet of the canopy with a prehensile tail, mostly active at night. Khmer name not confirmed: ឆ្មាខ្លាឃ្មុំ is a calque of \"bearcat\" — PK please give the local name."
+      },
+      {
+        "id": "gibbon",
+        "km": "ទោច",
+        "en": "Gibbon (pileated · yellow-cheeked)",
+        "count": 24,
+        "herd": [2, 4],
+        "habitat": "canopy",
+        "hp": 20,
+        "speed": 5,
+        "meat": 40,
+        "attack": 0,
+        "behaviour": "shy",
+        "range": 9,
+        "huntable": false,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Two species in one kind: pileated gibbon (Cardamoms, the west) and yellow-cheeked crested gibbon (the east). Long arms, swing through the canopy. Protected in the game (endangered)."
+      },
+      {
+        "id": "langur",
+        "km": "ស្វាហោ",
+        "en": "Silvered langur",
+        "count": 20,
+        "herd": [3, 6],
+        "habitat": "canopy",
+        "hp": 22,
+        "speed": 4.5,
+        "meat": 40,
+        "attack": 0,
+        "behaviour": "shy",
+        "range": 8,
+        "huntable": false,
+        "confidence": "HISTORICALLY_UNCERTAIN",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Silver-grey leaf monkey of riverine and lowland forest. Khmer ស្វាហោ is a best guess for langur — PK please check."
+      },
+      {
+        "id": "douc",
+        "km": "ស្វាព្រៃជើងក្រហម",
+        "en": "Red-shanked douc",
+        "count": 15,
+        "herd": [3, 5],
+        "habitat": "canopy",
+        "hp": 22,
+        "speed": 4.5,
+        "meat": 40,
+        "attack": 0,
+        "behaviour": "shy",
+        "range": 8,
+        "huntable": false,
+        "region": {
+          "x": [650, 1060],
+          "z": [200, 900]
+        },
+        "confidence": "HISTORICALLY_UNCERTAIN",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Colourful langur of the north-east (Mondulkiri, Ratanakiri): red legs, white forearms, yellow face. Khmer name is descriptive (\"wild monkey with red legs\") — PK please give the usual name."
+      },
+      {
+        "id": "slowLoris",
+        "km": "ស្វាលល",
+        "en": "Slow loris (pygmy · Bengal)",
+        "count": 10,
+        "herd": [1, 1],
+        "habitat": "canopy",
+        "hp": 4,
+        "speed": 0.8,
+        "meat": 5,
+        "attack": 0,
+        "behaviour": "calm",
+        "nocturnal": true,
+        "huntable": false,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Two species in one kind: pygmy slow loris and Bengal slow loris. Small, big-eyed, nocturnal and very slow. Protected in the game (endangered, wildlife trade)."
+      },
+      {
+        "id": "macaque",
+        "km": "ស្វា",
+        "en": "Macaque (long-tailed · pig-tailed)",
+        "count": 30,
+        "herd": [4, 6],
+        "habitat": "forest",
+        "hp": 15,
+        "speed": 5,
+        "meat": 30,
+        "attack": 0,
+        "behaviour": "shy",
+        "range": 7,
+        "huntable": false,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Two species in one kind: long-tailed (crab-eating) macaque and northern pig-tailed macaque. ស្វា is the general word for monkey/macaque. Primates are not hunted in the game."
+      },
+      {
+        "id": "giantIbis",
+        "km": "ត្រយ៉ងយក្ស",
+        "en": "Giant ibis",
+        "count": 6,
+        "herd": [1, 2],
+        "habitat": "water",
+        "hp": 12,
+        "speed": 4,
+        "meat": 40,
+        "attack": 0,
+        "behaviour": "shy",
+        "range": 9,
+        "huntable": false,
+        "region": {
+          "x": [450, 1000],
+          "z": [250, 800]
+        },
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Cambodia's national bird: seasonal forest pools and swamps in the dry dipterocarp forest of the northern plains. Critically endangered; protected in the game."
+      },
+      {
+        "id": "hornbill",
+        "km": "ត្រសក់ធំ",
+        "en": "Great hornbill",
+        "count": 10,
+        "herd": [1, 2],
+        "habitat": "canopy",
+        "hp": 12,
+        "speed": 5,
+        "meat": 40,
+        "attack": 0,
+        "behaviour": "shy",
+        "range": 8,
+        "huntable": false,
+        "confidence": "HISTORICALLY_UNCERTAIN",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Black and white with a big yellow casque. Khmer ត្រសក់ (hornbill) + ធំ (great) — PK please confirm. Protected in the game."
+      },
+      {
+        "id": "crocodile",
+        "km": "ក្រពើ",
+        "en": "Siamese crocodile",
+        "count": 10,
+        "herd": [1, 2],
+        "habitat": "water",
+        "hp": 150,
+        "speed": 3.5,
+        "meat": 250,
+        "attack": 10,
+        "behaviour": "predator",
+        "range": 5,
+        "leash": 12,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist", "harris2007"],
+        "notes": "Rivers, lakes and swamps; attacks people at the water edge and stays near its shore (short leash). Critically endangered today; the Cardamoms keep a wild population."
+      },
+      {
+        "id": "kingCobra",
+        "km": "ពស់វែក",
+        "en": "King cobra",
+        "count": 8,
+        "herd": [1, 1],
+        "habitat": "forest",
+        "hp": 15,
+        "speed": 3,
+        "meat": 20,
+        "attack": 14,
+        "behaviour": "predator",
+        "range": 3,
+        "leash": 8,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Strikes people who come within a few metres. ពស់វែក = cobra; the king cobra may also be called ពស់វែកធំ — PK please check."
+      },
+      {
+        "id": "python",
+        "km": "ពស់ថ្លាន់",
+        "en": "Reticulated python",
+        "count": 10,
+        "herd": [1, 1],
+        "habitat": "water",
+        "hp": 60,
+        "speed": 1.5,
+        "meat": 120,
+        "attack": 4,
+        "behaviour": "defensive",
+        "leash": 10,
+        "confidence": "HISTORICALLY_SUPPORTED",
+        "sources": ["pk-wildlife", "iucn-redlist"],
+        "notes": "Long, thick, patterned snake of forest near water; bites and coils if attacked."
+      }
+    ],
+    "confidence": "HISTORICALLY_SUPPORTED",
+    "notes": "Cambodia's forest wildlife (PK's list, D75) on top of the D61 game animals. Hunting scenes and forest animals (deer, boar, banteng, peafowl, tigers, elephants) appear on the Bayon reliefs; Zhou Daguan (1296) lists game, elephants and fishing on the Tonle Sap. Species presence follows today's ranges (IUCN); counts, ranges and strengths are gameplay. Protected kinds are never hunted.",
+    "sources": ["jacques1997", "higham2001", "pk-wildlife", "iucn-redlist"]
+  }
+}

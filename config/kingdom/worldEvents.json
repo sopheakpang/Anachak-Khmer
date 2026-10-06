@@ -1,0 +1,341 @@
+{
+  "$comment": "What happened in the world while the kingdom grew (PK: add information about the years and the era of the world). Shown on the timeline bar and as toasts when the in-game year reaches them. Khmer text drafted by Claude: PK to review. Years are the commonly cited dates; 'circa' marks approximate ones.",
+  "events": [
+    {
+      "year": 802,
+      "circa": false,
+      "place": {
+        "km": "ភ្នំគូលែន",
+        "en": "Phnom Kulen"
+      },
+      "km": "ព្រះបាទជ័យវរ្ម័នទី២ ប្រកាសខ្លួនជាចក្រពត្រិនៅលើភ្នំគូលែន",
+      "en": "Jayavarman II is consecrated universal king on Phnom Kulen",
+      "khmer": true,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 800,
+      "circa": false,
+      "place": {
+        "km": "រ៉ូម",
+        "en": "Rome"
+      },
+      "km": "ឆាលម៉ាញ ត្រូវបានគ្រងរាជ្យជាអធិរាជ",
+      "en": "Charlemagne is crowned emperor in Rome",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 825,
+      "circa": true,
+      "place": {
+        "km": "កោះជ្វា",
+        "en": "Java"
+      },
+      "km": "ប្រាសាទបូរ៉ូប៊ូឌួរ ត្រូវបានសាងរួច",
+      "en": "The great stupa of Borobudur is completed",
+      "khmer": false,
+      "confidence": "HISTORICALLY_SUPPORTED"
+    },
+    {
+      "year": 868,
+      "circa": false,
+      "place": {
+        "km": "ចិន",
+        "en": "China"
+      },
+      "km": "សៀវភៅបោះពុម្ពចាស់ជាងគេដែលមានកាលបរិច្ឆេទ៖ សូត្រពេជ្រ (Diamond Sutra)",
+      "en": "The Diamond Sutra, the oldest dated printed book, is made",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 871,
+      "circa": false,
+      "place": {
+        "km": "អង់គ្លេស",
+        "en": "England"
+      },
+      "km": "ព្រះបាទអាល់ហ្វ្រេដ ឡើងគ្រងរាជ្យនៅវ៉េសិច",
+      "en": "Alfred the Great becomes king of Wessex",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 875,
+      "circa": false,
+      "place": {
+        "km": "ចិន",
+        "en": "China"
+      },
+      "km": "កុបកម្មហ័ងឆាវ ចាប់ផ្ដើមធ្វើឱ្យរាជវង្សថាំងចុះខ្សោយ",
+      "en": "The Huang Chao rebellion begins to break the Tang dynasty",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 907,
+      "circa": false,
+      "place": {
+        "km": "ចិន",
+        "en": "China"
+      },
+      "km": "រាជវង្សថាំង ដួលរលំ",
+      "en": "The Tang dynasty falls",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 918,
+      "circa": false,
+      "place": {
+        "km": "កូរ៉េ",
+        "en": "Korea"
+      },
+      "km": "នគរកូរ្យូ ត្រូវបានបង្កើតឡើង",
+      "en": "The kingdom of Goryeo is founded",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 928,
+      "circa": false,
+      "place": {
+        "km": "កោះកេរ",
+        "en": "Koh Ker"
+      },
+      "km": "ព្រះបាទជ័យវរ្ម័នទី៤ សាងរាជធានីនៅកោះកេរ",
+      "en": "Jayavarman IV rules from a new capital at Koh Ker",
+      "khmer": true,
+      "confidence": "HISTORICALLY_SUPPORTED"
+    },
+    {
+      "year": 938,
+      "circa": false,
+      "place": {
+        "km": "វៀតណាម",
+        "en": "Vietnam"
+      },
+      "km": "សមរភូមិបាក់ដាំង៖ ង៉ោ ក្វៀន ឈ្នះ ហើយដាយវៀតបានឯករាជ្យពីចិន",
+      "en": "Battle of Bạch Đằng: Ngô Quyền wins, and Vietnam breaks free of China",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 960,
+      "circa": false,
+      "place": {
+        "km": "ចិន",
+        "en": "China"
+      },
+      "km": "រាជវង្សសុង ត្រូវបានបង្កើតឡើង",
+      "en": "The Song dynasty is founded",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 962,
+      "circa": false,
+      "place": {
+        "km": "អាល្លឺម៉ង់",
+        "en": "Germany"
+      },
+      "km": "អូតូទី១ គ្រងរាជ្យជាអធិរាជរ៉ូម៉ាំងបរិសុទ្ធ",
+      "en": "Otto I is crowned Holy Roman Emperor",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1000,
+      "circa": true,
+      "place": {
+        "km": "អាមេរិកខាងជើង",
+        "en": "North America"
+      },
+      "km": "អ្នកដំណើរន័រស ឡេហ្វ អេរីកសុន ទៅដល់អាមេរិកខាងជើង",
+      "en": "Norse sailors led by Leif Erikson reach North America",
+      "khmer": false,
+      "confidence": "HISTORICALLY_SUPPORTED"
+    },
+    {
+      "year": 1010,
+      "circa": false,
+      "place": {
+        "km": "ឥណ្ឌា",
+        "en": "India"
+      },
+      "km": "ប្រាសាទព្រិហទិស្វរៈ នៅថាន់ចាវូរ សាងរួចក្នុងរាជ្យចូឡៈ",
+      "en": "The Brihadishvara temple at Thanjavur is completed (Chola)",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1025,
+      "circa": false,
+      "place": {
+        "km": "ស្រីវិជ័យ",
+        "en": "Srivijaya"
+      },
+      "km": "កងទ័ពជើងទឹកចូឡៈ វាយលុកស្រីវិជ័យ",
+      "en": "The Chola navy raids Srivijaya",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1044,
+      "circa": false,
+      "place": {
+        "km": "ភូមា",
+        "en": "Myanmar"
+      },
+      "km": "អនោរថា ឡើងគ្រងរាជ្យនៅពុកាម (បាហ្គាន)",
+      "en": "Anawrahta becomes king of Pagan (Bagan)",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1066,
+      "circa": false,
+      "place": {
+        "km": "អង់គ្លេស",
+        "en": "England"
+      },
+      "km": "ការដណ្ដើមយកអង់គ្លេសដោយន័រម៉ង់",
+      "en": "The Norman conquest of England",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1096,
+      "circa": false,
+      "place": {
+        "km": "អឺរ៉ុប",
+        "en": "Europe"
+      },
+      "km": "សង្គ្រាមបូជនីយកិច្ចលើកទី១ ចាប់ផ្ដើម",
+      "en": "The First Crusade begins",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1113,
+      "circa": false,
+      "place": {
+        "km": "អង្គរ",
+        "en": "Angkor"
+      },
+      "km": "ព្រះបាទសូរ្យវរ្ម័នទី២ ឡើងគ្រងរាជ្យ",
+      "en": "Suryavarman II comes to the throne",
+      "khmer": true,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1127,
+      "circa": false,
+      "place": {
+        "km": "ចិន",
+        "en": "China"
+      },
+      "km": "ជិន ដណ្ដើមកៃហ្វេង ហើយរាជវង្សសុងខាងត្បូងចាប់ផ្ដើម",
+      "en": "The Jin take Kaifeng; the Southern Song begins",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1150,
+      "circa": true,
+      "place": {
+        "km": "អង្គរ",
+        "en": "Angkor"
+      },
+      "km": "អង្គរវត្តជិតរួចរាល់ នៅចុងរាជ្យព្រះបាទសូរ្យវរ្ម័នទី២",
+      "en": "Angkor Wat nears completion at the end of Suryavarman II's reign",
+      "khmer": true,
+      "confidence": "HISTORICALLY_SUPPORTED"
+    },
+    {
+      "year": 1163,
+      "circa": false,
+      "place": {
+        "km": "បារាំង",
+        "en": "France"
+      },
+      "km": "ការសាងវិហារណូទ្រដាម នៅប៉ារីស ចាប់ផ្ដើម",
+      "en": "Work begins on Notre-Dame de Paris",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1177,
+      "circa": false,
+      "place": {
+        "km": "យសោធរបុរៈ",
+        "en": "Yasodharapura"
+      },
+      "km": "កងទ័ពចាម្ប៉ាតាមទន្លេសាប វាយលុកយសោធរបុរៈ",
+      "en": "A Cham fleet comes up the Tonle Sap and sacks Yasodharapura",
+      "khmer": true,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1181,
+      "circa": false,
+      "place": {
+        "km": "អង្គរ",
+        "en": "Angkor"
+      },
+      "km": "ព្រះបាទជ័យវរ្ម័នទី៧ ឡើងគ្រងរាជ្យ បន្ទាប់ពីបណ្ដេញចាម្ប៉ាចេញ",
+      "en": "Jayavarman VII is crowned after driving out the Cham",
+      "khmer": true,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1185,
+      "circa": false,
+      "place": {
+        "km": "ជប៉ុន",
+        "en": "Japan"
+      },
+      "km": "សមរភូមិដាន់ណូអ៊ូរ៉ា៖ ត្រកូលមីណាម៉ូតូ ឈ្នះ",
+      "en": "Battle of Dan-no-ura: the Minamoto win; Kamakura rule begins",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1187,
+      "circa": false,
+      "place": {
+        "km": "ក្រុងយេរូសាឡិម",
+        "en": "Jerusalem"
+      },
+      "km": "សាឡាឌីន ដណ្ដើមក្រុងយេរូសាឡិម",
+      "en": "Saladin takes Jerusalem",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    },
+    {
+      "year": 1190,
+      "circa": true,
+      "place": {
+        "km": "ចាម្ប៉ា",
+        "en": "Champa"
+      },
+      "km": "កងទ័ពខ្មែរ ដណ្ដើមវិជ័យ រាជធានីចាម្ប៉ា",
+      "en": "The Khmer army takes Vijaya, the capital of Champa",
+      "khmer": true,
+      "confidence": "HISTORICALLY_SUPPORTED"
+    },
+    {
+      "year": 1206,
+      "circa": false,
+      "place": {
+        "km": "ម៉ុងហ្គោលី",
+        "en": "Mongolia"
+      },
+      "km": "តេមូជីន ត្រូវបានប្រកាសជា ជេងហ្គីសខាន់",
+      "en": "Temüjin is proclaimed Genghis Khan",
+      "khmer": false,
+      "confidence": "HISTORICALLY_CONFIRMED"
+    }
+  ]
+}

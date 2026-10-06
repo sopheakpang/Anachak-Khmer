@@ -1,0 +1,107 @@
+{
+  "$comment": "Works the Kingdom data cites. Short ids are used in the other kingdom/*.json files. Keep entries to published works; add page numbers when a researcher checks them.",
+  "sources": [
+    {
+      "id": "coedes1968",
+      "title": "The Indianized States of Southeast Asia",
+      "author": "George Coedès",
+      "year": 1968
+    },
+    {
+      "id": "jacques1997",
+      "title": "Angkor: Cities and Temples",
+      "author": "Claude Jacques, Michael Freeman",
+      "year": 1997
+    },
+    {
+      "id": "evans2007",
+      "title": "A comprehensive archaeological map of the world's largest preindustrial settlement complex at Angkor, Cambodia (PNAS 104)",
+      "author": "Damian Evans et al.",
+      "year": 2007
+    },
+    {
+      "id": "higham2001",
+      "title": "The Civilization of Angkor",
+      "author": "Charles Higham",
+      "year": 2001
+    },
+    {
+      "id": "jacq-hergoualch2007",
+      "title": "The Armies of Angkor: Military Structure and Weaponry of the Khmers",
+      "author": "Michel Jacq-Hergoualc'h",
+      "year": 2007
+    },
+    {
+      "id": "dvsktt",
+      "title": "Đại Việt sử ký toàn thư (Complete Annals of Đại Việt)",
+      "author": "Ngô Sĩ Liên and later compilers",
+      "year": 1479
+    },
+    {
+      "id": "pk-houses",
+      "title": "Traditional Khmer housing & prompt set (PK's reference file: Kantaang, Pit, Rongdorl, Rongdeung, Pteas Khmer, Koeng)",
+      "author": "PK (project reference)",
+      "year": 2026
+    },
+    {
+      "id": "coedes1911",
+      "title": "Les bas-reliefs d'Angkor-Vat (Bulletin de la Commission archéologique de l'Indochine)",
+      "author": "George Coedès",
+      "year": 1911
+    },
+    {
+      "id": "coedes-ic",
+      "title": "Inscriptions du Cambodge (8 vols.)",
+      "author": "George Coedès",
+      "year": 1966
+    },
+    {
+      "id": "pk-generals",
+      "title": "Statues of Angkor-era Khmer generals, Royal Palace, Phnom Penh (PK's reference image)",
+      "author": "PK (reference supplied)",
+      "year": 2026
+    },
+    {
+      "id": "pk-characters",
+      "title": "KHMER KINGDOMS Historical Human & Occupation Character Prompt Set (PK)",
+      "author": "PK",
+      "year": 2026
+    },
+    {
+      "id": "roveda2005",
+      "title": "Images of the Gods: Khmer Mythology in Cambodia, Laos & Thailand",
+      "author": "Vittorio Roveda",
+      "year": 2005
+    },
+    {
+      "id": "harris2007",
+      "title": "A Record of Cambodia: The Land and Its People (Zhou Daguan, 1297; translated by Peter Harris)",
+      "author": "Zhou Daguan, Peter Harris",
+      "year": 2007
+    },
+    {
+      "id": "iucn-redlist",
+      "title": "The IUCN Red List of Threatened Species (species accounts and ranges)",
+      "author": "IUCN",
+      "year": 2024
+    },
+    {
+      "id": "pk-wildlife",
+      "title": "Cambodia's forest wildlife: the species list for the Kingdom tab (PK)",
+      "author": "PK (project reference)",
+      "year": 2026
+    },
+    {
+      "id": "hendrickson2010",
+      "title": "Historic routes to Angkor: development of the Khmer road system (ninth to thirteenth centuries AD) in mainland Southeast Asia (Antiquity 84)",
+      "author": "Mitch Hendrickson",
+      "year": 2010
+    },
+    {
+      "id": "coedes1941",
+      "title": "La stèle du Prah Khan d'Angkor (BEFEO 41)",
+      "author": "George Coedès",
+      "year": 1941
+    }
+  ]
+}

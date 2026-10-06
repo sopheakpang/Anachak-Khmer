@@ -1,0 +1,18 @@
+{
+  "name": "នគរខ្មែរ · Khmer Kingdoms",
+  "short_name": "នគរខ្មែរ",
+  "description": "Build a Khmer kingdom: an offline strategy game. Developed by Mr. Sopheak Pang.",
+  "lang": "km",
+  "start_url": "./",
+  "scope": "./",
+  "id": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#1b1006",
+  "theme_color": "#1b1006",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

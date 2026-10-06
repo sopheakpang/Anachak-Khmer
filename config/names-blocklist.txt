@@ -1,0 +1,11 @@
+# One word per line, lower case. A display name containing any of these is replaced with "Builder" / "អ្នកសាងសង់".
+# Starter list only — PK adds Khmer and English words he wants blocked.
+fuck
+shit
+bitch
+porn
+sex
+nazi
+admin
+tiktok
+official

@@ -1,0 +1,153 @@
+{
+  "$comment": "Quality presets (spec: Performance budget). low = the stream laptop (default). ?preset=high on a stronger PC. ?preset=lite = no shadows, fewer people: use it only if low drops below 30 FPS. look.style: \"lowpoly\" = faceted shapes and flat colours (D41), \"film\" = the soft animated-film look (D25); ?style=film or ?style=lowpoly overrides it. flatColors: true = plain colours, false = painted detail kept on the facets (PK wants textured detail). mobile = the Android phone build of the Kingdom tab (D72): smaller render, no antialias, no shadows. ultra = a strong gaming PC (D79). kingdom = the Kingdom's Anno-style graphics (D79): ao = soft contact shadows (aoScale = its render size), bloom = glow, tiltShift = close-up blur, grade = warm golden-hour colour, water = 'shader' (waves, depth colour, foam) or 'flat', treeKinds = how many tree kinds (1-5), wind = trees sway, life = birds, smoke, garden plots, palms on the paddy dikes, props = PK's real 3D models for trees, palms, rocks and banana plants (config/kingdom/props.json; off on lite and the phone), diorama = PK 1.7.0's Angkor Cel-Diorama look (config/kingdom/diorama.json: NPR toon units with ink outlines, stylised PBR land, HD-2D long lens, tilt-shift, warm/cool grade, laterite/emerald terrain, Prek canal water, ground detail; no screen-space AO).",
+  "low": {
+    "renderScale": 1,
+    "antialias": true,
+    "maxCharacters": 100,
+    "trees": 60,
+    "namePlates": 60,
+    "look": {
+      "style": "lowpoly",
+      "flatColors": false,
+      "shadows": true,
+      "shadowMapSize": 1024,
+      "exposure": 1.05,
+      "envIntensity": 0.55,
+      "clouds": 6
+    },
+    "kingdom": {
+      "ao": true,
+      "aoScale": 0.5,
+      "bloom": true,
+      "tiltShift": true,
+      "grade": true,
+      "water": "shader",
+      "treeKinds": 5,
+      "wind": true,
+      "life": true,
+      "birds": 4,
+      "props": true,
+      "diorama": true
+    }
+  },
+  "high": {
+    "renderScale": 1,
+    "antialias": true,
+    "maxCharacters": 300,
+    "trees": 160,
+    "namePlates": 120,
+    "look": {
+      "style": "lowpoly",
+      "flatColors": false,
+      "shadows": true,
+      "shadowMapSize": 2048,
+      "exposure": 1.05,
+      "envIntensity": 0.6,
+      "clouds": 10
+    },
+    "kingdom": {
+      "ao": true,
+      "aoScale": 1,
+      "bloom": true,
+      "tiltShift": true,
+      "grade": true,
+      "water": "shader",
+      "treeKinds": 5,
+      "wind": true,
+      "life": true,
+      "birds": 5,
+      "props": true,
+      "diorama": true
+    }
+  },
+  "ultra": {
+    "renderScale": 1,
+    "antialias": true,
+    "maxCharacters": 400,
+    "trees": 220,
+    "namePlates": 120,
+    "look": {
+      "style": "lowpoly",
+      "flatColors": false,
+      "shadows": true,
+      "shadowMapSize": 4096,
+      "exposure": 1.05,
+      "envIntensity": 0.6,
+      "clouds": 10
+    },
+    "kingdom": {
+      "ao": true,
+      "aoScale": 1,
+      "bloom": true,
+      "tiltShift": true,
+      "grade": true,
+      "water": "shader",
+      "treeKinds": 5,
+      "wind": true,
+      "life": true,
+      "birds": 6,
+      "props": true,
+      "diorama": true
+    }
+  },
+  "lite": {
+    "renderScale": 1,
+    "antialias": true,
+    "maxCharacters": 60,
+    "trees": 40,
+    "namePlates": 60,
+    "look": {
+      "style": "lowpoly",
+      "flatColors": false,
+      "shadows": false,
+      "shadowMapSize": 512,
+      "exposure": 1.05,
+      "envIntensity": 0.7,
+      "clouds": 4
+    },
+    "kingdom": {
+      "ao": false,
+      "aoScale": 0.5,
+      "bloom": false,
+      "tiltShift": false,
+      "grade": true,
+      "water": "shader",
+      "treeKinds": 3,
+      "wind": false,
+      "life": true,
+      "birds": 3,
+      "props": false,
+      "diorama": false
+    }
+  },
+  "mobile": {
+    "renderScale": 0.75,
+    "antialias": false,
+    "maxCharacters": 60,
+    "trees": 40,
+    "namePlates": 30,
+    "look": {
+      "style": "lowpoly",
+      "flatColors": false,
+      "shadows": false,
+      "shadowMapSize": 512,
+      "exposure": 1.05,
+      "envIntensity": 0.7,
+      "clouds": 3
+    },
+    "kingdom": {
+      "ao": false,
+      "aoScale": 0.5,
+      "bloom": false,
+      "tiltShift": false,
+      "grade": false,
+      "water": "shader",
+      "treeKinds": 3,
+      "wind": false,
+      "life": false,
+      "birds": 0,
+      "props": false,
+      "diorama": false
+    }
+  }
+}

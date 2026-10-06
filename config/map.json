@@ -1,0 +1,50 @@
+{
+  "$comment": "Illustrated campaign map (prompt 08). Stylized positions on a 100 x 100 plane, not to scale. x = east, z = south.",
+  "kulen": { "x": 32, "z": -36, "radius": 16, "height": 5 },
+  "quarry": { "x": 26, "z": -28 },
+  "kilns": { "x": 24, "z": 24 },
+  "river": [
+    [34, -46],
+    [28, -30],
+    [18, -20],
+    [8, -12],
+    [3, -2],
+    [1, 10],
+    [-1, 22],
+    [-3, 36]
+  ],
+  "canal": [
+    [26, -28],
+    [20, -12],
+    [16, -2],
+    [16, 10],
+    [16, 18]
+  ],
+  "tonleSap": { "z": 40 },
+  "angkorThom": { "x": -3, "z": -12, "size": 13 },
+  "angkorWat": { "x": -3, "z": 6, "size": 7 },
+  "westBaray": { "x": -24, "z": -9, "w": 18, "d": 4 },
+  "eastBaray": { "x": 14, "z": -9, "w": 13, "d": 3.5 },
+  "indratataka": { "x": 17, "z": 12, "w": 8, "d": 2 },
+  "sites": {
+    "preah-ko": [15, 19],
+    "bakong": [18, 21],
+    "lolei": [17, 12],
+    "phnom-bakheng": [-8, -1],
+    "east-mebon": [14, -9],
+    "pre-rup": [15, -4],
+    "banteay-srei": [24, -32],
+    "ta-keo": [6, -9],
+    "baphuon": [-4, -14],
+    "angkor-wat": [-3, 6],
+    "ta-prohm": [8, -5],
+    "preah-khan": [-3, -23],
+    "bayon": [-3, -12]
+  },
+  "labels": [
+    { "km": "ភ្នំគូលែន", "en": "Phnom Kulen", "x": 32, "z": -42 },
+    { "km": "ទន្លេសាប", "en": "Tonle Sap", "x": 0, "z": 44 },
+    { "km": "បារាយណ៍ខាងលិច", "en": "West Baray", "x": -24, "z": -14 },
+    { "km": "រលួស", "en": "Roluos", "x": 18, "z": 26 }
+  ]
+}

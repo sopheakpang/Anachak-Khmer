@@ -1,0 +1,460 @@
+/* Kulen Expedition HUD (1080×1920 stage px). Zones keep clear of TikTok's own areas:
+   header 0–200, comments below 1270, buttons x ≥ 930 below 1000. Text ≥ 26 px. */
+.ui.mode-expedition > .title-band,
+.ui.mode-expedition > .info-band,
+.ui.mode-expedition > .banner {
+  display: none !important;
+}
+
+.ui.mode-expedition > .badge {
+  top: 730px;
+  left: auto;
+  right: 30px;
+}
+
+.exp-ui {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #fff8ea;
+  font-family: 'Kantumruy Pro', sans-serif;
+  text-shadow:
+    0 2px 6px rgb(20 10 0 / 0.75),
+    0 0 18px rgb(20 10 0 / 0.35);
+  --gold: #f1cd78;
+}
+.exp-ui[hidden],
+.exp-ui [hidden] {
+  display: none !important;
+}
+
+.exp-top {
+  position: absolute;
+  left: 40px;
+  top: 210px;
+  width: 1000px;
+  height: 205px;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+.exp-chapter {
+  display: flex;
+  gap: 18px;
+  align-items: baseline;
+}
+.exp-chapter-km {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 38px;
+  line-height: 1.45;
+  color: var(--gold);
+}
+.exp-chapter-en {
+  font-size: 28px;
+  opacity: 0.9;
+}
+.exp-objective {
+  font-size: 30px;
+  line-height: 1.4;
+}
+.exp-objective b {
+  color: #fff3d6;
+}
+.exp-quota {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  font-size: 27px;
+  font-weight: 600;
+}
+.exp-quota-bar {
+  flex: 1;
+  height: 26px;
+  border-radius: 13px;
+  background: rgb(255 255 255 / 0.2);
+  border: 2px solid rgb(255 240 200 / 0.55);
+  overflow: hidden;
+}
+.exp-quota-bar div {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #6fae6a, #d8c46a);
+  transition: width 0.6s ease;
+}
+
+.exp-feed {
+  position: absolute;
+  left: 40px;
+  top: 440px;
+  width: 560px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.exp-feed li {
+  font-size: 27px;
+  line-height: 1.4;
+  background: rgb(20 30 15 / 0.55);
+  border-radius: 14px;
+  padding: 4px 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exp-feed b {
+  color: #fff3d6;
+}
+
+.exp-minimap {
+  position: absolute;
+  left: 770px;
+  top: 440px;
+  width: 280px;
+  height: 280px;
+  border-radius: 20px;
+  border: 4px solid var(--gold);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+  pointer-events: auto;
+  box-sizing: border-box;
+}
+
+.exp-bars {
+  position: absolute;
+  left: 90px;
+  top: 1036px;
+  width: 810px;
+  height: 72px;
+  display: grid;
+  grid-template-columns: 72px 230px 1fr 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.exp-portrait {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid var(--gold);
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+}
+.exp-bars-text {
+  font-size: 27px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.exp-bars-text b {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-weight: 400;
+  color: var(--gold);
+}
+.exp-bar {
+  position: relative;
+  height: 30px;
+  border-radius: 15px;
+  background: rgb(0 0 0 / 0.45);
+  border: 2px solid rgb(255 240 200 / 0.5);
+  overflow: hidden;
+}
+.exp-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  transition: width 0.3s;
+}
+.exp-bar.hp i {
+  background: linear-gradient(90deg, #b8412f, #e8734a);
+}
+.exp-bar.en i {
+  background: linear-gradient(90deg, #2f5dab, #6fb0e8);
+}
+.exp-bar em {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.exp-skills {
+  position: absolute;
+  left: 90px;
+  top: 1118px;
+  width: 810px;
+  height: 138px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.exp-skill {
+  pointer-events: auto;
+  position: relative;
+  border: 3px solid var(--gold);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 50% 30%, var(--c1), transparent 70%),
+    linear-gradient(160deg, color-mix(in srgb, var(--c2) 70%, #1a1208), #1a1208);
+  color: #fff8ea;
+  font-family: 'Kantumruy Pro', sans-serif;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  padding: 6px;
+  overflow: hidden;
+  text-shadow: 0 2px 4px rgb(0 0 0 / 0.8);
+  cursor: none;
+}
+.exp-skill::after {
+  /* Cooldown veil (--cd = 0..1). */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.55);
+  transform-origin: bottom;
+  transform: scaleY(var(--cd, 0));
+}
+.exp-skill-key {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.exp-skill-km {
+  font-size: 26px;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.exp-select {
+  position: absolute;
+  left: 30px;
+  top: 430px;
+  width: 1020px;
+  height: 560px;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  pointer-events: auto;
+}
+.exp-select-head {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 40px;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--gold);
+}
+.exp-select-head b {
+  font-family: 'Kantumruy Pro', sans-serif;
+  color: #fff;
+  margin-left: 12px;
+}
+.exp-select-sub {
+  font-size: 27px;
+  text-align: center;
+}
+.exp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.exp-card {
+  pointer-events: auto;
+  cursor: none;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 16px 10px 14px;
+  border-radius: 24px;
+  border: 3px solid var(--gold);
+  background: linear-gradient(180deg, rgb(40 26 12 / 0.9), rgb(20 14 8 / 0.92));
+  color: #fff8ea;
+  font-family: 'Kantumruy Pro', sans-serif;
+  text-shadow: none;
+}
+.exp-card:hover {
+  transform: translateY(-4px);
+  border-color: #fff0b8;
+}
+.exp-card-num {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.exp-card-emblem {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: block;
+}
+.exp-card-warrior .exp-card-emblem {
+  background: radial-gradient(circle at 40% 35%, #ffd36a, #8c2f22 70%);
+}
+.exp-card-sage .exp-card-emblem {
+  background: radial-gradient(circle at 40% 35%, #fff4d0, #e0892a 70%);
+}
+.exp-card-rider .exp-card-emblem {
+  background: radial-gradient(circle at 40% 35%, #f4f6ff, #847a75 70%);
+}
+.exp-portrait .exp-card-emblem {
+  width: 56px;
+  height: 56px;
+}
+.exp-card-name {
+  font-family: 'Moulpali', 'Kantumruy Pro', sans-serif;
+  font-size: 40px;
+  line-height: 1.5;
+  color: var(--gold);
+}
+.exp-card-en,
+.exp-card-role,
+.exp-card-votes {
+  font-size: 26px;
+  line-height: 1.35;
+  text-align: center;
+}
+.exp-card-stats {
+  display: grid;
+  gap: 6px;
+  width: 80%;
+}
+.exp-card-stats i {
+  display: block;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #f1cd78 calc(var(--v) * 100%), rgb(255 255 255 / 0.15) 0);
+}
+.exp-card-votes {
+  color: #fff3d6;
+  font-weight: 700;
+}
+
+.exp-cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 50;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.6));
+}
+.exp-loading {
+  position: absolute;
+  left: 90px;
+  right: 90px;
+  top: 900px;
+  padding: 24px;
+  text-align: center;
+  font-size: 34px;
+  color: #fff8ea;
+  background: rgb(20 30 15 / 0.8);
+  border: 3px solid #f1cd78;
+  border-radius: 24px;
+}
+.exp-cursor .c-attack {
+  display: none;
+}
+.exp-cursor[data-state='attack'] .c-normal {
+  display: none;
+}
+.exp-cursor[data-state='attack'] .c-attack {
+  display: block;
+}
+.exp-cursor[data-state='far'] .c-normal path {
+  fill: #b9b2a4;
+}
+
+.exp-floats {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.exp-float {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 34px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-shadow:
+    0 2px 4px rgb(0 0 0 / 0.9),
+    0 0 12px rgb(0 0 0 / 0.5);
+}
+.exp-target {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  font-size: 26px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.exp-target i {
+  display: block;
+  width: 160px;
+  height: 14px;
+  border-radius: 7px;
+  background: rgb(0 0 0 / 0.6);
+  border: 2px solid rgb(255 240 200 / 0.7);
+  overflow: hidden;
+}
+.exp-target b {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #b8412f, #ff8a5a);
+}
+
+/* How to play (PK's prompt: instructions in the middle of the screen), first seconds
+   after the hero is chosen; translucent so the hero stays visible. */
+.exp-howto {
+  position: absolute;
+  left: 90px;
+  width: 900px;
+  top: 790px;
+  box-sizing: border-box;
+  padding: 14px 20px;
+  border-radius: 22px;
+  background: rgb(255 250 240 / 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgb(255 255 255 / 0.8);
+  color: #1a1410;
+  text-align: center;
+  pointer-events: none;
+  animation: exp-howto-in 0.4s ease;
+}
+.exp-howto-km {
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #7a2a14;
+}
+.exp-howto-en {
+  font-size: 30px;
+  line-height: 1.35;
+}
+.exp-howto-keys {
+  margin-top: 6px;
+  font-size: 27px;
+  line-height: 1.6;
+}
+.exp-howto kbd {
+  display: inline-block;
+  min-width: 34px;
+  padding: 0 8px;
+  margin: 0 2px;
+  border-radius: 8px;
+  background: #2a1a10;
+  color: #ffe9b0;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 27px;
+}
+@keyframes exp-howto-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}

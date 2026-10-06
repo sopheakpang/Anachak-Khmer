@@ -1,0 +1,109 @@
+{
+  "$comment": "All viewer-action rules (spec: Interaction map). Change numbers here, never in code.",
+  "tiers": [
+    {
+      "name": "small",
+      "minCoins": 1,
+      "transport": "workers",
+      "screen": "pip"
+    },
+    {
+      "name": "medium",
+      "minCoins": 5,
+      "transport": "oxcart",
+      "screen": "pip"
+    },
+    {
+      "name": "large",
+      "minCoins": 30,
+      "transport": "elephants",
+      "screen": "fullscreen"
+    },
+    {
+      "name": "huge",
+      "minCoins": 1000,
+      "transport": "raft",
+      "screen": "fullscreen-banner"
+    }
+  ],
+  "units": {
+    "like": 1,
+    "follow": 20,
+    "share": 10,
+    "comment": 0,
+    "join": 0,
+    "giftMultiplier": 5
+  },
+  "limits": {
+    "followOncePerStream": true,
+    "shareCooldownSec": 300,
+    "myStoneUserCooldownSec": 120,
+    "myStoneGlobalCooldownSec": 10,
+    "guildChangesPerStream": 1,
+    "likeBatchMs": 2000,
+    "joinShowEvery": 10,
+    "comboIdleMs": 5000
+  },
+  "caps": {
+    "perEventTempleShare": 0.15,
+    "stockpileMaxStartShare": 0.5
+  },
+  "queue": {
+    "max": 2000,
+    "drainPerTick": 200
+  },
+  "guilds": {
+    "1": {
+      "km": "ជាងកាត់ថ្ម",
+      "en": "Stone Cutters"
+    },
+    "2": {
+      "km": "អ្នកថែដំរី",
+      "en": "Elephant Keepers"
+    },
+    "3": {
+      "km": "អ្នកបើកក្បូន",
+      "en": "River Rafters"
+    },
+    "4": {
+      "km": "ជាងចម្លាក់",
+      "en": "Carvers"
+    }
+  },
+  "commands": {
+    "myStone": ["!mystone", "!ថ្មខ្ញុំ"]
+  },
+  "ranks": [
+    {
+      "minUnits": 0,
+      "km": "កម្មករ",
+      "en": "Laborer"
+    },
+    {
+      "minUnits": 100,
+      "km": "ជាងថ្ម",
+      "en": "Stone Cutter"
+    },
+    {
+      "minUnits": 1000,
+      "km": "ជាងសំណង់",
+      "en": "Mason"
+    },
+    {
+      "minUnits": 10000,
+      "km": "មេជាងចម្លាក់",
+      "en": "Master Carver"
+    },
+    {
+      "minUnits": 100000,
+      "km": "ស្ថាបត្យករហ្លួង",
+      "en": "Royal Architect"
+    }
+  ],
+  "names": {
+    "maxLength": 16,
+    "fallbackKm": "អ្នកសាងសង់",
+    "fallbackEn": "Builder"
+  },
+  "chaosGifts": ["Panda", "Corgi", "Drama Queen"]
+}

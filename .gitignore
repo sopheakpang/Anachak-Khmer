@@ -1,0 +1,14 @@
+node_modules
+dist
+data/*
+!data/.gitkeep
+.env
+test-results
+playwright-report
+apps/desktop/out
+coverage
+dist-mobile
+apk/
+__pycache__/
+.claude/*
+!.claude/agents/

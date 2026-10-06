@@ -1,0 +1,65 @@
+{
+  "$comment": "'Did you know?' cards (prompt 13). Khmer drafted by Claude — PK to review before streaming. Every card names its source.",
+  "cards": [
+    {
+      "km": "ព្រះគោ សាងឡើងនៅឆ្នាំ ៨៧៩ ក្នុងរជ្ជកាលព្រះបាទឥន្ទ្រវរ្ម័នទី១។",
+      "en": "Preah Ko was dedicated in 879, in the reign of King Indravarman I.",
+      "source": "Wikipedia: Preah Ko"
+    },
+    {
+      "km": "ប្រាសាទព្រះគោ មានប្រាង្គឥដ្ឋ ៦ ជាពីរជួរ ហើយប្រាង្គជួរមុខខ្ពស់ជាង។",
+      "en": "Preah Ko has six brick towers in two rows; the front row is taller.",
+      "source": "Wikipedia: Preah Ko"
+    },
+    {
+      "km": "ព្រះគោ ដាក់ឈ្មោះតាមរូបគោនន្ទិ ៣ ដែលបែរមុខទៅរកប្រាសាទ។",
+      "en": "Preah Ko, 'the sacred bull', is named after the three Nandi statues facing the towers.",
+      "source": "Wikipedia: Preah Ko"
+    },
+    {
+      "km": "ប្រាសាទបាគង (៨៨១) ជាប្រាសាទភ្នំធំដំបូងគេ។",
+      "en": "Bakong (881) was the first great temple mountain.",
+      "source": "Wikipedia: Bakong"
+    },
+    {
+      "km": "ថ្មភក់សង់ប្រាសាទ ត្រូវបានយកមកពីរណ្ដៅថ្មប្រហែល ៥០ នៅជើងភ្នំគូលែន។",
+      "en": "The sandstone came from about 50 quarries at the foot of Phnom Kulen.",
+      "source": "Live Science"
+    },
+    {
+      "km": "ប្រឡាយ និងផ្លូវ បង្កើតបានផ្លូវដឹកថ្មប្រវែងប្រហែល ៣៧ គីឡូម៉ែត្រ ទៅអង្គរវត្ត។",
+      "en": "Canals and roads made a stone route of about 37 km to Angkor Wat.",
+      "source": "Live Science"
+    },
+    {
+      "km": "អង្គរវត្ត ប្រើថ្មភក់ពី ៥ ទៅ ១០ លានដុំ ខ្លះធ្ងន់ដល់ ១៥០០ គីឡូក្រាម។",
+      "en": "Angkor Wat used 5–10 million sandstone blocks, some up to 1,500 kg.",
+      "source": "Live Science"
+    },
+    {
+      "km": "ថ្មជាច្រើនមានរន្ធតូចៗ សម្រាប់ដាក់ឈើលើកថ្មឡើងទៅលើ។",
+      "en": "Many blocks have small drilled holes, used to lift them into place.",
+      "source": "Khmer architecture (Wikipedia)"
+    },
+    {
+      "km": "ប្រាសាទតាកែវ ជាប្រាសាទដំបូងដែលសង់ស្ទើរតែទាំងស្រុងពីថ្មភក់។",
+      "en": "Ta Keo was the first temple built almost entirely of sandstone.",
+      "source": "Khmer architecture (Wikipedia)"
+    },
+    {
+      "km": "បន្ទាយស្រី មិនមែនសាងដោយព្រះមហាក្សត្រទេ គឺដោយមន្ត្រីម្នាក់។",
+      "en": "Banteay Srei was built not by a king but by a courtier.",
+      "source": "Khmer architecture (Wikipedia)"
+    },
+    {
+      "km": "អង្គរវត្ត សាងក្នុងរជ្ជកាលព្រះបាទសូរ្យវរ្ម័នទី២ ក្នុងសតវត្សទី១២។",
+      "en": "Angkor Wat was built under King Suryavarman II in the 12th century.",
+      "source": "Khmer architecture (Wikipedia)"
+    },
+    {
+      "km": "តាព្រហ្ម ព្រះខ័ន និងបាយ័ន សាងក្នុងរជ្ជកាលព្រះបាទជ័យវរ្ម័នទី៧។",
+      "en": "Ta Prohm, Preah Khan and the Bayon were built under King Jayavarman VII.",
+      "source": "Khmer architecture (Wikipedia)"
+    }
+  ]
+}

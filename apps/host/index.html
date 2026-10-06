@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="km">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The Temples · Host panel</title>
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="brand-km">សាងប្រាសាទ</span>
+        <span class="brand-en">Host panel</span>
+      </div>
+      <div class="pills">
+        <span class="pill" id="pill-bridge" data-state="off">Bridge: connecting…</span>
+        <span class="pill" id="pill-source" data-state="off">Source: –</span>
+        <span class="pill" id="pill-queue">Queue 0</span>
+        <span class="pill" id="pill-paused" hidden data-state="warn">Paused</span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card sim" aria-labelledby="sim-h">
+        <h2 id="sim-h">Simulate viewers</h2>
+        <label class="field">
+          <span>Viewer</span>
+          <select id="user"></select>
+        </label>
+
+        <h3>Free actions</h3>
+        <div class="btns">
+          <button data-sim="like" title="L">Like <kbd>L</kbd></button>
+          <button data-sim="tap15" title="T">Tap ×15 <kbd>T</kbd></button>
+          <button data-sim="follow" title="F">Follow <kbd>F</kbd></button>
+          <button data-sim="share" title="H">Share <kbd>H</kbd></button>
+          <button data-sim="join" title="J">Join <kbd>J</kbd></button>
+          <button data-sim="mystone" title="M">!mystone <kbd>M</kbd></button>
+        </div>
+        <div class="btns guilds">
+          <button data-guild="1">Guild 1</button>
+          <button data-guild="2">Guild 2</button>
+          <button data-guild="3">Guild 3</button>
+          <button data-guild="4">Guild 4</button>
+        </div>
+
+        <h3>Gifts</h3>
+        <div class="btns gifts" id="gifts"></div>
+        <button class="wide" data-sim="combo">Rose combo ×12 <kbd>C</kbd></button>
+
+        <h3>Modes</h3>
+        <div class="btns">
+          <button class="toggle" id="demo" aria-pressed="false">Demo viewers <kbd>D</kbd></button>
+          <button id="burst">Burst 100 <kbd>B</kbd></button>
+        </div>
+        <div class="stress">
+          <button class="toggle" id="stress" aria-pressed="false">Stress 1,000/min</button>
+          <label class="field inline">
+            <span>for</span>
+            <input id="stress-min" type="number" min="1" max="120" value="10" />
+            <span>min</span>
+          </label>
+        </div>
+        <p class="hint" id="mode-status">Idle</p>
+      </section>
+
+      <section class="card live" aria-labelledby="live-h">
+        <h2 id="live-h">Temple</h2>
+        <div class="temple">
+          <div class="temple-km" id="t-km">–</div>
+          <div class="temple-meta" id="t-meta">–</div>
+        </div>
+        <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="t-bar">
+          <div class="bar-fill" id="t-fill"></div>
+          <span class="bar-label" id="t-pct">0%</span>
+        </div>
+        <div class="stats">
+          <div><span class="k">Stones placed</span><span class="v" id="t-prog">0 / 0</span></div>
+          <div><span class="k">Kulen stockpile</span><span class="v" id="t-stock">0</span></div>
+          <div><span class="k">Likes today</span><span class="v" id="t-likes">0</span></div>
+        </div>
+
+        <div class="lists">
+          <div>
+            <h3>Top 5 · this temple</h3>
+            <ol class="board" id="top-temple"></ol>
+          </div>
+          <div>
+            <h3>Top 5 · today</h3>
+            <ol class="board" id="top-today"></ol>
+          </div>
+        </div>
+
+        <h3>Guilds · this temple</h3>
+        <div class="guild-bars" id="guild-bars"></div>
+      </section>
+
+      <section class="card feed-card" aria-labelledby="feed-h">
+        <h2 id="feed-h">Live feed</h2>
+        <ol class="feed" id="feed"></ol>
+      </section>
+
+      <section class="card controls" aria-labelledby="ctl-h">
+        <h2 id="ctl-h">Stream controls</h2>
+        <h3>Game mode</h3>
+        <div class="btns modes">
+          <button class="toggle" id="mode-build" data-mode="build" aria-pressed="true">Build · សាងសង់</button>
+          <button class="toggle" id="mode-expedition" data-mode="expedition" aria-pressed="false">
+            Expedition · បេសកកម្ម
+          </button>
+          <button class="toggle" id="mode-kingdom" data-mode="kingdom" aria-pressed="false">
+            Kingdom · នគរ
+          </button>
+          <button class="toggle" id="mode-anachak" data-mode="anachak" aria-pressed="false">
+            Anachak Khmer · អាណាចក្រខ្មែរ
+          </button>
+        </div>
+        <div class="btns votes">
+          <button data-vote="1">Vote !1 Vireak</button>
+          <button data-vote="2">Vote !2 Piseth</button>
+          <button data-vote="3">Vote !3 Kiri</button>
+        </div>
+        <div class="btns kingdom-ctl" aria-label="Kingdom">
+          <button data-kingdom="save">Save kingdom</button>
+          <button data-kingdom="load">Load kingdom</button>
+          <select id="kingdom-difficulty" aria-label="Difficulty">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+            <option value="expert">Expert</option>
+          </select>
+          <button class="danger" data-kingdom="new">New kingdom game</button>
+        </div>
+        <h3>Controls</h3>
+        <div class="btns">
+          <button id="pause">Pause game <kbd>P</kbd></button>
+          <button id="newstream" title="Resets once-per-stream limits (follows, guild changes)">
+            New stream
+          </button>
+          <button id="skip99">Skip to 99%</button>
+          <button class="toggle" id="zones" aria-pressed="false">Safe zones <kbd>Z</kbd></button>
+          <button class="danger" id="reset">Reset temple…</button>
+        </div>
+        <div class="confirm" id="reset-confirm" hidden>
+          <span>Reset this temple to 0%? Names and the stockpile are kept.</span>
+          <button class="danger" id="reset-yes">Yes, reset</button>
+          <button id="reset-no">Cancel</button>
+        </div>
+        <label class="field">
+          <span>Remove a viewer's name (on request)</span>
+          <span class="row">
+            <input id="remove-id" placeholder="viewer id — click a name in Top 5" />
+            <button id="remove-btn">Remove</button>
+          </span>
+        </label>
+        <p class="hint" id="ctl-status"></p>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
