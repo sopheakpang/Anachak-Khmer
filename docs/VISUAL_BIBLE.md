@@ -1,4 +1,4 @@
-# Visual Bible — the Angkor Cel-Diorama look (1.7.0)
+# Visual Bible — the Angkor Cel-Diorama look (1.7.0, 1.8.0)
 
 The Kingdom and Anachak RTS views are a **living diorama of Angkor**. The world looks like a hand-painted model village with real weight and light. The people and animals look like illustrated characters placed into it. Two rules carry everything:
 
@@ -19,6 +19,27 @@ The land should look the way people have used it:
 - **Forest floor.** The forest floor is a darker moss green, with undergrowth under the trees.
 - **Laterite.** Slopes, river banks and canal banks show warm laterite red.
 - **Hollows.** Hollows and the foot of slopes darken in hard steps of painted shade. This is *block-shadow AO*, never noisy screen-space AO.
+
+## Elephant grass (1.8.0)
+
+- **Where.** Wild open land carries broad stands of tall grass, 2–3 m high, and the river banks a fringe of it. It never grows near buildings (3–5 tiles, with a ragged edge), on worn earth, roads, fields or unexplored land: where people live and walk the land is open.
+- **Look.** Dark at the root inside the dense clump, sunlit at the tips; a few dry, straw-coloured clumps; about a third flower in white plumes, like the tall grasses of the Tonle Sap plains.
+- **Wind.** Gusts roll across the stands as visible waves: the leaves lean and turn pale as a gust passes, then rise again. Each clump also rocks slowly in its own time and the tips flutter. Windy weather and storms blow harder.
+- **People.** A walker pushes the grass aside around him.
+
+## See-through cover (1.8.0)
+
+Zoomed in close, nothing hides the people at work: a building, a tree, a temple wall or a stand of grass in front of a person opens a soft window round him (a fine screen-door pattern, so the picture stays sharp). Zoomed out, everything is solid again.
+
+## Night (1.8.0, Anachak Khmer)
+
+- **Torches.** A torch by every house door; torches round the hall, storehouses, camps, the landing, the market, the barracks and the temple site; people out walking hold one up; a torch is planted by people still working in the open. Each throws a soft pool of warm light; the nearest light the walls and people around them.
+- **Sky.** Hundreds of stars twinkle; the moon rises in the east and sets in the west, later each night, and waxes and wanes over 8 game days. Clouds go dark and moonlit blue.
+- **Moonlight.** The night light comes from where the moon stands, cool blue, brighter at full moon.
+
+## Water you cross (1.8.0)
+
+Shallow water is waded, the water standing at its depth on the body. Deeper than the chest: a dugout boat paddled, or a bamboo raft poled with the load aboard (once there is a river landing); with no boat, people swim the front crawl, or tread water with only head and shoulders out when they stop.
 
 ## Light and shadow
 

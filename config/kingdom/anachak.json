@@ -508,6 +508,33 @@
       "night": 1.0,
       "radius": 3.2
     },
+    "torches": {
+      "$comment": "PK 1.8.0 (ពេលយប់ដុតគប់ភ្លើង ដើម្បីបំភ្លឺ): at night a torch burns by the door of every house in `houses`, `work` torches stand round each work place, people walking after dark carry one (carry) and a torch is planted by people still working in the open (planted). Torches light when the night passes `from` (0..1). max = most flames at once near the view. Colours: flame, glow (halo and the pool on the ground), light (the real light of the nearest few; how many: config/quality.json kingdom.torchLights). glowSize and pool in m; lightRange in m and lightIntensity in candela. Resin torches and oil lamps are known from Angkor-period finds and from Zhou Daguan's account of lamps at night festivals; their placement here is a game abstraction.",
+      "houses": ["house", "nobleHouse"],
+      "work": {"townCentre": 4, "storehouse": 2, "lumberCamp": 2, "port": 2, "market": 4, "barracks": 2, "monument": 6},
+      "carry": true,
+      "planted": true,
+      "max": 260,
+      "from": 0.35,
+      "flame": "#ffb84a",
+      "glow": "#ff8a2e",
+      "light": "#ff9a48",
+      "glowSize": 0.9,
+      "pool": 3.2,
+      "lightRange": 11,
+      "lightIntensity": 40
+    },
+    "heavens": {
+      "$comment": "PK 1.8.0: hundreds of stars (stars, starSize in px from faint to bright) and a moon that keeps time: it rises in the east and sets in the west, a share of a day behind the sun that grows with its phase, so a full moon is up all night and a new moon not at all; it goes round its phases in cycleDays game days (a real month is 29.5 days; shortened so the change shows while playing). moonHigh = its highest elevation (degrees); moonSize = its size on the sky; moonlight = the colour of the night light, which comes from where the moon stands and is brighter at full moon. The RTS camera looks down at the land: the sky shows in the 3D mode; in the RTS view the moon lights the land and glints on the water.",
+      "stars": 900,
+      "starSize": [1.8, 5],
+      "starColor": "#eef2ff",
+      "cycleDays": 8,
+      "moonHigh": 62,
+      "moonSize": 0.045,
+      "moonColor": "#f2f0e6",
+      "moonlight": "#9fb4ff"
+    },
     "confidence": "GAMEPLAY_ABSTRACTION"
   },
   "danger": {

@@ -471,6 +471,17 @@
     "cost": 2.5,
     "speed": 0.55
   },
+  "water": {
+    "$comment": "PK 1.8.0: on water people ride a boat or a bamboo raft; without a boat, in water deeper than the chest, they swim. Depth (m) = shoreSlope x metres from the nearest land, at most maxDepth. Below chestDepth people wade at wadeSpeed of their pace. Deeper: a side that owns a finished building in boatsFrom (the river landing) has boats: a dugout (ទូក) for people, a bamboo raft (ក្បូនឬស្សី) when they carry one of raftLoads; boats move at rafts.speed. With no boat they swim at swimSpeed. Units with a role in wadeRoles (elephants, horses with riders) always wade. Zhou Daguan (1296-97) saw dug-out canoes and plank boats; people of the Tonle Sap swim from childhood. Depths and speeds are a game abstraction.",
+    "chestDepth": 1.3,
+    "shoreSlope": 0.3,
+    "maxDepth": 4,
+    "wadeSpeed": 0.75,
+    "swimSpeed": 0.4,
+    "boatsFrom": ["port"],
+    "raftLoads": ["wood", "stone"],
+    "wadeRoles": ["elephant", "cavalry"]
+  },
   "alerts": {
     "$comment": "PK: light alerts. A soft blue light over work in progress (building, training, research), a gold flash when it is finished, a red pulse on a resource that is running out (below lowRes) and on what a build or order still needs, an amber light over a lumber camp holding campFull timber or more (waiting for a cart).",
     "lowRes": 50,

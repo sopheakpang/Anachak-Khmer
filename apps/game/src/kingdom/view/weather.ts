@@ -233,6 +233,8 @@ export class WeatherFx {
   zoom = 0;
   /** How dark the night is now, 0..1 (Anachak Khmer's day and night; 0 elsewhere). */
   night = 0;
+  /** The moon's light now, 0 (none) .. 1 (full moon high); 0.5 = the night light as configured (PK 1.8.0). */
+  moonlight = 0.5;
   private nightLook: {
     sun: number;
     sky: number;
@@ -286,8 +288,16 @@ export class WeatherFx {
         const dark = NL.horizon.clone();
         this.nightBase.push({ apply: (n) => m.color.copy(c0).lerp(dark, n * 0.85) });
       } else if (m instanceof THREE.MeshStandardMaterial) {
+        // Clouds and far hills go dark and moonlit blue at night (PK 1.8.0: a real night sky).
         const e0 = m.emissiveIntensity;
-        this.nightBase.push({ apply: (n) => (m.emissiveIntensity = e0 * (1 - 0.88 * n)) });
+        const c0 = m.color.clone();
+        const dark = NL.horizon.clone().multiplyScalar(0.9);
+        this.nightBase.push({
+          apply: (n) => {
+            m.emissiveIntensity = e0 * (1 - 0.88 * n);
+            m.color.copy(c0).lerp(dark, n * 0.8);
+          },
+        });
       }
     });
   }
@@ -362,7 +372,7 @@ export class WeatherFx {
     this.flash = Math.max(0, this.flash - dt * 4);
     const NL = this.nightLook;
     const n = NL ? this.night : 0;
-    const sunK = NL ? 1 - (1 - NL.sun) * n : 1;
+    const sunK = NL ? 1 - (1 - Math.min(1, NL.sun * (0.5 + this.moonlight))) * n : 1;
     const skyK = NL ? 1 - (1 - NL.sky) * n : 1;
     if (this.sun) this.sun.intensity = this.sunBase * L.sun * sunK + this.flash * 2.5;
     if (this.hemi) this.hemi.intensity = this.hemiBase * L.sky * skyK + this.flash;

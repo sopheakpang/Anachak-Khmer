@@ -20,6 +20,7 @@ import {
   homeYardGeometry,
   mangoGeometry,
   swayMaterial,
+  bambooRaftGeometry,
 } from './flora';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import type { Resource, TempleKit } from '@temples/shared';
@@ -89,8 +90,12 @@ import { ANIMAL_LOOK, PERCH_RATE } from './wildLook';
 import { applyProp, loadProp } from './props';
 import { NprUnits } from './npr';
 import { blockAo, splatTerrain } from './terrain';
-import { GroundDetailRts, type Patch } from './detail';
+import { GroundDetailRts, hash as detailHash, type Patch } from './detail';
 import { WearMap } from './wear';
+import { ElephantGrass } from './elephantGrass';
+import { addSeeThrough, seeAmount, seeUniforms, setTargets, type SeeUniforms } from './seeThrough';
+import { TorchView, torchSpots, type TorchSite } from './torches';
+import { NightSky } from './nightSky';
 import { FallenTrees, boatGeometry, paddleGeometry, paddleMatrix } from './actions';
 import { modelUrl } from '../hero/glbModel';
 import type { PropSlotId } from '@temples/shared';
@@ -111,6 +116,8 @@ export const CAM_PITCH_DEG = 46;
 
 export const TEAM_COLOR: Record<Team, number> = { 0: 0x2f5fa8, 1: 0xb8412f };
 const STILL = { speed: 0, leg: 0, arm: 0, armSync: 0 };
+/** The water plane's height (m). */
+const WATER_Y = -0.12;
 const TREE_CAP = 1600;
 /** The RTS camera's lens (degrees). */
 const RTS_FOV = 32;
@@ -285,8 +292,22 @@ export class KingdomScene {
   /** Bamboo rafts under people crossing water (PK). */
   private rafts!: THREE.InstancedMesh;
   private paddles!: THREE.InstancedMesh;
+  /** PK 1.8.0: bamboo rafts (ក្បូនឬស្សី) under people carrying wood or stone across deep water. */
+  private bamboo!: THREE.InstancedMesh;
   /** PK 1.7.0: trees fall with the last axe cut and leave a stump. */
   private fallen!: FallenTrees;
+  /** PK 1.8.0: elephant grass, see-through cover, torches, the stars and the moon. */
+  readonly egrass: ElephantGrass | null = null;
+  private egrassKey = '';
+  private egrassClear: Set<number> | null = null;
+  readonly see: SeeUniforms | null = null;
+  private seeScanAt = -1;
+  readonly torches: TorchView | null = null;
+  private torchKey = '';
+  readonly nightSky: NightSky | null = null;
+  private readonly sunColor = new THREE.Color();
+  private readonly moonColor = new THREE.Color();
+  private readonly lightDir = new THREE.Vector3();
   private smokeAt = 0;
   private courtEra = '';
   readonly scene: THREE.Scene;
@@ -420,6 +441,25 @@ export class KingdomScene {
       this.roads = new RoadView(sim.map, sim.data.anachak.roads.width);
       this.scene.add(this.roads.group);
     }
+    // PK 1.8.0: tall elephant grass rolling in the wind.
+    if (this.gfx.diorama && this.gfx.elephantGrass && sim.data.diorama.elephantGrass.count > 0) {
+      const g = new ElephantGrass(sim.data.diorama.elephantGrass, !!this.gfx.grassShadows && this.sun.castShadow);
+      (this as { egrass: ElephantGrass | null }).egrass = g;
+      this.scene.add(g.group);
+    }
+    if (this.gfx.seeThrough) (this as { see: SeeUniforms | null }).see = seeUniforms();
+    // PK 1.8.0: the nights of Anachak Khmer: torches, stars and the moon.
+    if (sim.variant === 'anachak') {
+      const N = sim.data.anachak.night;
+      const tv = new TorchView(N.torches, this.gfx.torchLights ?? 0, figureMaterial);
+      (this as { torches: TorchView | null }).torches = tv;
+      this.scene.add(tv.group);
+      const sky = new NightSky(N);
+      (this as { nightSky: NightSky | null }).nightSky = sky;
+      this.scene.add(sky.group);
+      this.sunColor.copy(this.sun.color);
+      this.moonColor.set(N.heavens.moonlight);
+    }
     // Trees, rocks and fruit: instanced, hidden until explored.
     // Trees: the big map has ~10 000; only explored ones near the camera are drawn
     // (at most TREE_CAP instances, refilled when the view moves), so the frame budget holds.
@@ -443,6 +483,7 @@ export class KingdomScene {
       return m;
     });
     this.trees = this.treeSets[0]!;
+    for (const m of this.treeSets) m.userData.seeThrough = true;
     for (const m of this.treeSets.slice(1)) this.scene.add(m);
     // The rice year (PK): plants that grow from a seedling bed to golden rows, and the rahat.
     this.rice = new THREE.InstancedMesh(riceTuftGeometry(), figureMaterial, RICE_CAP);
@@ -466,7 +507,8 @@ export class KingdomScene {
     this.beaconMesh.frustumCulled = false;
     this.beaconMesh.renderOrder = 5;
     this.scene.add(this.beaconMesh);
-    for (const m of [this.rice, this.rahatFrames, this.rahatWheels, this.rafts]) {
+    this.bamboo = new THREE.InstancedMesh(bambooRaftGeometry(), figureMaterial, 40);
+    for (const m of [this.rice, this.rahatFrames, this.rahatWheels, this.rafts, this.bamboo]) {
       m.count = 0;
       m.frustumCulled = false;
       m.castShadow = m !== this.rice;
@@ -614,6 +656,7 @@ export class KingdomScene {
         type === 'house' || type === 'riceField' ? 40 : 12,
       );
       this.sets.set(type, set);
+      set.mesh.userData.seeThrough = true;
       this.scene.add(set.mesh);
     }
     this.scaffold = new THREE.InstancedMesh(scaffoldGeometry(), crowdMaterial(STILL), 24);
@@ -659,6 +702,7 @@ export class KingdomScene {
       mesh.userData.temple = ch.temple;
       this.scene.add(mesh);
       this.temples.set(ch.temple, { mesh, clip, height: heightOf(geo) + 0.5 });
+      mesh.userData.seeThrough = true;
     });
     // The current chapter's site: golden stakes and cords around its footprint.
     this.siteMarker = new THREE.Group();
@@ -854,53 +898,52 @@ export class KingdomScene {
   }
 
   /** Show trees, rocks and fruit once their tile has been explored; hide used-up ones. */
-  private syncNodes(): void {
+  /**
+   * Rocks and fruit bushes: only explored ones still there, within reach of the camera, packed
+   * at the front of their instanced meshes (PK 1.8.0: the frame budget; PK's 3D models are
+   * ~1 000 triangles each, so the whole map's worth must not be drawn every frame).
+   */
+  private nodesAt: [number, number, number] = [NaN, NaN, NaN];
+  private syncNodes(force = true): void {
+    const [cx, cz, dist] = this.view;
+    const [ax, az, ad] = this.nodesAt;
+    if (!force && Math.hypot(cx - ax, cz - az) < 15 && Math.abs(dist - ad) < 15) return;
+    this.nodesAt = [cx, cz, dist];
     const s = this.sim;
     const size = s.fog.size;
-    const place = (
-      mesh: THREE.InstancedMesh,
-      i: number,
-      x: number,
-      z: number,
-      scale: number,
-      rot: number,
-    ) => {
+    const reach = Math.max(90, dist * 2.2);
+    const counts = { stone: 0, gold: 0, gems: 0, fruit: 0 };
+    const place = (mesh: THREE.InstancedMesh, i: number, x: number, z: number, scale: number, rot: number) => {
       this.m.makeRotationY(rot);
       this.m.scale(this.v.setScalar(scale));
       this.m.setPosition(x, 0, z);
       mesh.setMatrixAt(i, this.m);
-      mesh.instanceMatrix.needsUpdate = true;
     };
-    for (const [id, [kind, i]] of this.rockIndex) {
+    this.nodeShown.clear();
+    const show = (id: number): [number, number] | null => {
       const n = s.nodes.get(id);
-      const shown = this.nodeShown.has(id);
-      if (!n) {
-        if (shown) {
-          place(this.rocks[kind], i, 0, 0, 0, 0);
-          this.nodeShown.delete(id);
-        }
-        continue;
-      }
-      if (shown || !s.fog.explored[n.tz * size + n.tx]) continue;
+      if (!n || !s.fog.explored[n.tz * size + n.tx]) return null;
       const [x, z] = s.nodePos(n);
-      place(this.rocks[kind], i, x, z, 1.1, n.tx + n.tz);
+      if (Math.abs(x - cx) > reach || Math.abs(z - cz) > reach) return null;
       this.nodeShown.add(id);
-    }
-    for (const [id, i] of this.fruitIndex) {
+      return [x, z];
+    };
+    for (const [id, [kind]] of this.rockIndex) {
+      const p = show(id);
       const n = s.nodes.get(id);
-      const shown = this.nodeShown.has(id);
-      if (!n) {
-        if (shown) {
-          place(this.fruit, i, 0, 0, 0, 0);
-          this.nodeShown.delete(id);
-        }
-        continue;
-      }
-      if (shown || !s.fog.explored[n.tz * size + n.tx]) continue;
-      const [x, z] = s.nodePos(n);
-      place(this.fruit, i, x, z, 1.4, n.tx);
-      this.nodeShown.add(id);
+      if (p && n) place(this.rocks[kind], counts[kind]++, p[0], p[1], 1.1, n.tx + n.tz);
     }
+    for (const id of this.fruitIndex.keys()) {
+      const p = show(id);
+      const n = s.nodes.get(id);
+      if (p && n) place(this.fruit, counts.fruit++, p[0], p[1], 1.4, n.tx);
+    }
+    for (const kind of ['stone', 'gold', 'gems'] as const) {
+      this.rocks[kind].count = counts[kind];
+      this.rocks[kind].instanceMatrix.needsUpdate = true;
+    }
+    this.fruit.count = counts.fruit;
+    this.fruit.instanceMatrix.needsUpdate = true;
   }
 
   /** Explored trees within reach of the camera, nearest first, up to TREE_CAP. */
@@ -1488,6 +1531,11 @@ export class KingdomScene {
   }
 
   /** Is this point on the square in front of a royal hall where the court stands? */
+  /** Is (x, z) inside the part of the world the camera shows now? */
+  private near(x: number, z: number): boolean {
+    return Math.abs(x - this.view[0]) < this.view[2] && Math.abs(z - this.view[1]) < this.view[2];
+  }
+
   private nearCourt(x: number, z: number): boolean {
     for (const b of this.sim.buildings.values()) {
       if (b.type !== 'townCentre') continue;
@@ -1809,6 +1857,7 @@ export class KingdomScene {
     let rings = 0;
     let bars = 0;
     let nrafts = 0;
+    let nbamboo = 0;
     const camQ = this.camera.quaternion;
     this.fallen.setTree(this.treeSets[0]!.geometry, this.treeSets[0]!.material as THREE.Material);
     this.fallen.update(t);
@@ -1832,20 +1881,52 @@ export class KingdomScene {
           heading = Math.PI / 2;
         }
       }
-      // Crossing water (PK 1.7.0): people stand in a dugout boat and paddle it; elephants wade.
-      if (s.onWater(u)) {
-        if (this.sim.def(u.type).role === 'elephant') y = -0.7;
-        else if (nrafts < this.rafts.instanceMatrix.count) {
-          const bob = Math.sin(t * 2 + u.id) * 0.03;
+      // At night people out walking carry a torch (PK 1.8.0), held up in the right hand.
+      if (
+        this.torchGlow > 0.05 &&
+        act === ACT.crowd &&
+        u.team === PLAYER &&
+        this.sim.data.anachak.night.torches.carry &&
+        !['elephant', 'cavalry'].includes(this.sim.def(u.type).role)
+      )
+        act = ACT.torch;
+      // Crossing water (PK 1.8.0): wade below the chest; deeper, a dugout boat (paddled) or a
+      // bamboo raft (poled, with wood or stone aboard) when the side has a landing; else swim.
+      let lean = act === ACT.plant ? 0.42 : act === ACT.reap ? 0.35 : undefined; // farmers bend over the rice
+      const way = s.waterWay(u);
+      if (way !== 'land') {
+        const bob = Math.sin(t * 2 + u.id) * 0.03;
+        const depth = s.depthAt(x, z);
+        if (way === 'wade') {
+          // The water stands at its depth on the body (big animals are taller: they sink less of it).
+          y = WATER_Y - Math.min(depth, this.sim.data.rules.water.chestDepth) * 0.92;
+        } else if (way === 'swim' && u.anim !== 'walk') {
+          // Treading water, waiting: only the head and shoulders above the surface.
+          act = ACT.stand;
+          y = WATER_Y - 1.38 + bob;
+        } else if (way === 'swim') {
+          // Lying flat, head toward the heading: the figure pivots at its feet, so step back half a body.
+          act = ACT.swim;
+          lean = 1.42;
+          y = WATER_Y - 0.26 + bob * 0.5;
+          x -= Math.sin(heading) * 0.85;
+          z -= Math.cos(heading) * 0.85;
+          if ((t + u.id * 0.31) % 0.9 < this.frameDt && this.near(x, z)) {
+            this.particles.burst('splash', x + Math.sin(heading) * 1.4, WATER_Y + 0.1, z + Math.cos(heading) * 1.4, 4);
+          }
+        } else if (way === 'raft' && nbamboo < this.bamboo.instanceMatrix.count) {
+          y = WATER_Y + 0.12 + bob;
+          act = ACT.lever; // pushing on the punting pole
+          this.m.makeRotationY(heading).setPosition(x, WATER_Y - 0.02 + bob, z);
+          this.bamboo.setMatrixAt(nbamboo++, this.m);
+        } else if (nrafts < this.rafts.instanceMatrix.count) {
           y = -0.06 + bob;
           act = ACT.row;
-          this.m.makeRotationY(heading).setPosition(x, -0.12 + bob, z);
+          this.m.makeRotationY(heading).setPosition(x, WATER_Y + bob, z);
           this.rafts.setMatrixAt(nrafts, this.m);
           this.paddles.setMatrixAt(nrafts++, paddleMatrix(this.m, x, y, z, heading, t));
         }
       }
-      // Farmers bend over the rice to plant and reap.
-      const lean = act === ACT.plant ? 0.42 : act === ACT.reap ? 0.35 : undefined;
       list.push({ place: () => ({ x, y, z, heading, act, lean }) });
       groups.set(key, list);
       // Work shows: chips fly, dust puffs, water splashes, with a sound, near the camera only.
@@ -1911,6 +1992,8 @@ export class KingdomScene {
       this.loadSets[r].instanceMatrix.needsUpdate = true;
     }
     this.rafts.count = nrafts;
+    this.bamboo.count = nbamboo;
+    this.bamboo.instanceMatrix.needsUpdate = true;
     this.paddles.count = nrafts;
     this.paddles.instanceMatrix.needsUpdate = true;
     this.rafts.instanceMatrix.needsUpdate = true;
@@ -2153,6 +2236,7 @@ export class KingdomScene {
     }
     this.veil.visible = !this.heroView;
     this.syncTrees(fresh);
+    this.syncNodes(false);
     this.syncMeat();
     this.syncWild(t);
     this.syncHover(t);
@@ -2164,6 +2248,8 @@ export class KingdomScene {
       this.night = nightness(this.sim.time, N);
       this.weatherFx.night = this.night;
       this.roads?.fire(fireGlow(this.night, N), N.fire.radius, t);
+      const T = N.torches;
+      this.torchGlow = Math.min(1, Math.max(0, (this.night - T.from) / (1 - T.from)));
     }
     this.weatherFx.update(this.sim.weather.id, t, cx, cz, this.frameDt);
     this.particles.update(this.frameDt);
@@ -2193,7 +2279,171 @@ export class KingdomScene {
     this.syncNpr();
     this.syncDetail(t, fresh);
     this.syncWear();
+    this.syncElephantGrass(t, fresh);
+    this.syncNight(t);
+    this.syncSee(t, selected);
     this.syncEffects(t);
+  }
+
+  // ------------------------------------------------------------ PK 1.8.0
+
+  /** A number that changes when buildings come, go or move (the land under them changed). */
+  private landKey(): string {
+    let h = this.sim.buildings.size;
+    for (const b of this.sim.buildings.values()) h = (h * 31 + b.id * 7 + b.tx * 131 + b.tz * 17) % 1e9;
+    return String(h);
+  }
+
+  /** People near the middle of the view, nearest first: [x, z] pairs (selected first). */
+  private peopleNear(cx: number, cz: number, radius: number, max: number, selected?: Set<number>): Unit[] {
+    const out: Array<[number, Unit]> = [];
+    const r2 = radius * radius;
+    for (const u of this.sim.units.values()) {
+      if (u.team === RIVAL && !this.sim.isVisible(u.x, u.z)) continue;
+      const d = (u.x - cx) ** 2 + (u.z - cz) ** 2;
+      if (d > r2) continue;
+      out.push([selected?.has(u.id) ? -1 : d, u]);
+    }
+    out.sort((a, b) => a[0] - b[0]);
+    return out.slice(0, max).map((p) => p[1]);
+  }
+
+  /** Elephant grass: planted round the view, wind from the weather, trampled by walkers. */
+  private syncElephantGrass(t: number, fresh: boolean): void {
+    const g = this.egrass;
+    if (!g) return;
+    g.group.visible = !this.heroView;
+    if (this.heroView) return;
+    const s = this.sim;
+    const [cx, cz, dist] = this.view;
+    const radius = Math.max(30, dist * g.cfg.reach);
+    const walkers: number[] = [];
+    for (const u of this.peopleNear(cx, cz, radius, 16)) walkers.push(u.x, u.z);
+    g.frame(t, this.weatherFx.wind, cx, cz, radius, walkers);
+    const key = this.landKey();
+    const changed = key !== this.egrassKey;
+    if (changed || !this.egrassClear) {
+      this.egrassKey = key;
+      // No tall grass within keepAway tiles of any building (yards, doors, paths to them).
+      const N = s.map.size;
+      const k = g.cfg.keepAway;
+      // The edge is ragged: up to 2 tiles further out on some tiles, so no straight line shows.
+      const near = new Set<number>();
+      for (const b of s.buildings.values())
+        for (let z = b.tz - k - 2; z < b.tz + b.d + k + 2; z++)
+          for (let x = b.tx - k - 2; x < b.tx + b.w + k + 2; x++) {
+            if (x < 0 || z < 0 || x >= N || z >= N) continue;
+            const out = Math.max(b.tx - x, x - (b.tx + b.w - 1), b.tz - z, z - (b.tz + b.d - 1), 0);
+            if (out <= k + Math.floor(detailHash(x, z, 77) * 3)) near.add(z * N + x);
+          }
+      this.egrassClear = near;
+    }
+    const near = this.egrassClear;
+    const N = s.map.size;
+    const clear = (tx: number, tz: number) =>
+      !near.has(tz * N + tx) && (!this.wear || this.wear.at(tx, tz) < 0.04);
+    const at = this.detailAt ?? this.patchAt(new Set());
+    g.lay(cx, cz, radius, s.map.tile, this.half, at, clear, changed || fresh);
+  }
+
+  /** The night (Anachak Khmer): torches, the stars and the moon, and moonlight. */
+  private syncNight(t: number): void {
+    const tv = this.torches;
+    const sky = this.nightSky;
+    if (!tv || !sky) return;
+    const s = this.sim;
+    const N = s.data.anachak.night;
+    const T = N.torches;
+    const key = this.landKey();
+    if (key !== this.torchKey) {
+      this.torchKey = key;
+      const sites: TorchSite[] = [];
+      for (const b of s.buildings.values()) {
+        if (b.team !== PLAYER || b.progress < 1) continue;
+        const [x, z] = s.center(b);
+        const facing = b.type === 'house' || b.type === 'nobleHouse' ? Math.PI / 2 : 0;
+        // Footprint in m, turned with the house (east-facing houses swap width and depth).
+        const w = b.w * s.map.tile;
+        const d = b.d * s.map.tile;
+        sites.push({ type: b.type, cx: x, cz: z, w: facing ? d : w, d: facing ? w : d, facing });
+      }
+      tv.setSpots(torchSpots(sites, T));
+    }
+    // Torches light once the night has come in far enough.
+    const glow = this.torchGlow;
+    const [cx, cz, dist] = this.view;
+    const radius = Math.max(40, dist * 1.4);
+    const planted: number[] = [];
+    const carried: number[] = [];
+    if (glow > 0.05 && !this.heroView) {
+      const seen = new Set<string>();
+      for (const u of this.peopleNear(cx, cz, radius, 120)) {
+        if (u.team !== PLAYER) continue;
+        const role = s.def(u.type).role;
+        if (role === 'elephant' || role === 'cavalry' || s.waterWay(u) !== 'land') continue;
+        if (T.carry && u.anim === 'walk' && !(u.carry && u.carry.n > 0) && carried.length < 60 * 3) {
+          // Held up in the right hand, a little ahead of the face (ACT.torch raises the arm).
+          const h = u.heading;
+          const sx = Math.cos(h);
+          const sz = -Math.sin(h);
+          carried.push(u.x + Math.sin(h) * 0.42 - sx * 0.28, 2.05, u.z + Math.cos(h) * 0.42 - sz * 0.28);
+        } else if (T.planted && (u.anim === 'gather' || u.anim === 'build')) {
+          // One torch planted per work spot (a 6 m cell), a step to the side of the worker.
+          const cell = `${Math.floor(u.x / 6)},${Math.floor(u.z / 6)}`;
+          if (seen.has(cell)) continue;
+          seen.add(cell);
+          planted.push(u.x + Math.cos(u.heading) * 1.4, u.z - Math.sin(u.heading) * 1.4);
+        }
+      }
+    }
+    tv.update(glow, t, this.camera.quaternion, cx, cz, radius, planted, carried);
+    // The stars and the moon (seen in the 3D mode's sky), and moonlight on the land.
+    sky.update(s.time, t, this.night, this.camera, 1);
+    if (this.night > 0.001) {
+      const k = this.night;
+      // From where the moon stands (kept above 25° so the shadows stay on the land).
+      const moon = this.moonAim.copy(sky.moonNow);
+      if (moon.y < 0.45) moon.setY(0.45);
+      moon.normalize();
+      this.lightDir.copy(this.sunDirNow).lerp(moon, k).normalize();
+      this.sun.position.copy(this.sun.target.position).addScaledVector(this.lightDir, 120);
+      this.sun.color.copy(this.sunColor).lerp(this.moonColor, k);
+      this.weatherFx.moonlight = sky.moonlight;
+    } else if (this.lastMoon) {
+      this.sun.position.copy(this.sun.target.position).addScaledVector(this.sunDirNow, 120);
+      this.sun.color.copy(this.sunColor);
+    }
+    this.lastMoon = this.night > 0.001;
+  }
+  private lastMoon = false;
+  private readonly moonAim = new THREE.Vector3();
+  /** How bright the torches are now (0 by day), for the people who carry them. */
+  private torchGlow = 0;
+
+  /** Zoomed in close: open a see-through window in the cover round each person near the middle. */
+  private syncSee(t: number, selected: Set<number>): void {
+    const U = this.see;
+    if (!U) return;
+    // New cover (props loaded, a temple rose, buildings added) gets the window test.
+    if (t - this.seeScanAt > 2 || this.seeScanAt < 0) {
+      this.seeScanAt = t;
+      this.scene.traverse((o) => {
+        if (!o.userData.seeThrough) return;
+        const m = (o as THREE.Mesh).material;
+        for (const mat of Array.isArray(m) ? m : m ? [m] : []) addSeeThrough(mat, U);
+      });
+    }
+    const C = this.sim.data.diorama.seeThrough;
+    const [cx, cz, dist] = this.view;
+    const amount = this.heroView ? 0 : seeAmount(dist, C.zoom, C.amount);
+    const pts: number[] = [];
+    if (amount > 0)
+      for (const u of this.peopleNear(cx, cz, dist * 1.2, C.targets, selected)) {
+        const big = this.sim.def(u.type).role === 'elephant';
+        pts.push(u.x, big ? 2.2 : 1.0, u.z);
+      }
+    this.camera.updateMatrixWorld();
+    setTargets(U, this.camera, pts, C.radius, amount, C.targets);
   }
 
   /** Stage pixel (1080 × 1920) → ground point, or null off the map. */

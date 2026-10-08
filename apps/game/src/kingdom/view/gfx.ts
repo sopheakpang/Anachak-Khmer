@@ -35,6 +35,13 @@ export interface KingdomGfx {
    * the laterite/emerald terrain splat and the Prek canal water, ground detail.
    */
   diorama?: boolean;
+  /** PK 1.8.0: tall elephant grass rolling in the wind (diorama.json elephantGrass); its shadows. */
+  elephantGrass?: boolean;
+  grassShadows?: boolean;
+  /** PK 1.8.0: real lights from the nearest night torches (0 = glow only). */
+  torchLights?: number;
+  /** PK 1.8.0: zoomed in, cover turns see-through round the people (diorama.json seeThrough). */
+  seeThrough?: boolean;
 }
 
 export const NO_GFX: KingdomGfx = {

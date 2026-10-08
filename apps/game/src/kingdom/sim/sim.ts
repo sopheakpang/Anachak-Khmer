@@ -1,3 +1,4 @@
+import { waterDepth, waterSpeed, waterWay, type WaterWay } from './water';
 import {
   RESOURCES,
   eraContent,
@@ -1323,7 +1324,7 @@ export class KingdomSim {
       (u.carry && u.carry.n > 0 ? 0.9 : 1) *
       (u.team === PLAYER ? this.playerEffect('speed', 1) : 1) *
       this.weatherDef.speed *
-      (this.onWater(u) ? this.data.rules.rafts.speed : 1) * // on a raft (PK)
+      waterSpeed(this.waterWay(u), this.data.rules.water, this.data.rules.rafts.speed) * // wade, swim, boat (PK)
       (this.onRoad(u.x, u.z) ? this.data.anachak.roads.speed : 1); // a royal road (D92)
     let move = speed * dt;
     if (!u.path.length) {
@@ -1365,6 +1366,34 @@ export class KingdomSim {
   onWater(u: Unit): boolean {
     const [tx, tz] = worldToTile(this.map, u.x, u.z);
     return this.grid.isWater(tx, tz);
+  }
+
+  /** Water depth (m) under a world point; 0 on land (PK 1.8.0). */
+  depthAt(x: number, z: number): number {
+    const [tx, tz] = worldToTile(this.map, x, z);
+    return waterDepth(this.grid.shore(tx, tz), this.map.tile, this.data.rules.water);
+  }
+
+  /** Does this side own boats (a finished river landing, rules.water.boatsFrom)? */
+  hasBoats(team: number): boolean {
+    if (this.boatsAt !== this.time) {
+      this.boatsAt = this.time;
+      this.boats = [false, false];
+      const from = this.data.rules.water.boatsFrom;
+      for (const b of this.buildings.values())
+        if (b.progress >= 1 && from.includes(b.type) && (b.team === 0 || b.team === 1)) this.boats[b.team] = true;
+    }
+    return this.boats[team] ?? false;
+  }
+  private boats: boolean[] = [false, false];
+  private boatsAt = -1;
+
+  /** How this unit crosses the water it stands in: wade, swim, boat or raft; 'land' off water. */
+  waterWay(u: Unit): WaterWay {
+    const depth = this.depthAt(u.x, u.z);
+    if (depth <= 0) return 'land';
+    const load = u.carry && u.carry.n > 0 ? u.carry.res : null;
+    return waterWay(depth, this.def(u.type).role, this.hasBoats(u.team), load, this.data.rules.water);
   }
 
   /** The closest point of a goal (building edge, tile centre or point). */

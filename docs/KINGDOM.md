@@ -209,3 +209,13 @@ Every building, unit, technology and era carries a confidence label and sources 
 ## Planned eras (not built yet; they will not be faked)
 
 Pre-Angkor / Chenla before Roluos, and Late Angkor → Post-Angkor after the Bayon (with the later house types). Each new era needs its own buildings, clothing, units and monuments, and must pass historical, gameplay, visual, performance and AI checks before the next one starts.
+
+### 1.8.0: elephant grass, full screen, see-through, torches, stars and moon, swimming (D125–D130, 2026-10-09)
+
+- **Elephant grass** (D125, `diorama.json` `elephantGrass`): stands of tall grass on wild land and river banks that roll in the wind; people push it aside; never near buildings, paths, roads or fields.
+- **Full screen** (D126): ⛶ at the end of the menu bar, or F11.
+- **See-through** (D127, `diorama.json` `seeThrough`): zoomed in, cover in front of people opens round them.
+- **Torches** (D128, `anachak.json` `night.torches`): by house doors, round work places, carried by walkers, planted by workers at night; the nearest give real light (`quality.json` `torchLights`).
+- **Stars and the moon** (D129, `anachak.json` `night.heavens`): the moon rises and sets by the game's clock and goes through its phases in 8 days; moonlight at night.
+- **Water** (D130, `rules.json` `water`): wade when shallow; deeper, a dugout boat or a bamboo raft (with wood or stone) once you own a river landing; otherwise swim, slowly.
+

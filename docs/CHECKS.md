@@ -487,3 +487,20 @@ Note: the test machine has no GPU and renders headless at about 2 FPS, so timing
 | Chop, fish, row actions; boat and paddle; the last cut fells the tree (sim event) and it falls and leaves a stump | ✅ | `view/diorama.test.ts`, `sim/felled.test.ts`, screenshots |
 | 3D camera stops in front of a tree | ✅ | `hero/hero.test.ts`, screenshot |
 | Population 150 / house 10 / phone 100 | ✅ | `rules.json`, `buildings.json`, sim tests read the config |
+
+### 1.8.0 (2026-10-09)
+
+**Automated:** `npm run verify` (lint, types, 633 unit tests in 70 files, build) ✅ · e2e `kingdom.spec.ts` KG-01…KG-08 ✅, `mobile.spec.ts` ✅ (KM-01 timed out once while the machine ran the whole suite in software GL, passed alone).
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Elephant grass: config, 1 m clump with leaves and culms, one noise fetch per vertex, quadratic bend, trample, shrink, shadow pass sways, no black backs; grows in stands and on banks, never near buildings, on earth, forest or water; capped, nearest first; re-laid only when the view moves | ✅ | `view/night18.test.ts`, `docs/screens/k18-elephant-grass.jpg` |
+| Full screen: toggles in and out, nothing where the browser cannot, a refusal leaves the window; ⛶ fits the 1920 menu bar with text ≥ 26 px | ✅ | `src/fullscreen.test.ts`, e2e KG-02 |
+| See-through: only zoomed in; people projected to windows (behind the camera: none); cover patched once, keeps its own patch, own program key | ✅ | `view/night18.test.ts`, `docs/screens/k18-see-through.jpg` |
+| Torches: one by each house door, a ring round work places (buildings exist in config), out by day, lit at night, nearest give real light; walkers hold a torch up (`ACT.torch`) | ✅ | `view/night18.test.ts`, `docs/screens/k18-night-torches.jpg` |
+| Stars and moon: hundreds of stars above the horizon; phases over cycleDays; full moon up all night, new moon not; rises east, sets west; shown only at night, follows the camera; moonlight follows the phase | ✅ | `view/night18.test.ts`, `docs/screens/k18-moon-stars.jpg` |
+| Water: shore distance, depth by slope and cap; wade / swim / boat / raft; in the sim a villager swims until his side has a landing, then boats, rafts with wood | ✅ | `sim/water.test.ts`, `docs/screens/k18-swimming.jpg`, `k18-boats-raft.jpg` |
+| Frame budget (low preset, Kingdom start view): 1.7.0 measured 804 833 triangles (over the 600 000 limit: PK's rock and fruit models drawn for the whole map); 1.8.0 with elephant grass 475 351–519 613 | ✅ | e2e KG-02 (`[budget]` lines), KG-04 world 181 136 |
+
+**Not verified here:** frame rate on the stream laptop (software GL in the container), the look of torches and moonlight on a real GPU, the full-screen switch in the Electron window.
+

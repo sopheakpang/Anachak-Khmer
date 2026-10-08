@@ -1,3 +1,4 @@
+import { shoreDistance } from './water';
 import type { KingdomData } from '@temples/shared';
 
 /**
@@ -650,6 +651,13 @@ export class Grid {
   pass(x: number, z: number, rafts: boolean): boolean {
     if (this.ok(x, z)) return true;
     return rafts && x >= 0 && z >= 0 && x < this.size && z < this.size && this.water[z * this.size + x] === 1;
+  }
+  private shoreD: Uint8Array | null = null;
+  /** Tiles from this water tile to the nearest land (0 on land); PK 1.8.0 water depth. */
+  shore(x: number, z: number): number {
+    if (!this.isWater(x, z)) return 0;
+    this.shoreD ??= shoreDistance(this.water, this.size);
+    return this.shoreD[z * this.size + x]!;
   }
   isWater(x: number, z: number): boolean {
     return x >= 0 && z >= 0 && x < this.size && z < this.size && this.water[z * this.size + x] === 1;

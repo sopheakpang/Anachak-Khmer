@@ -73,6 +73,54 @@
     "rippleScale": 2.4,
     "rippleStrength": 0.55
   },
+  "elephantGrass": {
+    "$comment": "PK 1.8.0: elephant grass (ស្មៅដំរី), dense tall tropical grass that rolls in the wind: the three.js port of PK's Godot spatial shader (all motion is vertex displacement; one noise fetch per vertex). It grows in broad wild stands on open land (standTiles = stand size in tiles, cover = share of open land inside stands, perTile = clumps per tile inside a stand) and along river banks (bank = chance per bank tile); never on worn earth, roads, fields, unexplored land or within keepAway tiles of a building. count = most clumps at once (near the view; reach = share of the view distance planted). height = clump height range (m). dry = the colour dry clumps wash toward, dryShare = share of dry clumps, flowering = share of clumps with white plumes. Wind: strength (x the weather's wind), dirDeg (0 = east, 90 = south on the map), speed = how fast the gust waves travel (m/s), waveScale = 1 / gust wave size (m), sharpness (0 soft .. 0.45 crisp bands), baseBend = lean in calm air, gustBend = extra lean in a gust, sway / swaySpeed = slow rocking, flutter / flutterSpeed = leaf-tip flutter. gustSheen = leaves turn pale in a gust (shows the wave), baseDark = darkness inside the clump. trample = how near (m) a walker bends it away. lod = shrink from/to (share of the planted radius). The tall grasses of the Tonle Sap plains (Saccharum, Phragmites; called elephant grass) flower in white plumes; Pennisetum purpureum, the 'elephant grass' of Africa, came later. confidence: GAMEPLAY_ABSTRACTION.",
+    "count": 800,
+    "blades": 12,
+    "reach": 0.85,
+    "standTiles": 11,
+    "cover": 0.38,
+    "perTile": 3.5,
+    "bank": 0.45,
+    "keepAway": 3,
+    "height": [
+      2.0,
+      3.0
+    ],
+    "dry": "#c9b46a",
+    "dryShare": 0.18,
+    "flowering": 0.3,
+    "gustSheen": 0.13,
+    "baseDark": 0.5,
+    "trample": 1.9,
+    "lod": [
+      0.75,
+      1.0
+    ],
+    "wind": {
+      "strength": 1.0,
+      "dirDeg": 20,
+      "speed": 5.0,
+      "waveScale": 0.018,
+      "sharpness": 0.22,
+      "baseBend": 0.14,
+      "gustBend": 0.42,
+      "sway": 0.05,
+      "swaySpeed": 1.1,
+      "flutter": 0.035,
+      "flutterSpeed": 7.5
+    }
+  },
+  "seeThrough": {
+    "$comment": "PK 1.8.0: zoomed in close, buildings, trees and tall grass between the camera and the people at work turn see-through round them, so the acting people and animals can always be seen. Fully on when the camera stands nearer than zoom[0] m, off beyond zoom[1] m (the RTS zoom runs 28 to 150 m). targets = how many people and animals (nearest the middle of the view, the selected first) get a window; radius = the window's width in m (it is 1.6 times as tall); amount = how much of the cover is taken away in its middle (a screen-door dither, so it stays sharp and cheap).",
+    "zoom": [
+      45,
+      70
+    ],
+    "targets": 24,
+    "radius": 2.6,
+    "amount": 0.82
+  },
   "detail": {
     "$comment": "Ground detail near the camera: undergrowth in the forest, a few wild flowers, pebbles, reeds and lotus pads at the water. The open meadow is drawn by the ground itself (no scattered tufts: PK 1.7.0). Counts are the most drawn at once.",
     "tufts": 2600,

@@ -400,6 +400,32 @@ export const KingdomRulesSchema = z.object({
       speed: z.number().positive().max(1).default(0.55),
     })
     .default({ enabled: true, cost: 2.5, speed: 0.55 }),
+  /**
+   * PK 1.8.0: how people cross water. Depth grows with the distance from the shore. Below
+   * chest height they wade; deeper they ride a dugout boat (ទូក) or, with a heavy load, a bamboo
+   * raft (ក្បូនឬស្សី) once their side owns a building in `boatsFrom`; without a boat they swim.
+   */
+  water: z
+    .object({
+      chestDepth: z.number().positive(),
+      shoreSlope: z.number().positive(),
+      maxDepth: z.number().positive(),
+      wadeSpeed: z.number().positive().max(1),
+      swimSpeed: z.number().positive().max(1),
+      boatsFrom: z.array(z.string()),
+      raftLoads: z.array(z.enum(['food', 'wood', 'stone', 'gold'])),
+      wadeRoles: z.array(z.string()),
+    })
+    .default({
+      chestDepth: 1.3,
+      shoreSlope: 0.3,
+      maxDepth: 4,
+      wadeSpeed: 0.75,
+      swimSpeed: 0.4,
+      boatsFrom: ['port'],
+      raftLoads: ['wood', 'stone'],
+      wadeRoles: ['elephant', 'cavalry'],
+    }),
   /** The rice year in a field (PK): sow, water with the rahat wheel, transplant, grow, reap. */
   rice: z.object({
     cycleSec: z.number().positive(),
@@ -692,6 +718,33 @@ export const AnachakSchema = z.object({
     horizon: z.string().regex(/^#[0-9a-f]{6}$/i),
     fog: z.string().regex(/^#[0-9a-f]{6}$/i),
     fire: z.object({ day: z.number().min(0), night: z.number().min(0), radius: z.number().positive() }),
+    /** PK 1.8.0: torches by the houses, round the work places, in people's hands at night. */
+    torches: z.object({
+      houses: z.array(z.string()),
+      work: z.record(z.string(), z.number().int().min(0).max(8)),
+      carry: z.boolean(),
+      planted: z.boolean(),
+      max: z.number().int().min(1),
+      from: z.number().min(0).max(1),
+      flame: z.string().regex(/^#[0-9a-f]{6}$/i),
+      glow: z.string().regex(/^#[0-9a-f]{6}$/i),
+      light: z.string().regex(/^#[0-9a-f]{6}$/i),
+      glowSize: z.number().positive(),
+      pool: z.number().positive(),
+      lightRange: z.number().positive(),
+      lightIntensity: z.number().min(0),
+    }),
+    /** PK 1.8.0: the stars and the moon. */
+    heavens: z.object({
+      stars: z.number().int().min(0).max(5000),
+      starSize: z.tuple([z.number().positive(), z.number().positive()]),
+      starColor: z.string().regex(/^#[0-9a-f]{6}$/i),
+      cycleDays: z.number().positive(),
+      moonHigh: z.number().min(10).max(90),
+      moonSize: z.number().positive(),
+      moonColor: z.string().regex(/^#[0-9a-f]{6}$/i),
+      moonlight: z.string().regex(/^#[0-9a-f]{6}$/i),
+    }),
     confidence: ConfidenceSchema,
   }),
   market: z.object({
@@ -1025,6 +1078,52 @@ export const DioramaSchema = z.object({
     fill: z.number().min(0),
     sun: z.number().min(0),
     foliage: Hex,
+  }),
+  /** PK 1.8.0: dense tall tropical grass that rolls in the wind (view/elephantGrass.ts). */
+  elephantGrass: z.object({
+    count: z.number().int().min(0),
+    blades: z.number().int().min(3).max(24),
+    reach: z.number().positive(),
+    standTiles: z.number().positive(),
+    cover: z.number().min(0).max(1),
+    perTile: z.number().min(0).max(6),
+    bank: z.number().min(0).max(1),
+    keepAway: z.number().int().min(0).max(12),
+    height: z.tuple([z.number().positive(), z.number().positive()]),
+    dry: Hex,
+    dryShare: z.number().min(0).max(1),
+    flowering: z.number().min(0).max(1),
+    gustSheen: z.number().min(0).max(1),
+    baseDark: z.number().min(0).max(1),
+    trample: z.number().min(0),
+    lod: z.tuple([z.number().positive(), z.number().positive()]),
+    wind: z.object({
+      strength: z.number().min(0).max(3),
+      dirDeg: z.number(),
+      speed: z.number().min(0),
+      waveScale: z.number().positive(),
+      sharpness: z.number().min(0).max(0.49),
+      baseBend: z.number().min(0).max(1),
+      gustBend: z.number().min(0).max(1.5),
+      sway: z.number().min(0).max(0.5),
+      swaySpeed: z.number().min(0),
+      flutter: z.number().min(0).max(0.3),
+      flutterSpeed: z.number().min(0),
+    }),
+  }),
+  /**
+   * PK 1.8.0: zoomed in close, whatever stands between the camera and the people at work
+   * (buildings, trees, tall grass) turns see-through round them (view/seeThrough.ts).
+   */
+  seeThrough: z.object({
+    /** Camera distance (m): fully on below the first, off above the second. */
+    zoom: z.tuple([z.number().positive(), z.number().positive()]),
+    /** How many people and animals are kept in view at once (nearest the middle of the view). */
+    targets: z.number().int().min(1).max(32),
+    /** Size of the see-through window round each (m, across; it is taller than wide). */
+    radius: z.number().positive(),
+    /** Share of the cover taken away in the middle of the window (0..1; 1 = a hole). */
+    amount: z.number().min(0).max(1),
   }),
   detail: z.object({
     tufts: z.number().int().min(0),

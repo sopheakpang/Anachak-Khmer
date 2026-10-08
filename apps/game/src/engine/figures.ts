@@ -660,12 +660,22 @@ export const LIMB_VERTEX = /* glsl */ `
         bend = 1.25 * gather + 0.1 * fling + haul * (0.9 + 0.3 * limb.x * cos(w * 1.3));
       } else ang = limb.x * (0.22 + 0.1 * fling);
     }
-    else {                                                                   // rowing (PK 1.7.0): the paddle stroke, every boat in time (the paddle prop follows uTime)
+    else if (act < 17.5) {                                                   // rowing (PK 1.7.0): the paddle stroke, every boat in time (the paddle prop follows uTime)
       float stroke = sin(uTime * 1.6);
       if (arm) {
         ang = -1.0 + (tool ? 0.5 : 0.35) * stroke;
         bend = 0.55 - 0.3 * stroke;
       } else ang = limb.x * 0.25;
+    }
+    else if (act < 18.5) {                                                   // swimming (PK 1.8.0): front crawl, arms circle in turn, legs flutter (the body lies flat: Agent.lean)
+      float k = fract(w * 0.13 + (limb.x > 0.0 ? 0.5 : 0.0));
+      if (arm) {
+        ang = -6.2832 * k;                                                     // reach forward over the head, pull down to the hip
+        bend = 0.15 + 0.5 * smoothstep(0.55, 0.8, k) * (1.0 - smoothstep(0.85, 1.0, k));
+      } else ang = limb.x * 0.3 * sin(w * 1.7);
+    }
+    else {                                                                   // a torch held up at night (PK 1.8.0): the hand high and forward, the legs and the other arm walk
+      if (arm && tool) { ang = -1.25 + 0.05 * sin(ph); bend = 1.1; }
     }
   }
   if (fore && bend != 0.0) {
@@ -762,6 +772,10 @@ export const ACT = {
   chop: 15,
   fish: 16,
   row: 17,
+  /** PK 1.8.0: front crawl in water deeper than the chest, with no boat. */
+  swim: 18,
+  /** PK 1.8.0: walking at night with a torch held up. */
+  torch: 19,
 } as const;
 
 /** The paddle's swing (radians) at time t, in step with the rowing arms (ACT.row). */

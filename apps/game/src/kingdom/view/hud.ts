@@ -77,6 +77,8 @@ export interface MenuState {
   /** Background music on or off, and its volume 0..1 (D76). */
   music?: boolean;
   musicVolume?: number;
+  /** Full screen (PK 1.8.0): on, off, or undefined where the browser cannot (no button). */
+  fullscreen?: boolean;
 }
 
 export class KingdomHud {
@@ -480,7 +482,10 @@ export class KingdomHud {
         // effects only → off. Music volume is on the year bar.
         (m.music === undefined
           ? `<button class="k-mb ${m.sound ? 'k-on' : 'k-off'}" data-act="sound" data-tip="${esc('<b>សំឡេង</b> · Sound effects on or off')}" data-ui>សំឡេង <b>${m.sound ? 'ON' : 'OFF'}</b></button>`
-          : `<button class="k-mb ${m.sound ? 'k-on' : 'k-off'}" data-act="sound" data-tip="${esc('<b>សំឡេង និងតន្ត្រី</b> · Sound: press for music and effects → effects only → off')}" data-ui>${m.sound ? (m.music ? '🎵' : '🔊') : '🔇'} <b>${!m.sound ? 'OFF' : m.music ? 'ON' : 'FX'}</b></button>`),
+          : `<button class="k-mb ${m.sound ? 'k-on' : 'k-off'}" data-act="sound" data-tip="${esc('<b>សំឡេង និងតន្ត្រី</b> · Sound: press for music and effects → effects only → off')}" data-ui>${m.sound ? (m.music ? '🎵' : '🔊') : '🔇'} <b>${!m.sound ? 'OFF' : m.music ? 'ON' : 'FX'}</b></button>`) +
+        (m.fullscreen === undefined
+          ? ''
+          : `<button class="k-mb k-full" data-act="fullscreen" data-tip="${esc(m.fullscreen ? '<b>ចាកចេញពីពេញអេក្រង់</b> · Leave full screen (F11 or Esc)' : '<b>ពេញអេក្រង់</b> · Full screen: the game fills the whole 1920×1080 monitor (F11)')}" data-ui>${m.fullscreen ? '🗗' : '⛶'}</button>`),
     );
   }
 

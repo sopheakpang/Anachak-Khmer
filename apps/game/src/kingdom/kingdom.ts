@@ -1,3 +1,4 @@
+import { canFullscreen, isFullscreen, toggleFullscreen } from '../fullscreen';
 import * as THREE from 'three';
 import {
   loadKingdom,
@@ -765,6 +766,10 @@ export class Kingdom {
           this.selected.add(h.id);
           this.centreOnHall();
         }
+      } else if (k === 'f11' && canFullscreen()) {
+        // The game's own full screen (PK 1.8.0): Esc or F11 again leaves it.
+        e.preventDefault();
+        void toggleFullscreen();
       } else if (k === 'f5') {
         e.preventDefault();
         this.save('quick');
@@ -935,6 +940,10 @@ export class Kingdom {
         if (this.sound.enabled && !this.opts.mobile) this.sound.setMusicOn(true);
       } else if (this.sound.musicOn) this.sound.setMusicOn(false);
       else this.sound.setEnabled(false);
+      return;
+    }
+    if (kind === 'fullscreen') {
+      void toggleFullscreen();
       return;
     }
     if (kind === 'music') {
@@ -2724,6 +2733,7 @@ export class Kingdom {
       sound: this.sound.enabled,
       music: this.sound.musicOn,
       musicVolume: this.sound.musicVolume,
+      fullscreen: !this.opts.mobile && canFullscreen() ? isFullscreen() : undefined,
     });
     if (now >= this.nextMoodCheck) {
       this.nextMoodCheck = now + 1000;
