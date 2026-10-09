@@ -494,7 +494,7 @@ Note: the test machine has no GPU and renders headless at about 2 FPS, so timing
 
 | Check | Result | Evidence |
 | --- | --- | --- |
-| Elephant grass: config, 1 m clump with leaves and culms, one noise fetch per vertex, quadratic bend, trample, shrink, shadow pass sways, no black backs; grows in stands and on banks, never near buildings, on earth, forest or water; capped, nearest first; re-laid only when the view moves | ✅ | `view/night18.test.ts`, `docs/screens/k18-elephant-grass.jpg` |
+| Elephant grass: config, 1 m clump with leaves and culms, one noise fetch per vertex, quadratic bend, trample, shrink, shadow pass sways, no black backs; grows in stands and on banks, never near buildings, on earth, forest or water; capped, nearest first; re-laid only when the view moves | ✅ | `view/night18.test.ts`, `docs/screens/k18-grass-low.jpg` (the first tall version was replaced by PK's lower grass) |
 | Full screen: toggles in and out, nothing where the browser cannot, a refusal leaves the window; ⛶ fits the 1920 menu bar with text ≥ 26 px | ✅ | `src/fullscreen.test.ts`, e2e KG-02 |
 | See-through: only zoomed in; people projected to windows (behind the camera: none); cover patched once, keeps its own patch, own program key | ✅ | `view/night18.test.ts`, `docs/screens/k18-see-through.jpg` |
 | Torches: one by each house door, a ring round work places (buildings exist in config), out by day, lit at night, nearest give real light; walkers hold a torch up (`ACT.torch`) | ✅ | `view/night18.test.ts`, `docs/screens/k18-night-torches.jpg` |
@@ -503,4 +503,15 @@ Note: the test machine has no GPU and renders headless at about 2 FPS, so timing
 | Frame budget (low preset, Kingdom start view): 1.7.0 measured 804 833 triangles (over the 600 000 limit: PK's rock and fruit models drawn for the whole map); 1.8.0 with elephant grass 475 351–519 613 | ✅ | e2e KG-02 (`[budget]` lines), KG-04 world 181 136 |
 
 **Not verified here:** frame rate on the stream laptop (software GL in the container), the look of torches and moonlight on a real GPU, the full-screen switch in the Electron window.
+
+### 1.8.0, second part: the jungle references and lower grass (2026-10-09)
+
+**Automated:** `npm run verify` ✅ (lint, types, 642 unit tests in 71 files, build) · e2e KG-02 ✅ (budget 506 148 triangles, 85 draw calls), KG-05, KG-06 ✅.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Grass under 1 m (both kinds), cogon mixed in, height varies, never on the water, a fringe along it | ✅ | `view/night18.test.ts`, `docs/screens/k18-grass-low.jpg`, `k18-hero-grass.jpg` |
+| Red mud, wetness soaks and dries, puddles shine, dead leaves only on forest land | ✅ | `view/jungle18.test.ts`, `docs/screens/k18-mud-puddles.jpg` |
+| Mossy rocks, fronds, roots on the forest floor and its edge, none on open grass (rocks rarely) | ✅ | `view/jungle18.test.ts` |
+| Mist and light shafts by weather, dawn, wetness and night; fixed world grid | ✅ | `view/jungle18.test.ts`, `docs/screens/k18-light-shafts.jpg` |
 

@@ -6,13 +6,16 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 
 | Code | Change |
 | --- | --- |
-| 1.8.0-01 | **Elephant grass** (ស្មៅដំរី, PK's Godot shader in three.js): dense stands of tall grass, 2–3 m, on wild open land and along river banks, rolling in waves of wind (stronger in windy weather and storms); leaves turn pale as a gust passes, some clumps flower in white plumes, people walking through push it aside. It never grows near buildings, on paths, fields or roads (D125). |
+| 1.8.0-01 | **Elephant grass and cogon grass** (ស្មៅដំរី, ស្បូវ; PK's Godot shader in three.js): dense stands of wild grass under 1 m high with natural variation (taller inside a stand, shorter at its edge), cogon paler with white plumes, a fringe along rivers (never on the water), rolling in waves of wind; people walking through push it aside; it grows round the hero in the 3D mode too. Never near buildings, on paths, fields or roads (D125, D131). |
 | 1.8.0-02 | **Full screen** button ⛶ at the end of the menu bar (or F11): the game fills the whole 1920×1080 monitor; Esc or F11 leaves it (D126). |
 | 1.8.0-03 | **See-through when zoomed in**: close up, buildings, trees, temple walls and tall grass in front of people open a window round them, so the people at work are always seen (D127). |
 | 1.8.0-04 | **Torches at night** (ពេលយប់ដុតគប់ភ្លើង): a torch by the door of every house, torches round the hall, storehouses, camps, the landing, the market, the barracks and the temple site; people out walking carry a torch held high, and one is planted by people still at work; warm light on the ground and on the people near them (D128). |
 | 1.8.0-05 | **Stars and the moon**: hundreds of twinkling stars and a moon that keeps time: it rises in the east and sets in the west, later each night, and goes from new to full and back (8 game days). Moonlight comes from where the moon stands, brighter at full moon; clouds go dark at night (D129). |
 | 1.8.0-06 | **Crossing water** (PK): shallow water is waded; deeper than the chest people ride a dugout boat (ទូក), or a bamboo raft (ក្បូនឬស្សី) when they carry wood or stone, once the kingdom has a river landing; with no boat they swim (front crawl, or treading water when they stop). Elephants and horses wade (D130). |
 | 1.8.0-07 | **Fixed** the frame budget: PK's rock and fruit models were drawn for the whole map every frame; now only those near the view (about 800 000 → 500 000 triangles at the start). |
+| 1.8.0-08 | **Red laterite mud** (PK's jungle references): the worn paths and yards are red clay, dark when wet; after rain **puddles** stand in the hollows of the mud, mirroring the sky, rings where the drops fall; the ground dries in about six minutes (D132). |
+| 1.8.0-09 | **The forest floor**: drifts of dead leaves under the trees, **mossy laterite rocks**, **fallen palm fronds** and **creeping roots** on the floor and at its edge; a few rocks out on open land and by the water (D132). |
+| 1.8.0-10 | **Humid air**: soft banks of **ground mist** drifting low, thick in mist and rain, at dawn and after rain; **light shafts** slanting down from the sun through gaps in the clouds on cloudy days and after rain (D133). |
 
 ## 1.7.0 — 2026-10-06
 

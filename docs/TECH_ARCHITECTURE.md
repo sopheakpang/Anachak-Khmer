@@ -17,6 +17,8 @@ The game runs on **three.js**, not Godot. PK's Godot prompts (spatial shaders, W
 | Prek canal water shader | `makePrekWater()`: height-texture depth fade (steadier than the depth buffer), Fresnel sky in time-of-day steps (`skyStep`), 2-step cel specular, crisp foam, two ripple layers | `kingdom/view/water.ts` |
 | Ground detail | `GroundDetailRts`: forest undergrowth, flowers, pebbles on worn earth, reeds, lotus. Hash-placed on the tile grid near the camera, four draw calls | `kingdom/view/detail.ts` |
 | Elephant grass (PK's Godot spatial shader, 1.8.0) | `ElephantGrass`: one instanced Lambert draw; vertex displacement only (`ELEPHANT_GRASS_VERTEX`): one fetch of a seeded tileable noise texture per vertex at the clump origin, scrolled downwind; quadratic bend with the tip sinking (length kept); per-clump sway; flutter; trample (16 walkers, uniform array); distance shrink. The shadow pass uses a `MeshDepthMaterial` with the same patch. Normals: straight up in view space (no black backs). Planted by `layElephantGrass` (stand noise, banks, `clear` near buildings and worn earth) | `kingdom/view/elephantGrass.ts` |
+| Jungle ground (1.8.0) | `splatTerrain()` gains a forest mask (`aForest` per vertex) for dead leaves, wetness (`wetness()`), puddles in the mud's hollows with a lower roughness and the sky colour, drop rings; `mossyRockGeometry`, `frondGeometry`, `rootGeometry` in the ground detail | `kingdom/view/terrain.ts`, `detail.ts` |
+| Mist and light shafts (1.8.0) | `MistLayer` (instanced noise quads) and `LightShafts` (instanced additive beams built along the sun direction in the vertex shader), `cellSpots()` on a world grid, `mistAmount()`, `shaftAmount()` | `kingdom/view/atmosphere.ts` |
 | See-through cover (1.8.0) | `addSeeThrough()` chains a fragment test onto cover materials (flagged `userData.seeThrough`): `vSeeClip` from the vertex stage gives exact NDC and depth; windows (`setTargets`: people projected each frame, at most 32) drop nearer fragments in an interleaved-gradient-noise dither. Program cache key `…|see` | `kingdom/view/seeThrough.ts` |
 | Torches (1.8.0) | `TorchView`: posts, flames (flicker by scale), camera-facing glows and ground pools (additive, soft falloff texture), a fixed set of `PointLight`s moved to the torches nearest the view; `torchSpots()` from buildings | `kingdom/view/torches.ts` |
 | Stars and moon (1.8.0) | `NightSky`: additive star points with twinkle, a moon quad with its phase terminator in the shader; `moonDir()` (the sun's path, a phase of a day behind), `moonPhase()`, `moonLit()`. The scene's sun light turns to moonlight from the moon's direction at night | `kingdom/view/nightSky.ts` |
@@ -36,7 +38,8 @@ The game runs on **three.js**, not Godot. PK's Godot prompts (spatial shaders, W
 
 ## Cost (1.8.0)
 
-- **Elephant grass.** 800 clumps × 92 triangles near the view (no grass shadows on low).
+- **Wild grass.** 1 500 tussocks × 108 triangles near the view (no grass shadows on low).
+- **Mist and shafts.** 14 + 8 quads.
 - **See-through.** A loop over at most 24 windows in cover fragments, only when zoomed in (skipped otherwise).
 - **Torches.** Instanced flames, glows and pools; 4 real lights on low (6 high, 8 ultra), always present so no shader recompiles.
 - **Rocks and fruit.** Only those near the view are drawn now (PK's ~1 000-triangle models were drawn for the whole map): the start view went from about 800 000 to 500 000 triangles.
@@ -62,3 +65,5 @@ The game runs on **three.js**, not Godot. PK's Godot prompts (spatial shaders, W
 `sim/felled.test.ts` checks the felled event. `hero/hero.test.ts` checks the camera stopping in front of trees.
 
 `kingdom/view/night18.test.ts` covers the elephant grass (config, geometry, noise, shader, placement, the field), the see-through cover (zoom, projection, patching), the torches, the stars and the moon. `kingdom/sim/water.test.ts` covers depth, wading, swimming, boats and rafts; `src/fullscreen.test.ts` the full-screen switch.
+
+`kingdom/view/jungle18.test.ts` covers the red mud, wetness and puddles, the forest-floor detail, the mist and the light shafts.

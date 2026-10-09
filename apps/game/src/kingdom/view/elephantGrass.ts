@@ -29,8 +29,9 @@ export const MAX_PUSH = 16;
 // ------------------------------------------------------------------ geometry
 
 /**
- * One clump, 1 m tall (instance scale gives the real height): `blades` long tapering leaves
- * arching out from the root in three segments, and two flowering culms with silky plumes.
+ * One tussock, 1 m tall and about 1 m across (the instance scales height and spread apart):
+ * `blades` tapering leaves rising from roots spread over its base, arching outward in two
+ * segments, and two flowering culms with silky plumes.
  * Normals point mostly up, so the clump is lit like a soft mass, not by thin faces.
  */
 export function elephantGrassGeometry(blades = 9): THREE.BufferGeometry {
@@ -39,8 +40,8 @@ export function elephantGrassGeometry(blades = 9): THREE.BufferGeometry {
   /** 0 = a leaf, 1 = the flowering culm and its plume (only some clumps flower). */
   const kind: number[] = [];
   let k1 = 0;
-  const root = new THREE.Color(0x203a16);
-  const tip = new THREE.Color(0x6e9a3a);
+  const root = new THREE.Color(0x2c4c1e);
+  const tip = new THREE.Color(0x8cb852);
   const plume = new THREE.Color(0xeee6c8);
   const stem = new THREE.Color(0x7f9a4a);
   const c = new THREE.Color();
@@ -49,12 +50,17 @@ export function elephantGrassGeometry(blades = 9): THREE.BufferGeometry {
     col.push(ca.r, ca.g, ca.b, cb.r, cb.g, cb.b, cd.r, cd.g, cd.b);
     kind.push(k1, k1, k1);
   };
-  const SEG = 3;
+  const SEG = 2;
   for (let i = 0; i < blades; i++) {
     const a = (i / blades) * Math.PI * 2 + i * 2.39996;
-    const h = 0.72 + 0.28 * hash(i, 3, 1);
-    const lean = 0.25 + 0.45 * hash(i, 5, 2);
-    const w = 0.07 + 0.04 * hash(i, 7, 3);
+    const h = 0.55 + 0.45 * hash(i, 3, 1);
+    const lean = 0.12 + 0.25 * hash(i, 5, 2);
+    const w = 0.045 + 0.03 * hash(i, 7, 3);
+    // Roots spread over the base (a disc 0.45 across), so the tussock reads as a dense mass.
+    const rr = 0.42 * Math.sqrt(hash(i, 11, 4));
+    const ra = hash(i, 13, 5) * Math.PI * 2;
+    const bx = Math.cos(ra) * rr;
+    const bz = Math.sin(ra) * rr;
     const ox = Math.cos(a);
     const oz = Math.sin(a);
     // Across the blade (horizontal, perpendicular to its lean).
@@ -64,8 +70,8 @@ export function elephantGrassGeometry(blades = 9): THREE.BufferGeometry {
       const out = 0.05 + lean * t * t; // arches outward
       const y = h * t * (1 - 0.12 * t * t * lean); // droops a little at the tip
       const half = w * Math.pow(1 - t, 0.7) + 0.002;
-      const cx = ox * out;
-      const cz = oz * out;
+      const cx = bx + ox * out;
+      const cz = bz + oz * out;
       return {
         l: [cx - sx * half, y, cz - sz * half],
         r: [cx + sx * half, y, cz + sz * half],
@@ -260,8 +266,10 @@ export const ELEPHANT_GRASS_VERTEX = /* glsl */ `
     vec3 eWl = normalize(vec3(dot(instanceMatrix[0].xyz, eW), 0.0, dot(instanceMatrix[2].xyz, eW)) + vec3(1e-5, 0.0, 0.0));
     vec3 eSide = vec3(-eWl.z, 0.0, eWl.x);
     float eBend = clamp(uEgWind * (uEgBase + eG * uEgGust + sin(ePh * uEgSwaySpeed) * uEgSway), -0.2, 0.95);
-    float eOff = eBend * eH * eH;
-    float eFl = sin(ePh * uEgFlutterSpeed + transformed.y * 3.0 + transformed.x * 5.0) * uEgFlutter * eH * (0.4 + eG) * uEgWind;
+    // The tussock is scaled wider than tall: bend in metres of its height, not of its width.
+    float eAsp = length(instanceMatrix[1].xyz) / max(1e-4, length(instanceMatrix[0].xyz));
+    float eOff = eBend * eH * eH * eAsp;
+    float eFl = sin(ePh * uEgFlutterSpeed + transformed.y * 3.0 + transformed.x * 5.0) * uEgFlutter * eH * (0.4 + eG) * uEgWind * eAsp;
     vec3 eDisp = eWl * eOff + eSide * eFl;
     // Trampled: the clump leans away from the nearest walker.
     float eFlat = 0.0;
@@ -277,10 +285,10 @@ export const ELEPHANT_GRASS_VERTEX = /* glsl */ `
         eAway = normalize(vec3(dot(instanceMatrix[0].xyz, dw), 0.0, dot(instanceMatrix[2].xyz, dw)) + vec3(1e-5, 0.0, 0.0));
       }
     }
-    eDisp = mix(eDisp, eAway * 0.85 * eH * eH, eFlat);
+    eDisp = mix(eDisp, eAway * 0.85 * eH * eH * eAsp, eFlat);
     transformed += eDisp;
     float eL = length(eDisp.xz);
-    transformed.y -= eL * eL * 0.5;                       // the tip sinks as it bends over
+    transformed.y -= eL * eL * 0.5 / max(eAsp, 0.05);    // the tip sinks as it bends over
     // Distance LOD: far clumps shrink to their root.
     transformed *= 1.0 - smoothstep(uEgLod.x, uEgLod.y, distance(eO.xz, uEgCenter));
   }
@@ -338,8 +346,12 @@ export interface Clump {
   x: number;
   z: number;
   s: number;
+  /** Width across (m): a tussock is wider than it is tall. */
+  w: number;
   rot: number;
   dry: number;
+  /** Cogon grass (paler, shorter) rather than elephant grass. */
+  cogon?: boolean;
 }
 
 /** Smooth value noise of the tile grid, 0..1, in cells of `cell` tiles (the stands). */
@@ -375,7 +387,7 @@ export function layElephantGrass(
   half: number,
   at: (tx: number, tz: number) => Patch,
   clear: (tx: number, tz: number) => boolean,
-  cfg: Pick<ElephantGrassCfg, 'count' | 'standTiles' | 'cover' | 'perTile' | 'bank' | 'height' | 'dryShare'>,
+  cfg: Pick<ElephantGrassCfg, 'count' | 'standTiles' | 'cover' | 'perTile' | 'bank' | 'height' | 'dryShare' | 'cogon' | 'spread'>,
 ): Clump[] {
   const out: Clump[] = [];
   const t0x = Math.floor((cx - radius + half) / tile);
@@ -393,29 +405,48 @@ export function layElephantGrass(
   for (const [, tx, tz] of tiles) {
     if (out.length >= cfg.count) break;
     const what = at(tx, tz);
-    if (what !== 'grass' && what !== 'bank') continue;
+    if (what !== 'grass') continue;
+    // A fringe along the water: land tiles next to the river or the canal (never on the water).
+    const wet = (x: number, z: number) => {
+      const w = at(x, z);
+      return w === 'bank' || w === 'water';
+    };
+    const shore = wet(tx + 1, tz) || wet(tx - 1, tz) || wet(tx, tz + 1) || wet(tx, tz - 1);
     const r = (k: number) => hash(tx, tz, 200 + k);
     let n: number;
-    if (what === 'bank') n = r(0) < cfg.bank ? 1 : 0;
+    // How deep inside its stand the tile is (0 edge … 1 middle): the grass is taller there.
+    let inner = 0.5;
+    const v0 = standNoise(tx, tz, cfg.standTiles);
+    if (shore && v0 < 1 - cfg.cover) n = r(0) < cfg.bank ? 2 : 0;
     else {
       const v = standNoise(tx, tz, cfg.standTiles);
       const edge = 1 - cfg.cover;
       if (v < edge) continue;
       // Thin at the stand's edge, full inside.
       const k = Math.min(1, (v - edge) / 0.08);
+      inner = Math.min(1, (v - edge) / 0.2);
       n = Math.floor(cfg.perTile * k + r(1));
     }
+    // Cogon grass and elephant grass grow in their own patches (a second, finer noise).
+    const cogonHere = standNoise(tx + 517, tz - 211, cfg.standTiles * 0.6) < cfg.cogon.share;
     if (!n || !clear(tx, tz)) continue;
     const x0 = tx * tile - half;
     const z0 = tz * tile - half;
-    for (let i = 0; i < n && out.length < cfg.count; i++)
+    for (let i = 0; i < n && out.length < cfg.count; i++) {
+      // Natural height: the stand (taller in its middle) and the clump's own share.
+      const cogon = cogonHere ? r(80 + i) < 0.85 : r(80 + i) < 0.15;
+      const [a, b] = cogon ? cfg.cogon.height : [h0, h1];
+      const k = 0.55 * inner + 0.45 * r(30 + i);
       out.push({
         x: x0 + r(10 + i) * tile,
         z: z0 + r(20 + i) * tile,
-        s: h0 + (h1 - h0) * r(30 + i),
+        s: a + (b - a) * k,
+        w: cfg.spread[0] + (cfg.spread[1] - cfg.spread[0]) * r(90 + i),
         rot: r(40 + i) * Math.PI * 2,
         dry: r(50 + i) < cfg.dryShare ? 0.5 + 0.5 * r(60 + i) : 0.15 * r(60 + i),
+        cogon,
       });
+    }
   }
   return out;
 }
@@ -437,6 +468,7 @@ export class ElephantGrass {
   private readonly up = new THREE.Vector3(0, 1, 0);
   private readonly green = new THREE.Color(1, 1, 1);
   private readonly dry: THREE.Color;
+  private readonly cogonTint: THREE.Color;
   private readonly c = new THREE.Color();
 
   constructor(
@@ -455,6 +487,8 @@ export class ElephantGrass {
     this.group.add(this.mesh);
     // Dry clumps: the green leaves wash toward straw (instance colour multiplies the vertex colour).
     this.dry = new THREE.Color(cfg.dry).multiplyScalar(1.6);
+    // Cogon is paler and yellower (instance colours may go above 1: they brighten).
+    this.cogonTint = new THREE.Color(cfg.cogon.tint).multiplyScalar(1.3);
   }
 
   /**
@@ -489,9 +523,10 @@ export class ElephantGrass {
     const clumps = layElephantGrass(cx, cz, radius, tile, half, at, clear, this.cfg);
     clumps.forEach((p, i) => {
       this.q.setFromAxisAngle(this.up, p.rot);
-      this.m.compose(this.v.set(p.x, 0, p.z), this.q, this.sc.set(p.s, p.s, p.s));
+      this.m.compose(this.v.set(p.x, 0, p.z), this.q, this.sc.set(p.w, p.s, p.w));
       this.mesh.setMatrixAt(i, this.m);
-      this.mesh.setColorAt(i, this.c.copy(this.green).lerp(this.dry, p.dry));
+      this.c.copy(p.cogon ? this.cogonTint : this.green).lerp(this.dry, p.dry);
+      this.mesh.setColorAt(i, this.c);
     });
     this.mesh.count = clumps.length;
     this.planted = clumps.length;

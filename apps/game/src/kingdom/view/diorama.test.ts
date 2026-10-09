@@ -176,11 +176,12 @@ describe('Ground detail', () => {
     // No tufts on the open meadow: undergrowth in the forest (x < 0) and reeds at the bank only.
     for (const p of a) if (p.kind === 'clump') expect(p.x < 2 || p.z < 2).toBe(true);
     const soil = layDetail(0, 0, 60, 2, 0, () => 'soil', D.detail);
-    expect(soil.every((p) => p.kind === 'pebble')).toBe(true);
+    // Worn earth: pebbles kicked up, and now and then a laterite rock (PK 1.8.0).
+    expect(soil.every((p) => p.kind === 'pebble' || p.kind === 'rock')).toBe(true);
   });
 
   it('keeps within the caps, nearest first, and nothing on built ground', () => {
-    const caps = { tufts: 10, flowers: 2, pebbles: 3, lotus: 1 };
+    const caps = { tufts: 10, flowers: 2, pebbles: 3, lotus: 1, rocks: 2, fronds: 2, roots: 2 };
     const a = layDetail(0, 0, 200, 2, 0, at, caps);
     expect(a.filter((p) => p.kind === 'clump').length).toBeLessThanOrEqual(10);
     expect(layDetail(0, 0, 60, 2, 0, () => 'none', D.detail)).toEqual([]);

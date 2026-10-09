@@ -36,9 +36,10 @@ function compile(m: THREE.Material) {
 }
 
 describe('elephant grass (PK 1.8.0)', () => {
-  it('config: tall (2–3 m), dense stands, and the PC presets plant it (not lite, not the phone)', async () => {
-    expect(EG.height[0]).toBeGreaterThanOrEqual(1.8);
-    expect(EG.height[1]).toBeLessThanOrEqual(3.5);
+  it('config: under 1 m from the landscape view (PK), cogon mixed in, PC presets plant it (not lite, not the phone)', async () => {
+    expect(EG.height[1]).toBeLessThan(1);
+    expect(EG.cogon.height[1]).toBeLessThan(1);
+    expect(EG.cogon.height[0]).toBeLessThan(EG.height[0]);
     expect(EG.count).toBeGreaterThan(200);
     const q = (await import('../../../../../config/quality.json')).default as unknown as Record<
       string,
@@ -105,15 +106,25 @@ describe('elephant grass (PK 1.8.0)', () => {
     expect(inStand / tiles).toBeGreaterThan(0.05);
     expect(inStand / tiles).toBeLessThan(0.7);
     for (const c of all) {
-      expect(c.s).toBeGreaterThanOrEqual(EG.height[0]);
-      expect(c.s).toBeLessThanOrEqual(EG.height[1]);
+      const [a, b] = c.cogon ? EG.cogon.height : EG.height;
+      expect(c.s).toBeGreaterThanOrEqual(a);
+      expect(c.s).toBeLessThanOrEqual(b);
+      expect(c.s).toBeLessThan(1);
     }
+    // Both grasses, and natural variation in height.
+    expect(all.some((c) => c.cogon) && all.some((c) => !c.cogon)).toBe(true);
+    const hs = all.map((c) => c.s);
+    expect(Math.max(...hs) - Math.min(...hs)).toBeGreaterThan(0.3);
     // Forbidden: near buildings (clear says no), soil, forest, none.
     expect(layElephantGrass(0, 0, 60, 2, 0, grassEverywhere, () => false, EG)).toHaveLength(0);
     for (const p of ['soil', 'forest', 'none', 'water'] as Patch[])
       expect(layElephantGrass(0, 0, 60, 2, 0, () => p, () => true, EG)).toHaveLength(0);
-    // Banks grow reeds of it too.
-    expect(layElephantGrass(0, 0, 60, 2, 0, () => 'bank', () => true, EG).length).toBeGreaterThan(0);
+    // Never on the water; a fringe on the land along it.
+    expect(layElephantGrass(0, 0, 60, 2, 0, () => 'bank', () => true, EG)).toHaveLength(0);
+    const shoreAt = (tx: number): Patch => (tx < 0 ? 'water' : 'grass');
+    const fringe = layElephantGrass(0, 0, 60, 2, 0, (tx) => shoreAt(tx), () => true, EG);
+    expect(fringe.every((c) => c.x >= 0)).toBe(true);
+    expect(fringe.some((c) => c.x < 2)).toBe(true);
     // Capped at count, nearest first.
     const capped = layElephantGrass(0, 0, 60, 2, 0, grassEverywhere, () => true, { ...EG, count: 10 });
     expect(capped).toHaveLength(10);

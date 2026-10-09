@@ -89,10 +89,11 @@ import {
 import { ANIMAL_LOOK, PERCH_RATE } from './wildLook';
 import { applyProp, loadProp } from './props';
 import { NprUnits } from './npr';
-import { blockAo, splatTerrain } from './terrain';
+import { blockAo, splatTerrain, wetness, type SplatUniforms } from './terrain';
 import { GroundDetailRts, hash as detailHash, type Patch } from './detail';
 import { WearMap } from './wear';
 import { ElephantGrass } from './elephantGrass';
+import { LightShafts, MistLayer, mistAmount, shaftAmount } from './atmosphere';
 import { addSeeThrough, seeAmount, seeUniforms, setTargets, type SeeUniforms } from './seeThrough';
 import { TorchView, torchSpots, type TorchSite } from './torches';
 import { NightSky } from './nightSky';
@@ -448,6 +449,13 @@ export class KingdomScene {
       this.scene.add(g.group);
     }
     if (this.gfx.seeThrough) (this as { see: SeeUniforms | null }).see = seeUniforms();
+    // PK 1.8.0: ground mist and light shafts (the diorama presets).
+    if (this.gfx.diorama && this.gfx.atmosphere) {
+      const A = sim.data.diorama.atmosphere;
+      this.mist = new MistLayer(A.mist);
+      this.shafts = new LightShafts(A.shafts);
+      this.scene.add(this.mist.group, this.shafts.group);
+    }
     // PK 1.8.0: the nights of Anachak Khmer: torches, stars and the moon.
     if (sim.variant === 'anachak') {
       const N = sim.data.anachak.night;
@@ -811,6 +819,8 @@ export class KingdomScene {
     geo.rotateX(-Math.PI / 2);
     const pos = geo.getAttribute('position') as THREE.BufferAttribute;
     const col = new Float32Array(pos.count * 3);
+    // PK 1.8.0: how much of the land round each vertex is forest (dead leaves lie only there).
+    const forestK = new Float32Array(pos.count);
     const c = new THREE.Color();
     const at = (x: number, z: number) => {
       const j = Math.max(0, Math.min(N - 1, z)) * N + Math.max(0, Math.min(N - 1, x));
@@ -826,6 +836,7 @@ export class KingdomScene {
       for (let dz = -h; dz < h; dz++) for (let dx = -h; dx < h; dx++) around.push(at(vx + dx, vz + dz));
       const wet = around.filter((t) => t === 'water').length;
       const high = around.filter((t) => t === 'hill').length;
+      forestK[i] = around.filter((t) => t === 'forest').length / around.length;
       let r = 0;
       let g = 0;
       let b = 0;
@@ -856,7 +867,16 @@ export class KingdomScene {
       for (let i = 0; i < pos.count; i++) hs[i] = pos.getY(i);
       const D = this.sim.data.diorama.terrain;
       geo.setAttribute('aoBlock', new THREE.BufferAttribute(blockAo(hs, S + 1, D.aoSteps), 1));
-      splatTerrain(groundMat, D, this.sim.data.diorama.ground, this.wear?.texture, size);
+      geo.setAttribute('aForest', new THREE.BufferAttribute(forestK, 1));
+      this.groundU = splatTerrain(
+        groundMat,
+        D,
+        this.sim.data.diorama.ground,
+        this.wear?.texture,
+        size,
+        this.sim.data.diorama.wet,
+      );
+      this.puddleSky.copy(this.groundU.uSky.value);
     }
     const ground = new THREE.Mesh(geo, groundMat);
     ground.receiveShadow = true;
@@ -2279,6 +2299,8 @@ export class KingdomScene {
     this.syncNpr();
     this.syncDetail(t, fresh);
     this.syncWear();
+    this.syncWet(t);
+    this.syncAir(t);
     this.syncElephantGrass(t, fresh);
     this.syncNight(t);
     this.syncSee(t, selected);
@@ -2308,17 +2330,74 @@ export class KingdomScene {
     return out.slice(0, max).map((p) => p[1]);
   }
 
+  /** Wet ground after rain (PK 1.8.0): soaks in rain or storm, dries slowly; puddles mirror the sky. */
+  private syncWet(t: number): void {
+    const U = this.groundU;
+    if (!U) return;
+    const id = this.sim.weather.id;
+    // Game time drives it (the ground dries faster when the game runs faster).
+    const dt = this.wetAt < 0 ? 0 : Math.max(0, this.sim.time - this.wetAt);
+    this.wetAt = this.sim.time;
+    this.wet = wetness(this.wet, id === 'rain' || id === 'storm', Math.min(dt, 30), this.sim.data.diorama.wet);
+    U.uWet.value = this.wet;
+    U.uRain.value = this.weatherFx.rain;
+    U.uTime.value = t;
+    U.uSky.value.copy(this.puddleSky).lerp(this.nightPuddle, this.night);
+  }
+  private wetAt = -1;
+
+  /** The dawn (0..1, Anachak Khmer's day): from the end of the night until the morning is up. */
+  private dawn(): number {
+    if (this.sim.variant !== 'anachak') return 0;
+    const N = this.sim.data.anachak.night;
+    const p = (((this.sim.time / N.daySec) % 1) + 1) % 1;
+    const q = p < 0.5 ? p + 1 : p; // the dawn runs over the end of the day into the next
+    const a = N.dawn[0];
+    const b = N.dawn[1] + 0.12;
+    if (q < a || q > b) return 0;
+    return Math.sin(((q - a) / (b - a)) * Math.PI);
+  }
+
+  /** Ground mist and light shafts (PK 1.8.0), round the view, from the weather and the hour. */
+  private syncAir(t: number): void {
+    const mist = this.mist;
+    const shafts = this.shafts;
+    if (!mist || !shafts) return;
+    const A = this.sim.data.diorama.atmosphere;
+    const id = this.sim.weather.id;
+    const [cx, cz, dist] = this.view;
+    const radius = Math.max(60, dist * 1.3);
+    const off = this.heroView;
+    mist.update(t, cx, cz, radius, off ? 0 : mistAmount(id, this.dawn(), this.wet, A.mist), this.night, this.windXZ);
+    shafts.update(
+      t,
+      cx,
+      cz,
+      radius,
+      off ? 0 : shaftAmount(id, this.wet, this.night, A.shafts),
+      this.sunDirNow,
+      this.camera.position,
+    );
+  }
+
   /** Elephant grass: planted round the view, wind from the weather, trampled by walkers. */
   private syncElephantGrass(t: number, fresh: boolean): void {
     const g = this.egrass;
     if (!g) return;
-    g.group.visible = !this.heroView;
-    if (this.heroView) return;
     const s = this.sim;
-    const [cx, cz, dist] = this.view;
-    const radius = Math.max(30, dist * g.cfg.reach);
+    let [cx, cz] = this.view;
+    let radius = Math.max(30, this.view[2] * g.cfg.reach);
+    // In the 3D hero mode the grass grows round the hero (PK 1.8.0: running through the grass).
+    const hero = this.heroView ? s.heroEye : null;
+    g.group.visible = !this.heroView || !!hero;
+    if (this.heroView && !hero) return;
+    if (hero) {
+      [cx, cz] = hero;
+      radius = 36;
+    }
     const walkers: number[] = [];
-    for (const u of this.peopleNear(cx, cz, radius, 16)) walkers.push(u.x, u.z);
+    if (hero) walkers.push(hero[0], hero[1]);
+    for (const u of this.peopleNear(cx, cz, radius, 15)) walkers.push(u.x, u.z);
     g.frame(t, this.weatherFx.wind, cx, cz, radius, walkers);
     const key = this.landKey();
     const changed = key !== this.egrassKey;
@@ -2416,6 +2495,15 @@ export class KingdomScene {
     this.lastMoon = this.night > 0.001;
   }
   private lastMoon = false;
+  /** PK 1.8.0: ground mist and light shafts. */
+  mist: MistLayer | null = null;
+  shafts: LightShafts | null = null;
+  private readonly windXZ = new THREE.Vector2(1, 0.35);
+  /** PK 1.8.0: the ground's wetness (0 dry … 1 soaked) and its uniforms. */
+  wet = 0;
+  private groundU: SplatUniforms | null = null;
+  private readonly puddleSky = new THREE.Color();
+  private readonly nightPuddle = new THREE.Color(0x1b2747);
   private readonly moonAim = new THREE.Vector3();
   /** How bright the torches are now (0 by day), for the people who carry them. */
   private torchGlow = 0;

@@ -20,12 +20,23 @@ The land should look the way people have used it:
 - **Laterite.** Slopes, river banks and canal banks show warm laterite red.
 - **Hollows.** Hollows and the foot of slopes darken in hard steps of painted shade. This is *block-shadow AO*, never noisy screen-space AO.
 
-## Elephant grass (1.8.0)
+## Wild grass (1.8.0)
 
-- **Where.** Wild open land carries broad stands of tall grass, 2–3 m high, and the river banks a fringe of it. It never grows near buildings (3–5 tiles, with a ragged edge), on worn earth, roads, fields or unexplored land: where people live and walk the land is open.
-- **Look.** Dark at the root inside the dense clump, sunlit at the tips; a few dry, straw-coloured clumps; about a third flower in white plumes, like the tall grasses of the Tonle Sap plains.
-- **Wind.** Gusts roll across the stands as visible waves: the leaves lean and turn pale as a gust passes, then rise again. Each clump also rocks slowly in its own time and the tips flutter. Windy weather and storms blow harder.
-- **People.** A walker pushes the grass aside around him.
+- **Height.** From the landscape view the grass stays under 1 m (PK): elephant grass 0.55–0.95 m, cogon grass (ស្បូវ) 0.3–0.7 m, taller in the middle of a stand and shorter at its edge, each tussock its own height.
+- **Where.** Broad wild stands on open land and a fringe on the land along rivers and canals, never on the water. Never near buildings (3–5 tiles, with a ragged edge), on worn earth, roads, fields or unexplored land.
+- **Look.** Dense tussocks, wider than tall. Elephant grass deep green, sunlit at the tips; cogon paler and yellower in its own patches; a few dry straw-coloured clumps; about a third flower in white plumes.
+- **Wind.** Gusts roll across the stands as visible waves: the leaves lean and turn pale as a gust passes. Windy weather and storms blow harder.
+- **People.** A walker pushes the grass aside around him. In the 3D mode it grows round the hero, knee to hip high.
+
+## The jungle ground (1.8.0)
+
+- **Mud.** Paths and yards are red laterite clay, darker when wet. After rain, puddles stand in the hollows of the mud and mirror the sky (grey-blue by day, deep blue at night), with rings where drops fall.
+- **Forest floor.** Drifts of dead leaves, mossy laterite rocks, fallen palm fronds and creeping roots; a few rocks out on open land and by the water.
+
+## Humid air (1.8.0)
+
+- **Mist.** Soft banks of ground mist drift low over the land: thick in mist and rain, at dawn and after rain, thin on a clear noon, blue at night.
+- **Light shafts.** On cloudy days and after rain, beams of sunlight slant down from the sun through gaps in the clouds.
 
 ## See-through cover (1.8.0)
 

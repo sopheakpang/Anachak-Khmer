@@ -1071,6 +1071,17 @@ export const DioramaSchema = z.object({
     regrow: z.number().min(0),
     soilFrom: z.number().min(0).max(1),
     soilTo: z.number().min(0).max(1),
+    /** PK 1.8.0: dead leaves on the forest floor. */
+    litter: Hex.optional(),
+  }),
+  /** PK 1.8.0: wet ground and puddles on the mud paths after rain (view/terrain.ts). */
+  wet: z.object({
+    soak: z.number().positive(),
+    dry: z.number().positive(),
+    puddleScale: z.number().positive(),
+    puddleCover: z.number().min(0).max(1),
+    darken: z.number().min(0).max(1),
+    sky: Hex,
   }),
   light: z.object({
     elevation: z.number().min(5).max(85),
@@ -1090,6 +1101,14 @@ export const DioramaSchema = z.object({
     bank: z.number().min(0).max(1),
     keepAway: z.number().int().min(0).max(12),
     height: z.tuple([z.number().positive(), z.number().positive()]),
+    /** Width of a tussock (m): it is wider than tall, so stands read as a dense mass. */
+    spread: z.tuple([z.number().positive(), z.number().positive()]),
+    /** PK 1.8.0: dense cogon grass (ស្បូវ) mixed in: its share, its heights (m) and paler tint. */
+    cogon: z.object({
+      share: z.number().min(0).max(1),
+      height: z.tuple([z.number().positive(), z.number().positive()]),
+      tint: Hex,
+    }),
     dry: Hex,
     dryShare: z.number().min(0).max(1),
     flowering: z.number().min(0).max(1),
@@ -1111,6 +1130,31 @@ export const DioramaSchema = z.object({
       flutterSpeed: z.number().min(0),
     }),
   }),
+  /** PK 1.8.0: ground mist and light shafts through the clouds (view/atmosphere.ts). */
+  atmosphere: z.object({
+    mist: z.object({
+      count: z.number().int().min(0).max(64),
+      cell: z.number().positive(),
+      size: z.tuple([z.number().positive(), z.number().positive()]),
+      height: z.tuple([z.number(), z.number()]),
+      opacity: z.number().min(0).max(1),
+      color: Hex,
+      nightColor: Hex,
+      weather: z.record(z.string(), z.number().min(0).max(1)),
+      dawn: z.number().min(0).max(1),
+      wet: z.number().min(0).max(1),
+    }),
+    shafts: z.object({
+      count: z.number().int().min(0).max(32),
+      cell: z.number().positive(),
+      width: z.tuple([z.number().positive(), z.number().positive()]),
+      length: z.number().positive(),
+      strength: z.number().min(0).max(2),
+      color: Hex,
+      weather: z.record(z.string(), z.number().min(0).max(1)),
+      afterRain: z.number().min(0).max(1),
+    }),
+  }),
   /**
    * PK 1.8.0: zoomed in close, whatever stands between the camera and the people at work
    * (buildings, trees, tall grass) turns see-through round them (view/seeThrough.ts).
@@ -1130,6 +1174,10 @@ export const DioramaSchema = z.object({
     flowers: z.number().int().min(0),
     pebbles: z.number().int().min(0),
     lotus: z.number().int().min(0),
+    /** PK 1.8.0: mossy laterite rocks, fallen palm fronds, creeping roots. */
+    rocks: z.number().int().min(0).default(0),
+    fronds: z.number().int().min(0).default(0),
+    roots: z.number().int().min(0).default(0),
     reach: z.number().positive(),
   }),
 });

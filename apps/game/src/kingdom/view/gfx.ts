@@ -40,6 +40,8 @@ export interface KingdomGfx {
   grassShadows?: boolean;
   /** PK 1.8.0: real lights from the nearest night torches (0 = glow only). */
   torchLights?: number;
+  /** PK 1.8.0: ground mist and light shafts through the clouds (diorama.json atmosphere). */
+  atmosphere?: boolean;
   /** PK 1.8.0: zoomed in, cover turns see-through round the people (diorama.json seeThrough). */
   seeThrough?: boolean;
 }

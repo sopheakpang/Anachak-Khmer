@@ -1,5 +1,5 @@
 {
-  "$comment": "Quality presets (spec: Performance budget). low = the stream laptop (default). ?preset=high on a stronger PC. ?preset=lite = no shadows, fewer people: use it only if low drops below 30 FPS. look.style: \"lowpoly\" = faceted shapes and flat colours (D41), \"film\" = the soft animated-film look (D25); ?style=film or ?style=lowpoly overrides it. flatColors: true = plain colours, false = painted detail kept on the facets (PK wants textured detail). mobile = the Android phone build of the Kingdom tab (D72): smaller render, no antialias, no shadows. ultra = a strong gaming PC (D79). kingdom = the Kingdom's Anno-style graphics (D79): ao = soft contact shadows (aoScale = its render size), bloom = glow, tiltShift = close-up blur, grade = warm golden-hour colour, water = 'shader' (waves, depth colour, foam) or 'flat', treeKinds = how many tree kinds (1-5), wind = trees sway, life = birds, smoke, garden plots, palms on the paddy dikes, props = PK's real 3D models for trees, palms, rocks and banana plants (config/kingdom/props.json; off on lite and the phone), diorama = PK 1.7.0's Angkor Cel-Diorama look (config/kingdom/diorama.json: NPR toon units with ink outlines, stylised PBR land, HD-2D long lens, tilt-shift, warm/cool grade, laterite/emerald terrain, Prek canal water, ground detail; no screen-space AO). PK 1.8.0: elephantGrass = tall grass rolling in the wind (config/kingdom/diorama.json elephantGrass), grassShadows = it casts shadows (an extra pass), torchLights = how many real lights the nearest night torches give (0 = glow only; config/kingdom/anachak.json night.torches), seeThrough = cover turns see-through round people when zoomed in.",
+  "$comment": "Quality presets (spec: Performance budget). low = the stream laptop (default). ?preset=high on a stronger PC. ?preset=lite = no shadows, fewer people: use it only if low drops below 30 FPS. look.style: \"lowpoly\" = faceted shapes and flat colours (D41), \"film\" = the soft animated-film look (D25); ?style=film or ?style=lowpoly overrides it. flatColors: true = plain colours, false = painted detail kept on the facets (PK wants textured detail). mobile = the Android phone build of the Kingdom tab (D72): smaller render, no antialias, no shadows. ultra = a strong gaming PC (D79). kingdom = the Kingdom's Anno-style graphics (D79): ao = soft contact shadows (aoScale = its render size), bloom = glow, tiltShift = close-up blur, grade = warm golden-hour colour, water = 'shader' (waves, depth colour, foam) or 'flat', treeKinds = how many tree kinds (1-5), wind = trees sway, life = birds, smoke, garden plots, palms on the paddy dikes, props = PK's real 3D models for trees, palms, rocks and banana plants (config/kingdom/props.json; off on lite and the phone), diorama = PK 1.7.0's Angkor Cel-Diorama look (config/kingdom/diorama.json: NPR toon units with ink outlines, stylised PBR land, HD-2D long lens, tilt-shift, warm/cool grade, laterite/emerald terrain, Prek canal water, ground detail; no screen-space AO). PK 1.8.0: elephantGrass = tall grass rolling in the wind (config/kingdom/diorama.json elephantGrass), grassShadows = it casts shadows (an extra pass), torchLights = how many real lights the nearest night torches give (0 = glow only; config/kingdom/anachak.json night.torches), seeThrough = cover turns see-through round people when zoomed in. atmosphere = ground mist and light shafts (diorama.json atmosphere).",
   "low": {
     "renderScale": 1,
     "antialias": true,
@@ -31,7 +31,8 @@
       "elephantGrass": true,
       "grassShadows": false,
       "torchLights": 4,
-      "seeThrough": true
+      "seeThrough": true,
+      "atmosphere": true
     }
   },
   "high": {
@@ -65,7 +66,8 @@
       "elephantGrass": true,
       "grassShadows": true,
       "torchLights": 6,
-      "seeThrough": true
+      "seeThrough": true,
+      "atmosphere": true
     }
   },
   "ultra": {
@@ -99,7 +101,8 @@
       "elephantGrass": true,
       "grassShadows": true,
       "torchLights": 8,
-      "seeThrough": true
+      "seeThrough": true,
+      "atmosphere": true
     }
   },
   "lite": {
@@ -133,7 +136,8 @@
       "elephantGrass": false,
       "grassShadows": false,
       "torchLights": 0,
-      "seeThrough": true
+      "seeThrough": true,
+      "atmosphere": false
     }
   },
   "mobile": {
@@ -167,7 +171,8 @@
       "elephantGrass": false,
       "grassShadows": false,
       "torchLights": 0,
-      "seeThrough": true
+      "seeThrough": true,
+      "atmosphere": false
     }
   }
 }

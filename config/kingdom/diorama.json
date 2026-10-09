@@ -74,25 +74,24 @@
     "rippleStrength": 0.55
   },
   "elephantGrass": {
-    "$comment": "PK 1.8.0: elephant grass (ស្មៅដំរី), dense tall tropical grass that rolls in the wind: the three.js port of PK's Godot spatial shader (all motion is vertex displacement; one noise fetch per vertex). It grows in broad wild stands on open land (standTiles = stand size in tiles, cover = share of open land inside stands, perTile = clumps per tile inside a stand) and along river banks (bank = chance per bank tile); never on worn earth, roads, fields, unexplored land or within keepAway tiles of a building. count = most clumps at once (near the view; reach = share of the view distance planted). height = clump height range (m). dry = the colour dry clumps wash toward, dryShare = share of dry clumps, flowering = share of clumps with white plumes. Wind: strength (x the weather's wind), dirDeg (0 = east, 90 = south on the map), speed = how fast the gust waves travel (m/s), waveScale = 1 / gust wave size (m), sharpness (0 soft .. 0.45 crisp bands), baseBend = lean in calm air, gustBend = extra lean in a gust, sway / swaySpeed = slow rocking, flutter / flutterSpeed = leaf-tip flutter. gustSheen = leaves turn pale in a gust (shows the wave), baseDark = darkness inside the clump. trample = how near (m) a walker bends it away. lod = shrink from/to (share of the planted radius). The tall grasses of the Tonle Sap plains (Saccharum, Phragmites; called elephant grass) flower in white plumes; Pennisetum purpureum, the 'elephant grass' of Africa, came later. confidence: GAMEPLAY_ABSTRACTION.",
-    "count": 800,
-    "blades": 12,
+    "$comment": "PK 1.8.0: elephant grass (ស្មៅដំរី) and cogon grass (ស្បូវ), dense tropical grass that rolls in the wind: the three.js port of PK's Godot spatial shader (all motion is vertex displacement; one noise fetch per vertex). It grows in broad wild stands on open land (standTiles = stand size in tiles, cover = share of open land inside stands, perTile = clumps per tile inside a stand) and in a fringe on the land along rivers and canals (bank = chance per shore tile; never on the water); never on worn earth, roads, fields, unexplored land or within keepAway tiles of a building. count = most clumps at once (near the view; reach = share of the view distance planted). height = elephant grass height range (m); spread = a tussock's width (m, wider than tall: dense stands); PK: from the landscape view the grass stays under 1 m, with natural variation (taller inside a stand, shorter at its edge, each clump its own). cogon = dense cogon grass (ស្បូវ, Imperata cylindrica, the thatch grass of Cambodian roofs): share of clumps, its height range (m) and a paler tint; it flowers in white plumes. dry = the colour dry clumps wash toward, dryShare = share of dry clumps, flowering = share of clumps with white plumes. Wind: strength (x the weather's wind), dirDeg (0 = east, 90 = south on the map), speed = how fast the gust waves travel (m/s), waveScale = 1 / gust wave size (m), sharpness (0 soft .. 0.45 crisp bands), baseBend = lean in calm air, gustBend = extra lean in a gust, sway / swaySpeed = slow rocking, flutter / flutterSpeed = leaf-tip flutter. gustSheen = leaves turn pale in a gust (shows the wave), baseDark = darkness inside the clump. trample = how near (m) a walker bends it away. lod = shrink from/to (share of the planted radius). The tall grasses of the Tonle Sap plains (Saccharum, Phragmites; called elephant grass) flower in white plumes; Pennisetum purpureum, the 'elephant grass' of Africa, came later. confidence: GAMEPLAY_ABSTRACTION.",
+    "count": 1500,
+    "blades": 22,
     "reach": 0.85,
     "standTiles": 11,
     "cover": 0.38,
-    "perTile": 3.5,
+    "perTile": 3.6,
     "bank": 0.45,
     "keepAway": 3,
-    "height": [
-      2.0,
-      3.0
-    ],
+    "height": [0.55, 0.95],
+    "spread": [1.1, 1.7],
+    "cogon": {"share": 0.55, "height": [0.3, 0.7], "tint": "#e6edb0"},
     "dry": "#c9b46a",
     "dryShare": 0.18,
     "flowering": 0.3,
     "gustSheen": 0.13,
-    "baseDark": 0.5,
-    "trample": 1.9,
+    "baseDark": 0.3,
+    "trample": 1.4,
     "lod": [
       0.75,
       1.0
@@ -111,6 +110,31 @@
       "flutterSpeed": 7.5
     }
   },
+  "atmosphere": {
+    "$comment": "PK 1.8.0 (references: a humid jungle clearing, high humidity atmospheric fog, volumetric light rays breaking through the clouds). mist: soft banks of ground mist drifting low (height in m) round the view, one per world cell of `cell` m at most (count), size in m; thickness = weather share (weather), + dawn x the dawn (Anachak Khmer's day) + wet x how wet the ground is after rain; opacity at full thickness; color by day, nightColor by night. shafts: beams of sunlight slanting from the sun through gaps in the clouds (count, one per cell), width and length in m, strength; brightness = weather share + afterRain x wetness on a clear or cloudy day; none at night. Colours sRGB.",
+    "mist": {
+      "count": 14,
+      "cell": 34,
+      "size": [38, 70],
+      "height": [0.8, 3.2],
+      "opacity": 0.55,
+      "color": "#e3ebe6",
+      "nightColor": "#5d6f8f",
+      "weather": {"clear": 0.12, "cloudy": 0.3, "windy": 0.05, "rain": 0.55, "storm": 0.45, "mist": 1},
+      "dawn": 0.55,
+      "wet": 0.35
+    },
+    "shafts": {
+      "count": 8,
+      "cell": 30,
+      "width": [3, 8],
+      "length": 70,
+      "strength": 0.65,
+      "color": "#ffe7b0",
+      "weather": {"clear": 0.3, "cloudy": 0.95, "windy": 0.25, "rain": 0.1, "storm": 0, "mist": 0.75},
+      "afterRain": 0.7
+    }
+  },
   "seeThrough": {
     "$comment": "PK 1.8.0: zoomed in close, buildings, trees and tall grass between the camera and the people at work turn see-through round them, so the acting people and animals can always be seen. Fully on when the camera stands nearer than zoom[0] m, off beyond zoom[1] m (the RTS zoom runs 28 to 150 m). targets = how many people and animals (nearest the middle of the view, the selected first) get a window; radius = the window's width in m (it is 1.6 times as tall); amount = how much of the cover is taken away in its middle (a screen-door dither, so it stays sharp and cheap).",
     "zoom": [
@@ -122,28 +146,41 @@
     "amount": 0.82
   },
   "detail": {
-    "$comment": "Ground detail near the camera: undergrowth in the forest, a few wild flowers, pebbles, reeds and lotus pads at the water. The open meadow is drawn by the ground itself (no scattered tufts: PK 1.7.0). Counts are the most drawn at once.",
+    "$comment": "Ground detail near the camera: undergrowth in the forest, a few wild flowers, pebbles, reeds and lotus pads at the water. The open meadow is drawn by the ground itself (no scattered tufts: PK 1.7.0). Counts are the most drawn at once. PK 1.8.0 (the jungle clearing reference): mossy laterite rocks (forest floor, its edge, banks, a few on open land and earth), fallen palm fronds and creeping roots (forest floor and its edge).",
     "tufts": 2600,
     "flowers": 500,
     "pebbles": 700,
     "lotus": 220,
+    "rocks": 260,
+    "fronds": 320,
+    "roots": 360,
     "reach": 1.2
   },
   "ground": {
-    "$comment": "PK 1.7.0 (reference: a Manor Lords-like settlement): the ground follows life. Bare brown earth where people live and work (round buildings, yardTiles wide) and where they walk (each step wears the grass: walkWear per second on the tile, workWear while working); it grows back slowly (regrow per 10 s) where nobody goes. soilFrom/soilTo: how worn (0-1) before the earth shows through and is all earth. Meadow: a fine natural lawn of several greens; forest floor darker. Colours sRGB.",
+    "$comment": "PK 1.7.0 (reference: a Manor Lords-like settlement): the ground follows life. Bare earth where people live and work (round buildings, yardTiles wide) and where they walk (each step wears the grass: walkWear per second on the tile, workWear while working); it grows back slowly (regrow per 10 s) where nobody goes. soilFrom/soilTo: how worn (0-1) before the earth shows through and is all earth. Meadow: a fine natural lawn of several greens; forest floor darker. Colours sRGB. PK 1.8.0: the earth is red laterite mud (Angkor's red soil), dark where it is wet.",
     "meadowDark": "#459a44",
     "meadowLight": "#86cc66",
     "meadowDry": "#a3b067",
     "forestFloor": "#56692f",
-    "soil": "#8a6646",
-    "soilDark": "#664a32",
-    "soilLight": "#ab8a62",
+    "soil": "#97543a",
+    "soilDark": "#6b3624",
+    "soilLight": "#b67a52",
     "yardTiles": 2,
     "walkWear": 0.05,
     "workWear": 0.02,
     "regrow": 0.012,
     "soilFrom": 0.2,
-    "soilTo": 0.55
+    "soilTo": 0.55,
+    "litter": "#7a5532"
+  },
+  "wet": {
+    "$comment": "PK 1.8.0 (reference: a red clay jungle path with puddles reflecting the cloudy sky): in rain or storm the ground soaks (soak per second, 0..1) and dries after (dry per second: about 6 minutes). Wet ground darkens (darken), the mud paths most; puddles stand in the hollows of the mud (puddleScale = 1 / hollow size in m, puddleCover = share of the mud), mirror the sky colour (sky, sRGB) and shine; falling drops ring them.",
+    "soak": 0.05,
+    "dry": 0.0028,
+    "puddleScale": 0.32,
+    "puddleCover": 0.36,
+    "darken": 0.3,
+    "sky": "#a9bccb"
   },
   "light": {
     "$comment": "Sun and shadow for the diorama: a lower afternoon sun (elevation in degrees) gives long, readable shadows; shadowMap px; fill = the sky's soft fill light (lower = deeper shadows); sun = sunlight strength. foliage multiplies the trees' colours (deeper, natural greens), each tree a little different.",
