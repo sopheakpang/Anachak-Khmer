@@ -136,6 +136,73 @@ export function elephantGrassGeometry(blades = 9): THREE.BufferGeometry {
   return g;
 }
 
+/**
+ * Grass cards (PK 1.8.0: PK's Meshy grass model, baked by scripts/models/grassCards.mjs): three
+ * upright cards crossed at 60°, each showing the model from its own side (atlas columns 0–2),
+ * `card` wide and tall when the grass itself is 1 tall, cut in 4 rows so the wind bends them.
+ * The atlas row (plumes or leaves only) is picked per clump by the `aVariant` attribute.
+ * With `top`, the atlas has a 4th column (the grass from straight above) and a flat card at
+ * `TOP_CARD` of the height shows it: the steep RTS camera sees a tussock, not a thin star.
+ */
+/** Height of the flat top card, as a share of the grass height. */
+export const TOP_CARD = 0.45;
+
+export function grassCardGeometry(card: number, rows = 4, top = false): THREE.BufferGeometry {
+  const cols = top ? 4 : 3;
+  const pos: number[] = [];
+  const uv: number[] = [];
+  const kind: number[] = [];
+  const col: number[] = [];
+  const idx: number[] = [];
+  for (let k = 0; k < 3; k++) {
+    const a = (k * Math.PI) / 3;
+    const ca = Math.cos(a);
+    const sa = Math.sin(a);
+    const base = pos.length / 3;
+    for (let r = 0; r <= rows; r++)
+      for (const side of [-0.5, 0.5]) {
+        const x = side * card;
+        const y = (r / rows) * card;
+        // The view from angle a looks along -(sin a, 0, cos a): the card lies across it.
+        pos.push(x * ca, y, -x * sa);
+        uv.push((k + side + 0.5) / cols, r / rows);
+        kind.push(0);
+        col.push(1, 1, 1);
+      }
+    for (let r = 0; r < rows; r++) {
+      const i = base + r * 2;
+      idx.push(i, i + 1, i + 3, i, i + 3, i + 2);
+    }
+  }
+  if (top) {
+    // Image up = -z, right = +x (scripts/models/grassCards.mjs bakes it so).
+    const base = pos.length / 3;
+    for (const [sx, sz] of [
+      [-0.5, 0.5],
+      [0.5, 0.5],
+      [-0.5, -0.5],
+      [0.5, -0.5],
+    ] as const) {
+      pos.push(sx * card, TOP_CARD, sz * card);
+      uv.push((3 + sx + 0.5) / 4, 0.5 - sz);
+      kind.push(2); // the flat card: shown only to a camera looking down (ELEPHANT_GRASS_VERTEX)
+      col.push(1, 1, 1);
+    }
+    idx.push(base, base + 1, base + 3, base, base + 3, base + 2);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  g.setAttribute('aKind', new THREE.Float32BufferAttribute(kind, 1));
+  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  g.setIndex(idx);
+  const nor = new Float32Array(pos.length);
+  for (let i = 1; i < nor.length; i += 3) nor[i] = 1;
+  g.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+  g.computeBoundingSphere();
+  return g;
+}
+
 // ------------------------------------------------------------------ noise texture
 
 /**
@@ -241,6 +308,9 @@ const VERTEX_HEAD = /* glsl */ `
   uniform float uEgFlutterSpeed; uniform vec2 uEgCenter; uniform vec2 uEgLod;
   uniform vec3 uEgPush[${MAX_PUSH}]; uniform int uEgPushN; uniform float uEgFlower;
   attribute float aKind;
+  #ifdef USE_MAP
+  attribute float aVariant;
+  #endif
   varying float vEgH; varying float vEgGust;
 `;
 
@@ -255,7 +325,13 @@ export const ELEPHANT_GRASS_VERTEX = /* glsl */ `
     float eRnd = fract(sin(dot(eO.xz, vec2(127.1, 311.7))) * 43758.5453);
     float ePh = uEgTime + eRnd * 6.2831;
     // Only some clumps flower: the others fold their culm away to nothing.
-    if (aKind > 0.5 && fract(eRnd * 7.31) > uEgFlower) transformed = vec3(0.0);
+    if (aKind > 0.5 && aKind < 1.5 && fract(eRnd * 7.31) > uEgFlower) transformed = vec3(0.0);
+    // The flat top card (grass cards): seen from above it is the tussock; from low down (the
+    // hero's eye) it would be a flat mat, so it folds away as the view flattens.
+    if (aKind > 1.5) {
+      vec3 eV = normalize(cameraPosition - (modelMatrix * vec4(eO, 1.0)).xyz);
+      transformed *= smoothstep(0.42, 0.62, eV.y);
+    }
     // Rolling gust waves: one fetch per vertex at the clump origin, scrolling downwind.
     vec2 eUv = (eO.xz - uEgDir * uEgTime * uEgSpeed) * uEgScale;
     float eG = smoothstep(uEgSharp, 1.0 - uEgSharp, texture2D(uEgNoise, eUv).r);
@@ -312,10 +388,18 @@ const FRAGMENT_COLOUR = /* glsl */ `
   diffuseColor.rgb += uEgSheen * vEgGust * vEgH;          // pale leaves roll with the gust
 `;
 
+/** Cards: the atlas row of this clump (top = with plumes, bottom = leaves only). */
+const CARD_UV = /* glsl */ `
+  #ifdef USE_MAP
+  vMapUv.y = vMapUv.y * 0.5 + aVariant * 0.5;
+  #endif
+`;
+
 function patch(sh: THREE.WebGLProgramParametersWithUniforms, U: ElephantGrassUniforms, colour: boolean): void {
   Object.assign(sh.uniforms, U);
   sh.vertexShader = sh.vertexShader
     .replace('#include <common>', `#include <common>\n${VERTEX_HEAD}`)
+    .replace('#include <uv_vertex>', `#include <uv_vertex>\n${CARD_UV}`)
     .replace('#include <begin_vertex>', `#include <begin_vertex>\n${ELEPHANT_GRASS_VERTEX}`);
   if (colour)
     sh.fragmentShader = sh.fragmentShader
@@ -326,16 +410,21 @@ function patch(sh: THREE.WebGLProgramParametersWithUniforms, U: ElephantGrassUni
 }
 
 /** The grass material (Lambert: cheap, soft) and its shadow-pass twin with the same wind. */
-export function elephantGrassMaterials(U: ElephantGrassUniforms): {
+export function elephantGrassMaterials(
+  U: ElephantGrassUniforms,
+  map: THREE.Texture | null = null,
+): {
   material: THREE.MeshLambertMaterial;
   depth: THREE.MeshDepthMaterial;
 } {
-  const material = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+  // With PK's grass cards: the atlas, cut out where it is clear (an opaque draw, no sorting).
+  const cut = map ? { map, alphaTest: 0.45 } : {};
+  const material = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, ...cut });
   material.onBeforeCompile = (sh) => patch(sh, U, true);
-  material.customProgramCacheKey = () => 'elephant-grass';
-  const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking });
+  material.customProgramCacheKey = () => `elephant-grass${map ? '-cards' : ''}`;
+  const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, ...cut });
   depth.onBeforeCompile = (sh) => patch(sh, U, false);
-  depth.customProgramCacheKey = () => 'elephant-grass-depth';
+  depth.customProgramCacheKey = () => `elephant-grass-depth${map ? '-cards' : ''}`;
   return { material, depth };
 }
 
@@ -352,6 +441,8 @@ export interface Clump {
   dry: number;
   /** Cogon grass (paler, shorter) rather than elephant grass. */
   cogon?: boolean;
+  /** In flower (the cards' plume row). */
+  flower?: boolean;
 }
 
 /** Smooth value noise of the tile grid, 0..1, in cells of `cell` tiles (the stands). */
@@ -387,7 +478,10 @@ export function layElephantGrass(
   half: number,
   at: (tx: number, tz: number) => Patch,
   clear: (tx: number, tz: number) => boolean,
-  cfg: Pick<ElephantGrassCfg, 'count' | 'standTiles' | 'cover' | 'perTile' | 'bank' | 'height' | 'dryShare' | 'cogon' | 'spread'>,
+  cfg: Pick<
+    ElephantGrassCfg,
+    'count' | 'standTiles' | 'cover' | 'perTile' | 'bank' | 'height' | 'dryShare' | 'cogon' | 'spread' | 'flowering' | 'cards'
+  >,
 ): Clump[] {
   const out: Clump[] = [];
   const t0x = Math.floor((cx - radius + half) / tile);
@@ -406,12 +500,23 @@ export function layElephantGrass(
     if (out.length >= cfg.count) break;
     const what = at(tx, tz);
     if (what !== 'grass') continue;
-    // A fringe along the water: land tiles next to the river or the canal (never on the water).
+    // Never at the water's edge (the bank there slopes under the water); a fringe one tile back.
     const wet = (x: number, z: number) => {
       const w = at(x, z);
       return w === 'bank' || w === 'water';
     };
-    const shore = wet(tx + 1, tz) || wet(tx - 1, tz) || wet(tx, tz + 1) || wet(tx, tz - 1);
+    let edge = false;
+    let shore = false;
+    for (let dz = -2; dz <= 2 && !edge; dz++)
+      for (let dx = -2; dx <= 2; dx++) {
+        if (!wet(tx + dx, tz + dz)) continue;
+        if (Math.abs(dx) <= 1 && Math.abs(dz) <= 1) {
+          edge = true;
+          break;
+        }
+        shore = true;
+      }
+    if (edge) continue;
     const r = (k: number) => hash(tx, tz, 200 + k);
     let n: number;
     // How deep inside its stand the tile is (0 edge … 1 middle): the grass is taller there.
@@ -441,14 +546,26 @@ export function layElephantGrass(
         x: x0 + r(10 + i) * tile,
         z: z0 + r(20 + i) * tile,
         s: a + (b - a) * k,
-        w: cfg.spread[0] + (cfg.spread[1] - cfg.spread[0]) * r(90 + i),
+        // Cards keep the model's own shape (a little wider or narrower); built tussocks are wide.
+        w: cfg.cards
+          ? (a + (b - a) * k) * (cfg.cards.spread[0] + (cfg.cards.spread[1] - cfg.cards.spread[0]) * r(90 + i))
+          : cfg.spread[0] + (cfg.spread[1] - cfg.spread[0]) * r(90 + i),
         rot: r(40 + i) * Math.PI * 2,
         dry: r(50 + i) < cfg.dryShare ? 0.5 + 0.5 * r(60 + i) : 0.15 * r(60 + i),
         cogon,
+        flower: r(70 + i) < cfg.flowering,
       });
     }
   }
   return out;
+}
+
+/**
+ * How far (m) a full carpet of `count` clumps reaches round its centre, at `perTile` a tile
+ * (a little less, so the distance fade, not the last clump, ends it).
+ */
+export function grassReach(cfg: Pick<ElephantGrassCfg, 'count' | 'perTile'>, tile: number): number {
+  return tile * Math.sqrt(cfg.count / Math.max(0.1, cfg.perTile) / Math.PI) * 0.92;
 }
 
 // ------------------------------------------------------------------ the field
@@ -469,6 +586,9 @@ export class ElephantGrass {
   private readonly green = new THREE.Color(1, 1, 1);
   private readonly dry: THREE.Color;
   private readonly cogonTint: THREE.Color;
+  /** Drawn with PK's grass cards (else the built tussocks). */
+  readonly cards: boolean;
+  private readonly variant: THREE.InstancedBufferAttribute;
   private readonly c = new THREE.Color();
 
   constructor(
@@ -476,8 +596,15 @@ export class ElephantGrass {
     shadows: boolean,
   ) {
     this.uniforms = elephantGrassUniforms(cfg, windNoiseTexture());
-    const { material, depth } = elephantGrassMaterials(this.uniforms);
-    this.mesh = new THREE.InstancedMesh(elephantGrassGeometry(cfg.blades), material, Math.max(1, cfg.count));
+    // PK's Meshy grass as cards when the config names them (scripts/models/grassCards.mjs).
+    const C = cfg.cards;
+    const map = C ? cardTexture(C.file) : null;
+    const { material, depth } = elephantGrassMaterials(this.uniforms, map);
+    const geo = C ? grassCardGeometry(C.card, C.rows ?? 4, !!C.top) : elephantGrassGeometry(cfg.blades);
+    this.cards = !!C;
+    this.variant = new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, cfg.count)), 1);
+    geo.setAttribute('aVariant', this.variant);
+    this.mesh = new THREE.InstancedMesh(geo, material, Math.max(1, cfg.count));
     this.mesh.customDepthMaterial = depth;
     this.mesh.count = 0;
     this.mesh.frustumCulled = false;
@@ -487,6 +614,8 @@ export class ElephantGrass {
     this.group.add(this.mesh);
     // Dry clumps: the green leaves wash toward straw (instance colour multiplies the vertex colour).
     this.dry = new THREE.Color(cfg.dry).multiplyScalar(1.6);
+    // The meadow grass is tinted toward the ground's own green (a texture colour times it).
+    if (cfg.tint) this.green.set(cfg.tint).multiplyScalar(1.5);
     // Cogon is paler and yellower (instance colours may go above 1: they brighten).
     this.cogonTint = new THREE.Color(cfg.cogon.tint).multiplyScalar(1.3);
   }
@@ -527,7 +656,9 @@ export class ElephantGrass {
       this.mesh.setMatrixAt(i, this.m);
       this.c.copy(p.cogon ? this.cogonTint : this.green).lerp(this.dry, p.dry);
       this.mesh.setColorAt(i, this.c);
+      this.variant.setX(i, p.flower ? 1 : 0);
     });
+    this.variant.needsUpdate = true;
     this.mesh.count = clumps.length;
     this.planted = clumps.length;
     this.mesh.instanceMatrix.needsUpdate = true;
@@ -535,3 +666,14 @@ export class ElephantGrass {
     return true;
   }
 }
+
+/** The grass card atlas (a browser texture; none in the tests, where there is no page). */
+function cardTexture(file: string): THREE.Texture | null {
+  if (typeof document === 'undefined') return null;
+  const base = (import.meta as unknown as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/';
+  const t = new THREE.TextureLoader().load(`${base}${file}`);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+

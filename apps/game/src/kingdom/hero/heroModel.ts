@@ -189,6 +189,13 @@ const at = <T extends THREE.Object3D>(o: T, x: number, y: number, z: number): T 
 
 // ---------------------------------------------------------------- weapons
 
+/**
+ * A sword worn at the left hip (PK 1.8.0): in the pelvis's frame (+x is the figure's left),
+ * hilt up and forward by the hip, the blade slanting down and back; drawn for `keepDrawn`
+ * seconds after the last strike.
+ */
+export const SHEATH = { at: [0.19, 0.06, 0.1] as const, rot: [Math.PI + 0.5, 0, -0.18] as const, keepDrawn: 1.5 };
+
 function weapon(kind: HeroKit['weapon']): THREE.Group {
   const g = new THREE.Group();
   const wood = 0x6e4a2c;
@@ -577,6 +584,15 @@ export class HeroModel {
   /** Height of the rider's eyes above the ground (the camera looks a bit higher on a mount). */
   readonly lift: number;
   private readonly weapon: THREE.Group;
+  /** Where a sword hangs when it is not drawn (at the left hip), and whether this kit wears one. */
+  private readonly sheath: THREE.Group;
+  private readonly sheathes: boolean;
+  /** The last time (s) the hero struck or used a skill: the sword stays drawn a moment after. */
+  private foughtAt = -1e9;
+  /** Is the sword in the hand now (for the tests)? */
+  get drawn(): boolean {
+    return this.weapon.parent === this.j.gripR;
+  }
   /** A soft light-ring at the feet (the selected hero) and the slash trail. */
   readonly trail: THREE.Mesh;
   private readonly trailMat: THREE.MeshBasicMaterial;
@@ -621,6 +637,14 @@ export class HeroModel {
     this.weapon = weapon(kit.weapon);
     this.weapon.userData.gear = true;
     this.j.gripR.add(this.weapon);
+    // PK 1.8.0: a sword is worn at the left hip, hilt forward, and drawn only to fight.
+    this.sheath = new THREE.Group();
+    this.sheath.userData.gear = true;
+    this.sheath.position.set(SHEATH.at[0], SHEATH.at[1], SHEATH.at[2]);
+    this.sheath.rotation.set(SHEATH.rot[0], SHEATH.rot[1], SHEATH.rot[2]);
+    this.j.pelvis.add(this.sheath);
+    this.sheathes = kit.weapon === 'sword' || kit.weapon === 'preahKhan';
+    if (this.sheathes) this.sheath.add(this.weapon);
     if (kit.weapon === 'bow') {
       const b = bow();
       b.userData.gear = true;
@@ -718,6 +742,12 @@ export class HeroModel {
       reset(g);
     j.body.position.set(0, 0, 0);
     j.body.rotation.set(0, 0, 0);
+    // The sword: drawn while fighting and for a moment after, else back at the hip.
+    if (this.sheathes) {
+      if (h.state === 'attack' || h.state === 'skill') this.foughtAt = h.t;
+      const want = h.t - this.foughtAt < SHEATH.keepDrawn ? this.j.gripR : this.sheath;
+      if (this.weapon.parent !== want) want.add(this.weapon);
+    }
     if (this.beast) this.beast.root.rotation.x = 0;
     // Arms rest a little away from the body; the right holds the weapon forward.
     j.shoulderL.rotation.z = 0.12;

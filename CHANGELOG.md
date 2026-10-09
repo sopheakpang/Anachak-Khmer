@@ -16,6 +16,10 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.8.0-08 | **Red laterite mud** (PK's jungle references): the worn paths and yards are red clay, dark when wet; after rain **puddles** stand in the hollows of the mud, mirroring the sky, rings where the drops fall; the ground dries in about six minutes (D132). |
 | 1.8.0-09 | **The forest floor**: drifts of dead leaves under the trees, **mossy laterite rocks**, **fallen palm fronds** and **creeping roots** on the floor and at its edge; a few rocks out on open land and by the water (D132). |
 | 1.8.0-10 | **Humid air**: soft banks of **ground mist** drifting low, thick in mist and rain, at dawn and after rain; **light shafts** slanting down from the sun through gaps in the clouds on cloudy days and after rain (D133). |
+| 1.8.0-11 | **Crystal-clear turquoise water**: the rivers, canals and moats are clear turquoise; the pale sandy bed shows through in the shallows, with dancing light (caustics); deeper it turns deep teal (D134). |
+| 1.8.0-12 | **The king wears his sword at the hip**: sheathed at his waist while he walks, works or rests; he draws it to strike or use his skill and puts it back a moment after the fight (D135). |
+| 1.8.0-13 | **PK's 3D grass in the game**: PK's Meshy grass "Resilient Oasis" is now the elephant grass, and his "mix of cogon" grass covers **every green meadow** as short grass 30 cm high (above the foot, below the knee); both roll in the wind and bend round walkers; from the high camera each tussock is seen from above. The old spiky tufts round the hero are gone from the meadows (D136). |
+| 1.8.0-14 | **Keyboard settings** 🎮 (year bar): every key of the kingdom view and of the 3D hero mode can be changed, two keys per action, Khmer names first; a key already used moves to the action it came from; kept in the browser; Reset brings the defaults back. The hero's buttons and hints name the keys you chose (D137). |
 
 ## 1.7.0 — 2026-10-06
 

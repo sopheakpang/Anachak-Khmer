@@ -1324,3 +1324,95 @@
   font-weight: 700;
   white-space: nowrap;
 }
+
+/* The keyboard panel (PK 1.8.0, year bar 🎮): two columns of actions, two keys each. */
+.k-keys {
+  position: absolute;
+  left: 140px;
+  right: 140px;
+  top: 170px;
+  max-height: 690px;
+  box-sizing: border-box;
+  padding: 12px 20px 16px;
+  border-radius: 22px;
+  font-size: 26px;
+  pointer-events: auto;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 8px;
+}
+.k-keys h3 {
+  margin: 0;
+  font-size: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.k-keys button {
+  font: inherit;
+  font-size: 26px;
+  border-radius: 12px;
+  border: 2px solid rgb(160 110 40 / 0.8);
+  background: linear-gradient(#ffe9a8, #f0c860);
+  color: #3a2410;
+  padding: 2px 12px;
+  cursor: pointer;
+}
+.k-keys-tabs {
+  display: flex;
+  gap: 10px;
+}
+.k-keys-tab.k-on {
+  background: linear-gradient(#fff6d6, #ffd977);
+  border-color: #7a2a14;
+  font-weight: 700;
+}
+.k-keys-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 28px;
+  overflow: auto;
+}
+.k-keyrow {
+  display: grid;
+  grid-template-columns: 1fr 120px 120px;
+  gap: 8px;
+  align-items: center;
+  border-top: 1px solid rgb(120 80 30 / 0.25);
+  padding: 3px 0;
+}
+.k-keyname {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.k-keyname small {
+  font-size: 26px;
+  color: #5a4a3a;
+}
+.k-keys .k-key {
+  min-height: 44px;
+  font-weight: 700;
+}
+.k-keys .k-key.k-empty {
+  opacity: 0.55;
+}
+.k-keys .k-key.k-wait {
+  background: #fff;
+  border-color: #b0321e;
+  animation: k-key-wait 0.8s ease-in-out infinite alternate;
+}
+@keyframes k-key-wait {
+  to {
+    background: #ffd9c8;
+  }
+}
+.k-keys-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.k-keys-hint {
+  color: #5a4a3a;
+}

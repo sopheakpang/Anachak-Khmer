@@ -140,6 +140,7 @@ export class KingdomHud {
       <div class="k-floats" id="k-floats"></div>
       <div class="k-bubbles" id="k-bubbles"></div>
       <section class="k-orders k-glass" id="k-orders" hidden data-ui></section>
+      <section class="k-keys k-glass" id="k-keys" hidden data-ui></section>
       <div class="k-radial" id="k-radial" hidden></div>
       <section class="k-outcome k-glass" id="k-outcome" hidden data-ui></section>
       <section class="k-card k-glass" id="k-card" hidden data-ui></section>
@@ -164,6 +165,7 @@ export class KingdomHud {
       'floats',
       'bubbles',
       'orders',
+      'keys',
       'radial',
       'tip',
     ])
@@ -236,6 +238,8 @@ export class KingdomHud {
     musicVolume?: number;
     /** The order board (Hay Day-style): buyers waiting, how many can be filled now, a junk in port. */
     orders?: { ready: number; canFill: number; boat: boolean };
+    /** The keyboard panel (PK 1.8.0): open, closed, or undefined on phones (no button). */
+    keys?: boolean;
   }): void {
     const [y0, y1] = YEARBAR_RANGE;
     const x = (y: number) => `${(((Math.max(y0, Math.min(y1, y)) - y0) / (y1 - y0)) * 100).toFixed(2)}%`;
@@ -261,7 +265,10 @@ export class KingdomHud {
           : `<button class="k-yb-speed" data-act="music-vol" data-tip="${esc('<b>កម្រិតតន្ត្រី</b> · Music volume: press for the next step')}" data-ui>🔉 <b>${km(Math.round(b.musicVolume * 100))}%</b></button>`) +
         (b.orders
           ? `<button class="k-yb-speed k-yb-orders${b.orders.canFill ? ' k-yb-hot' : ''}" data-act="orders" data-tip="${esc('<b>ការបញ្ជាទិញ</b> · Orders: buyers want your goods and pay in gold (O)')}" data-ui>${b.orders.boat ? '⛵' : '📜'} ការបញ្ជាទិញ · Orders <b>${km(b.orders.ready)}</b></button>`
-          : ''),
+          : '') +
+        (b.keys === undefined
+          ? ''
+          : `<button class="k-yb-speed${b.keys ? ' k-yb-hot' : ''}" data-act="keys" data-tip="${esc('<b>ក្តារចុច</b> · Keyboard: choose your own keys to play, for the kingdom and the hero')}" data-ui>🎮</button>`),
     );
   }
 
@@ -269,6 +276,12 @@ export class KingdomHud {
   renderOrders(html: string | null): void {
     this.el.orders!.hidden = !html;
     if (html) this.setHtml('orders', html);
+  }
+
+  /** The keyboard panel (year bar 🎮), or null to close it. */
+  renderKeys(html: string | null): void {
+    this.el.keys!.hidden = !html;
+    if (html) this.setHtml('keys', html);
   }
 
   /** Full baskets over the houses to click (Hay Day-style collecting). */

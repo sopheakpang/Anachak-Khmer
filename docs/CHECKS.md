@@ -515,3 +515,17 @@ Note: the test machine has no GPU and renders headless at about 2 FPS, so timing
 | Mossy rocks, fronds, roots on the forest floor and its edge, none on open grass (rocks rarely) | ✅ | `view/jungle18.test.ts` |
 | Mist and light shafts by weather, dawn, wetness and night; fixed world grid | ✅ | `view/jungle18.test.ts`, `docs/screens/k18-light-shafts.jpg` |
 
+
+### 1.8.0, third part: clear water, the sword at the hip, PK's grass, the keyboard (2026-10-09)
+
+**Automated:** `npm run verify` ✅ (lint, types, 653 unit tests in 73 files, build) · e2e KG-01…KG-09 ✅ (KG-02 budget 502 228 and 506 889 triangles, 86 draw calls; KG-09 new), KM-02…KM-04 ✅. KM-01 ❌: the tap selects the king instead of the villager and times out; it fails the same way on the previous commit (ec40d29) in this container, so it is not caused by these changes — to look at on a real phone.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Water turquoise, see-through in the shallows (clarity), caustics on a pale sand bed | ✅ | `view/grass18.test.ts`, `docs/screens/k18-water-clear.jpg` |
+| The king's sword sheathed at the hip, drawn to strike, back after `keepDrawn` | ✅ | `hero/hero.test.ts`, `docs/screens/k18-sword-hip.jpg` |
+| PK's grass baked to cards (3 sides + top, 2 rows), alpha cut, top card folds for a low eye; elephant grass uses Resilient Oasis | ✅ | `view/grass18.test.ts`, `docs/screens/k18-sward-close.jpg` |
+| Meadow grass 0.26–0.34 m on every open grass tile (not soil, forest, water, paths, buildings), 8 triangles a clump, green tint; old hero tufts only on the forest floor | ✅ | `view/grass18.test.ts`, `docs/screens/k18-sward-rts.jpg`, `k18-sward-hero.jpg` |
+| Keyboard: defaults from config, swap on conflict, Esc/Backspace reserved, kept in the browser (and a blocked store is harmless), Reset; panel Khmer first, text ≥ 26 px; a new key works in the game and the old one stops | ✅ | `kingdom/keymap.test.ts`, e2e KG-09, `docs/screens/k18-keyboard.jpg` |
+
+**Not verified here:** the frame rate with the meadow grass on the stream laptop (software GL here), the keyboard panel with a real Khmer keyboard layout.

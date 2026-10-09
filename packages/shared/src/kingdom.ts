@@ -14,6 +14,7 @@ import worldEventsJson from '../../../config/kingdom/worldEvents.json';
 import anachakJson from '../../../config/kingdom/anachak.json';
 import propsJson from '../../../config/kingdom/props.json';
 import dioramaJson from '../../../config/kingdom/diorama.json';
+import controlsJson from '../../../config/kingdom/controls.json';
 
 /**
  * Khmer Kingdoms (the RTS tab): data-driven historical content. Every object carries its
@@ -1001,6 +1002,62 @@ export const PropsSchema = z.object({
 
 /** PK 1.7.0: the Angkor Cel-Diorama look (config/kingdom/diorama.json, docs/VISUAL_BIBLE.md). */
 const Hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+/** A field of wind-blown grass (view/elephantGrass.ts): the tall stands and the short sward. */
+const GrassFieldSchema = z.object({
+    count: z.number().int().min(0),
+    blades: z.number().int().min(3).max(24),
+    reach: z.number().positive(),
+    standTiles: z.number().positive(),
+    cover: z.number().min(0).max(1),
+    perTile: z.number().min(0).max(16),
+    bank: z.number().min(0).max(1),
+    keepAway: z.number().int().min(0).max(12),
+    height: z.tuple([z.number().positive(), z.number().positive()]),
+    /** Width of a tussock (m): it is wider than tall, so stands read as a dense mass. */
+    spread: z.tuple([z.number().positive(), z.number().positive()]),
+    /** PK 1.8.0: PK's Meshy grass baked into cards (atlas file, card size per 1 of grass height, width share). */
+    cards: z
+      .object({
+        file: z.string(),
+        card: z.number().positive(),
+        spread: z.tuple([z.number().positive(), z.number().positive()]),
+        /** Rows each card is cut in (more = it bends smoother in the wind; 1 for short grass). */
+        rows: z.number().int().min(1).max(8).optional(),
+        /** The atlas has a 4th column, the grass from above, shown on a flat card (the RTS camera). */
+        top: z.boolean().optional(),
+        source: z.string(),
+      })
+      .optional(),
+    /** PK 1.8.0: dense cogon grass (ស្បូវ) mixed in: its share, its heights (m) and paler tint. */
+    cogon: z.object({
+      share: z.number().min(0).max(1),
+      height: z.tuple([z.number().positive(), z.number().positive()]),
+      tint: Hex,
+    }),
+    /** Colour every clump is multiplied by (x1.5: may brighten), to match the ground's green. */
+    tint: Hex.optional(),
+    dry: Hex,
+    dryShare: z.number().min(0).max(1),
+    flowering: z.number().min(0).max(1),
+    gustSheen: z.number().min(0).max(1),
+    baseDark: z.number().min(0).max(1),
+    trample: z.number().min(0),
+    lod: z.tuple([z.number().positive(), z.number().positive()]),
+    wind: z.object({
+      strength: z.number().min(0).max(3),
+      dirDeg: z.number(),
+      speed: z.number().min(0),
+      waveScale: z.number().positive(),
+      sharpness: z.number().min(0).max(0.49),
+      baseBend: z.number().min(0).max(1),
+      gustBend: z.number().min(0).max(1.5),
+      sway: z.number().min(0).max(0.5),
+      swaySpeed: z.number().min(0),
+      flutter: z.number().min(0).max(0.3),
+      flutterSpeed: z.number().min(0),
+    }),
+  });
+
 export const DioramaSchema = z.object({
   camera: z.object({ fov: z.number().min(8).max(60), far: z.number().positive() }),
   post: z.object({
@@ -1056,6 +1113,9 @@ export const DioramaSchema = z.object({
     rippleSpeed: z.number().min(0),
     rippleScale: z.number().positive(),
     rippleStrength: z.number().min(0).max(1),
+    /** PK 1.8.0: crystal-clear water: opacity in the shallows and the deep, light on the bed. */
+    clarity: z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]).optional(),
+    caustics: z.number().min(0).max(1).optional(),
   }),
   ground: z.object({
     meadowDark: Hex,
@@ -1091,45 +1151,9 @@ export const DioramaSchema = z.object({
     foliage: Hex,
   }),
   /** PK 1.8.0: dense tall tropical grass that rolls in the wind (view/elephantGrass.ts). */
-  elephantGrass: z.object({
-    count: z.number().int().min(0),
-    blades: z.number().int().min(3).max(24),
-    reach: z.number().positive(),
-    standTiles: z.number().positive(),
-    cover: z.number().min(0).max(1),
-    perTile: z.number().min(0).max(6),
-    bank: z.number().min(0).max(1),
-    keepAway: z.number().int().min(0).max(12),
-    height: z.tuple([z.number().positive(), z.number().positive()]),
-    /** Width of a tussock (m): it is wider than tall, so stands read as a dense mass. */
-    spread: z.tuple([z.number().positive(), z.number().positive()]),
-    /** PK 1.8.0: dense cogon grass (ស្បូវ) mixed in: its share, its heights (m) and paler tint. */
-    cogon: z.object({
-      share: z.number().min(0).max(1),
-      height: z.tuple([z.number().positive(), z.number().positive()]),
-      tint: Hex,
-    }),
-    dry: Hex,
-    dryShare: z.number().min(0).max(1),
-    flowering: z.number().min(0).max(1),
-    gustSheen: z.number().min(0).max(1),
-    baseDark: z.number().min(0).max(1),
-    trample: z.number().min(0),
-    lod: z.tuple([z.number().positive(), z.number().positive()]),
-    wind: z.object({
-      strength: z.number().min(0).max(3),
-      dirDeg: z.number(),
-      speed: z.number().min(0),
-      waveScale: z.number().positive(),
-      sharpness: z.number().min(0).max(0.49),
-      baseBend: z.number().min(0).max(1),
-      gustBend: z.number().min(0).max(1.5),
-      sway: z.number().min(0).max(0.5),
-      swaySpeed: z.number().min(0),
-      flutter: z.number().min(0).max(0.3),
-      flutterSpeed: z.number().min(0),
-    }),
-  }),
+  elephantGrass: GrassFieldSchema,
+  /** PK 1.8.0: the short grass (30 cm) that covers every green meadow, same wind (PK's Meshy model). */
+  sward: GrassFieldSchema,
   /** PK 1.8.0: ground mist and light shafts through the clouds (view/atmosphere.ts). */
   atmosphere: z.object({
     mist: z.object({
@@ -1183,6 +1207,32 @@ export const DioramaSchema = z.object({
 });
 export type Diorama = z.infer<typeof DioramaSchema>;
 
+/** The keyboard (PK 1.8.0): every action, its names, its default keys (KeyboardEvent.code). */
+const ControlActionSchema = z.object({
+  id: z.string().min(1),
+  km: z.string().min(1),
+  en: z.string().min(1),
+  keys: z.array(z.string().min(1)).min(1).max(2),
+});
+export const ControlsSchema = z
+  .object({ map: z.array(ControlActionSchema).min(1), hero: z.array(ControlActionSchema).min(1) })
+  .superRefine((c, ctx) => {
+    for (const g of ['map', 'hero'] as const) {
+      const ids = new Set<string>();
+      const keys = new Map<string, string>();
+      for (const a of c[g]) {
+        if (ids.has(a.id)) ctx.addIssue({ code: 'custom', path: [g], message: `${a.id} twice` });
+        ids.add(a.id);
+        for (const k of a.keys) {
+          if (keys.has(k)) ctx.addIssue({ code: 'custom', path: [g], message: `${k} on ${keys.get(k)} and ${a.id}` });
+          keys.set(k, a.id);
+        }
+      }
+    }
+  });
+export type Controls = z.infer<typeof ControlsSchema>;
+export type ControlAction = z.infer<typeof ControlActionSchema>;
+
 export interface KingdomData {
   eras: Era[];
   sources: Array<{ id: string; title: string; author: string; year: number }>;
@@ -1201,6 +1251,8 @@ export interface KingdomData {
   anachak: Anachak;
   props: z.infer<typeof PropsSchema>;
   diorama: Diorama;
+  /** The default keys (config/kingdom/controls.json). */
+  controls: Controls;
 }
 
 const byId = <T extends { id: string }>(list: T[]): Record<string, T> =>
@@ -1221,6 +1273,7 @@ export function loadKingdom(): KingdomData {
     anachak: AnachakSchema.parse(anachakJson),
     props: PropsSchema.parse(propsJson),
     diorama: DioramaSchema.parse(dioramaJson),
+    controls: ControlsSchema.parse(controlsJson),
     occupations: z.object({ occupations: z.array(OccupationSchema).min(1) }).parse(charactersJson)
       .occupations,
     worldEvents: z

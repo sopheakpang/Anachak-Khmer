@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import { loadKingdom } from '@temples/shared';
 import { HeroCore, NO_INPUT, inArc, kitFor, type HeroInput } from './heroCore';
-import { HeroModel, lookFor } from './heroModel';
+import { HeroModel, SHEATH, lookFor } from './heroModel';
 import {
   doWork,
   heal,
@@ -323,6 +323,30 @@ describe('the anime model', () => {
       expect(m.lift > 0, k.id).toBe(k.id === 'rider' || k.id === 'elephant');
       m.dispose();
     }
+  });
+
+  it('the king wears his sword at the hip, draws it to fight and puts it back after (PK 1.8.0)', () => {
+    const k = kitFor(H, 'king');
+    const m = new HeroModel(k, lookFor(k, 'king'));
+    const pose = (state: 'idle' | 'attack' | 'skill' | 'run', t: number) =>
+      m.pose({ state, stateT: 0.1, combo: 0, stride: 1, speed: state === 'run' ? 4 : 0, y: 0, t, strikeSec: 0.4, skillKind: k.skill.kind });
+    pose('idle', 1);
+    expect(m.drawn).toBe(false);
+    pose('run', 2);
+    expect(m.drawn).toBe(false);
+    pose('attack', 3);
+    expect(m.drawn).toBe(true);
+    pose('idle', 3 + SHEATH.keepDrawn * 0.5);
+    expect(m.drawn).toBe(true); // a moment after the blow it is still in hand
+    pose('idle', 3 + SHEATH.keepDrawn + 0.1);
+    expect(m.drawn).toBe(false);
+    pose('skill', 10);
+    expect(m.drawn).toBe(true);
+    // Spears and axes stay in the hand.
+    const sp = kitFor(H, 'spearman');
+    const s2 = new HeroModel(sp, lookFor(sp, 'spearman'));
+    s2.pose({ state: 'idle', stateT: 0, combo: 0, stride: 0, speed: 0, y: 0, t: 1, strikeSec: 0.4, skillKind: sp.skill.kind });
+    expect(s2.drawn).toBe(true);
   });
 
   it('stands upright in every pose (the hips never tip over)', () => {

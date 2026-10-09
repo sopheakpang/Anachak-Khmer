@@ -94,7 +94,11 @@ export class GroundDetail {
   /** The wind on the grass (PK 1.6.0): time and strength, read by the shader. */
   readonly wind = { uTime: { value: 0 }, uWind: { value: 1 } };
 
-  constructor() {
+  /**
+   * `meadowTufts` false: no tufts on open grass, where the scene's meadow grass (PK's Meshy
+   * model, diorama.json sward) already grows (PK 1.8.0); the forest floor keeps its tufts.
+   */
+  constructor(readonly meadowTufts = true) {
     const n = (SPAN * 2 + 1) ** 2;
     this.grass = new THREE.InstancedMesh(tuftGeometry(), grassWindMaterial(this.wind), n);
     const disc = new THREE.CircleGeometry(1, 9);
@@ -158,6 +162,7 @@ export class GroundDetail {
           this.dirt.setMatrixAt(d++, this.m);
           if (kind === 'bare') continue;
         }
+        if (kind === 'grass' && !this.meadowTufts) continue;
         // Thinner toward the edge of the patch, so it never ends in a hard line.
         const k = (kind === 'forest' ? 1.25 : 1) * (0.55 + hash(gx, gz, 7) * 0.7) * (1 - edge * edge * 0.8);
         this.s.set(k, k * (0.8 + hash(gx, gz, 8) * 0.6), k);

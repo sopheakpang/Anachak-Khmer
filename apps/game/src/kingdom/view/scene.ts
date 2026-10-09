@@ -92,7 +92,7 @@ import { NprUnits } from './npr';
 import { blockAo, splatTerrain, wetness, type SplatUniforms } from './terrain';
 import { GroundDetailRts, hash as detailHash, type Patch } from './detail';
 import { WearMap } from './wear';
-import { ElephantGrass } from './elephantGrass';
+import { ElephantGrass, grassReach } from './elephantGrass';
 import { LightShafts, MistLayer, mistAmount, shaftAmount } from './atmosphere';
 import { addSeeThrough, seeAmount, seeUniforms, setTargets, type SeeUniforms } from './seeThrough';
 import { TorchView, torchSpots, type TorchSite } from './torches';
@@ -141,7 +141,7 @@ export type HoverTarget = { kind: 'unit' | 'building' | 'node' | 'animal'; id: n
 
 const TERRAIN_COLOR: Record<string, number> = {
   grass: 0x6f9440,
-  water: 0x2f5a62,
+  water: 0xb3a77c, // PK 1.8.0: a pale sand bed under the clear water
   ford: 0xa08658,
   forest: 0x4f7430,
   rock: 0x8a8270,
@@ -299,8 +299,10 @@ export class KingdomScene {
   private fallen!: FallenTrees;
   /** PK 1.8.0: elephant grass, see-through cover, torches, the stars and the moon. */
   readonly egrass: ElephantGrass | null = null;
-  private egrassKey = '';
-  private egrassClear: Set<number> | null = null;
+  /** PK 1.8.0: the 30 cm meadow grass (diorama.json sward). */
+  readonly sward: ElephantGrass | null = null;
+  private readonly egrassKey = new Map<ElephantGrass, string>();
+  private readonly egrassClear = new Map<ElephantGrass, Set<number>>();
   readonly see: SeeUniforms | null = null;
   private seeScanAt = -1;
   readonly torches: TorchView | null = null;
@@ -446,6 +448,12 @@ export class KingdomScene {
     if (this.gfx.diorama && this.gfx.elephantGrass && sim.data.diorama.elephantGrass.count > 0) {
       const g = new ElephantGrass(sim.data.diorama.elephantGrass, !!this.gfx.grassShadows && this.sun.castShadow);
       (this as { egrass: ElephantGrass | null }).egrass = g;
+      this.scene.add(g.group);
+    }
+    // PK 1.8.0: the short grass (30 cm, PK's Meshy model) over every green meadow.
+    if (this.gfx.diorama && this.gfx.sward && sim.data.diorama.sward.count > 0) {
+      const g = new ElephantGrass(sim.data.diorama.sward, false);
+      (this as { sward: ElephantGrass | null }).sward = g;
       this.scene.add(g.group);
     }
     if (this.gfx.seeThrough) (this as { see: SeeUniforms | null }).see = seeUniforms();
@@ -859,6 +867,10 @@ export class KingdomScene {
     }
     geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     geo.computeVertexNormals();
+    // The ground's height grid (PK 1.8.0: nothing planted where the bank dips under the water).
+    const gh = new Float32Array(pos.count);
+    for (let i = 0; i < pos.count; i++) gh[i] = pos.getY(i);
+    this.groundH = { h: gh, n: S + 1, size };
     const tx = textures();
     const groundMat = soft({ vertexColors: true, map: repeated(tx.grass, 48, 48), roughness: 1 }, 0);
     if (this.gfx.diorama) {
@@ -2301,7 +2313,8 @@ export class KingdomScene {
     this.syncWear();
     this.syncWet(t);
     this.syncAir(t);
-    this.syncElephantGrass(t, fresh);
+    this.syncElephantGrass(this.egrass, t, fresh);
+    this.syncElephantGrass(this.sward, t, fresh);
     this.syncNight(t);
     this.syncSee(t, selected);
     this.syncEffects(t);
@@ -2345,6 +2358,23 @@ export class KingdomScene {
     U.uSky.value.copy(this.puddleSky).lerp(this.nightPuddle, this.night);
   }
   private wetAt = -1;
+  private groundH: { h: Float32Array; n: number; size: number } | null = null;
+
+  /** The drawn ground's height (m) at a world point (bilinear on the terrain grid). */
+  groundY(x: number, z: number): number {
+    const G = this.groundH;
+    if (!G) return 0;
+    const fx = Math.min(G.n - 1.001, Math.max(0, ((x + G.size / 2) / G.size) * (G.n - 1)));
+    const fz = Math.min(G.n - 1.001, Math.max(0, ((z + G.size / 2) / G.size) * (G.n - 1)));
+    const ix = Math.floor(fx);
+    const iz = Math.floor(fz);
+    const ux = fx - ix;
+    const uz = fz - iz;
+    const at = (a: number, b: number) => G.h[b * G.n + a]!;
+    const top = at(ix, iz) * (1 - ux) + at(ix + 1, iz) * ux;
+    const bot = at(ix, iz + 1) * (1 - ux) + at(ix + 1, iz + 1) * ux;
+    return top * (1 - uz) + bot * uz;
+  }
 
   /** The dawn (0..1, Anachak Khmer's day): from the end of the night until the morning is up. */
   private dawn(): number {
@@ -2381,8 +2411,7 @@ export class KingdomScene {
   }
 
   /** Elephant grass: planted round the view, wind from the weather, trampled by walkers. */
-  private syncElephantGrass(t: number, fresh: boolean): void {
-    const g = this.egrass;
+  private syncElephantGrass(g: ElephantGrass | null, t: number, fresh: boolean): void {
     if (!g) return;
     const s = this.sim;
     let [cx, cz] = this.view;
@@ -2395,14 +2424,16 @@ export class KingdomScene {
       [cx, cz] = hero;
       radius = 36;
     }
+    // A carpet (every tile): only as far as its clumps reach, so the LOD fade hides its edge.
+    if (g.cfg.cover >= 1) radius = Math.min(radius, grassReach(g.cfg, this.sim.map.tile));
     const walkers: number[] = [];
     if (hero) walkers.push(hero[0], hero[1]);
     for (const u of this.peopleNear(cx, cz, radius, 15)) walkers.push(u.x, u.z);
     g.frame(t, this.weatherFx.wind, cx, cz, radius, walkers);
     const key = this.landKey();
-    const changed = key !== this.egrassKey;
-    if (changed || !this.egrassClear) {
-      this.egrassKey = key;
+    const changed = key !== this.egrassKey.get(g);
+    if (changed || !this.egrassClear.get(g)) {
+      this.egrassKey.set(g, key);
       // No tall grass within keepAway tiles of any building (yards, doors, paths to them).
       const N = s.map.size;
       const k = g.cfg.keepAway;
@@ -2415,12 +2446,16 @@ export class KingdomScene {
             const out = Math.max(b.tx - x, x - (b.tx + b.w - 1), b.tz - z, z - (b.tz + b.d - 1), 0);
             if (out <= k + Math.floor(detailHash(x, z, 77) * 3)) near.add(z * N + x);
           }
-      this.egrassClear = near;
+      this.egrassClear.set(g, near);
     }
-    const near = this.egrassClear;
+    const near = this.egrassClear.get(g)!;
     const N = s.map.size;
+    const T = s.map.tile;
     const clear = (tx: number, tz: number) =>
-      !near.has(tz * N + tx) && (!this.wear || this.wear.at(tx, tz) < 0.04);
+      !near.has(tz * N + tx) &&
+      (!this.wear || this.wear.at(tx, tz) < 0.04) &&
+      // Dry land only: where the drawn bank dips under the water plane there is no grass.
+      this.groundY((tx + 0.5) * T - this.half, (tz + 0.5) * T - this.half) > WATER_Y + 0.08;
     const at = this.detailAt ?? this.patchAt(new Set());
     g.lay(cx, cz, radius, s.map.tile, this.half, at, clear, changed || fresh);
   }

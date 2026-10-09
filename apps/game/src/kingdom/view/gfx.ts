@@ -37,6 +37,8 @@ export interface KingdomGfx {
   diorama?: boolean;
   /** PK 1.8.0: tall elephant grass rolling in the wind (diorama.json elephantGrass); its shadows. */
   elephantGrass?: boolean;
+  /** PK 1.8.0: the 30 cm meadow grass over every green tile (diorama.json sward). */
+  sward?: boolean;
   grassShadows?: boolean;
   /** PK 1.8.0: real lights from the nearest night torches (0 = glow only). */
   torchLights?: number;

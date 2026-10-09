@@ -838,3 +838,50 @@ test('KG-08: PK 1.6.0: move a house to a new spot; the historical temple has no 
   });
   expect(templeMovable).toBe(false);
 });
+
+test('KG-09: PK 1.8.0: the keyboard panel: pick a key for an action, it works, Reset brings the defaults', async ({
+  page,
+}) => {
+  await page.goto('/?mode=kingdom&offline=1&preset=lite');
+  await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.kingdom, null, {
+    timeout: 180_000,
+    polling: 500,
+  });
+  if (await page.locator('#k-card').isVisible())
+    await page.locator('#k-card .k-card-x').dispatchEvent('pointerdown');
+  await page.evaluate(() => {
+    const k = window.__temples.kingdom!;
+    k.sim.ai.nextRaid = 1e9;
+    k.keymap.reset();
+    k.selected.clear();
+  });
+  // The 🎮 button on the year bar opens the panel; Khmer first, every map action listed.
+  await page.locator('.k-yearbar [data-act="keys"]').dispatchEvent('pointerdown');
+  await expect(page.locator('#k-keys')).toBeVisible();
+  await expect(page.locator('#k-keys h3')).toContainText('ក្តារចុច');
+  const size = await page.locator('#k-keys .k-keyname').first().evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+  expect(size).toBeGreaterThanOrEqual(26);
+  // "The royal hall" gets G: click its first key, press G.
+  await page.locator('#k-keys [data-act="keys-set:map:hall:0"]').dispatchEvent('pointerdown');
+  await expect(page.locator('#k-keys [data-act="keys-set:map:hall:0"]')).toHaveText('…');
+  await page.keyboard.press('g');
+  await expect(page.locator('#k-keys [data-act="keys-set:map:hall:0"]')).toHaveText('G');
+  await page.locator('#k-keys [data-act="keys-close"]').dispatchEvent('pointerdown');
+  await expect(page.locator('#k-keys')).toBeHidden();
+  // G now selects the hall; H does nothing any more.
+  const hallBy = async (key: string) => {
+    await page.evaluate(() => window.__temples.kingdom!.selected.clear());
+    await page.keyboard.press(key);
+    return page.evaluate(() => {
+      const k = window.__temples.kingdom!;
+      return [...k.selected].some((id) => k.sim.buildings.get(id)?.type === 'townCentre');
+    });
+  };
+  expect(await hallBy('h')).toBe(false);
+  expect(await hallBy('g')).toBe(true);
+  // Kept in the browser; Reset brings H back.
+  expect(await page.evaluate(() => localStorage.getItem('temples.keys.v1'))).toContain('KeyG');
+  await page.locator('.k-yearbar [data-act="keys"]').dispatchEvent('pointerdown');
+  await page.locator('#k-keys [data-act="keys-reset"]').dispatchEvent('pointerdown');
+  expect(await hallBy('h')).toBe(true);
+});

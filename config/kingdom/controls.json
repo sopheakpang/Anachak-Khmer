@@ -1,0 +1,39 @@
+{
+  "$comment": "PK 1.8.0: the keyboard, as each player likes it. Every action has up to two keys, named by their place on the keyboard (KeyboardEvent.code: KeyW is the W key whatever the layout, so a Khmer keyboard plays the same). The player changes them in the game (year bar 🎮); their choice is kept in the browser; these are the defaults and Reset brings them back. map = the kingdom view; hero = the 3D hero mode.",
+  "map": [
+    { "id": "panUp", "km": "រំកិលឡើង", "en": "Move the view up", "keys": ["KeyW", "ArrowUp"] },
+    { "id": "panDown", "km": "រំកិលចុះ", "en": "Move the view down", "keys": ["KeyS", "ArrowDown"] },
+    { "id": "panLeft", "km": "រំកិលឆ្វេង", "en": "Move the view left", "keys": ["KeyA", "ArrowLeft"] },
+    { "id": "panRight", "km": "រំកិលស្តាំ", "en": "Move the view right", "keys": ["KeyD", "ArrowRight"] },
+    { "id": "centre", "km": "ទៅកាន់អ្វីដែលបានជ្រើស", "en": "Go to the selection", "keys": ["Space"] },
+    { "id": "hall", "km": "ព្រះរាជវាំង", "en": "The royal hall", "keys": ["KeyH"] },
+    { "id": "find", "km": "រកធនធាន", "en": "Find a resource", "keys": ["KeyF"] },
+    { "id": "map", "km": "ផែនទីបុរាណ", "en": "The old map", "keys": ["KeyM"] },
+    { "id": "history", "km": "ប្រវត្តិ", "en": "History", "keys": ["KeyY"] },
+    { "id": "orders", "km": "ការបញ្ជាទិញ", "en": "Orders", "keys": ["KeyO"] },
+    { "id": "speedUp", "km": "លឿនជាងមុន", "en": "Faster", "keys": ["Equal", "NumpadAdd"] },
+    { "id": "speedDown", "km": "យឺតជាងមុន", "en": "Slower", "keys": ["Minus", "NumpadSubtract"] },
+    { "id": "cancel", "km": "បោះបង់", "en": "Cancel the job", "keys": ["Delete"] },
+    { "id": "deselect", "km": "លែងជ្រើស", "en": "Deselect", "keys": ["Escape"] },
+    { "id": "quickSave", "km": "រក្សាទុករហ័ស", "en": "Quick save", "keys": ["F5"] },
+    { "id": "quickLoad", "km": "បើករហ័ស", "en": "Quick load", "keys": ["F9"] },
+    { "id": "fullscreen", "km": "ពេញអេក្រង់", "en": "Full screen", "keys": ["F11"] }
+  ],
+  "hero": [
+    { "id": "forward", "km": "ទៅមុខ", "en": "Forward", "keys": ["KeyW"] },
+    { "id": "back", "km": "ថយក្រោយ", "en": "Back", "keys": ["KeyS"] },
+    { "id": "left", "km": "ឆ្វេង", "en": "Left", "keys": ["KeyA"] },
+    { "id": "right", "km": "ស្តាំ", "en": "Right", "keys": ["KeyD"] },
+    { "id": "run", "km": "រត់", "en": "Run", "keys": ["ShiftLeft", "ShiftRight"] },
+    { "id": "jump", "km": "លោត", "en": "Jump", "keys": ["Space"] },
+    { "id": "attack", "km": "វាយ", "en": "Strike", "keys": ["KeyJ"] },
+    { "id": "skill", "km": "ក្បាច់ពិសេស", "en": "Skill", "keys": ["KeyK", "KeyR"] },
+    { "id": "dash", "km": "គេច", "en": "Dodge", "keys": ["KeyQ"] },
+    { "id": "work", "km": "ធ្វើការ", "en": "Work, talk, take", "keys": ["KeyE"] },
+    { "id": "camLeft", "km": "បង្វិលកាមេរ៉ាឆ្វេង", "en": "Turn the camera left", "keys": ["ArrowLeft"] },
+    { "id": "camRight", "km": "បង្វិលកាមេរ៉ាស្តាំ", "en": "Turn the camera right", "keys": ["ArrowRight"] },
+    { "id": "camUp", "km": "កាមេរ៉ាឡើង", "en": "Camera up", "keys": ["ArrowUp"] },
+    { "id": "camDown", "km": "កាមេរ៉ាចុះ", "en": "Camera down", "keys": ["ArrowDown"] },
+    { "id": "exit", "km": "ត្រឡប់", "en": "Back to the kingdom", "keys": ["Escape"] }
+  ]
+}

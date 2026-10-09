@@ -155,6 +155,7 @@ export function makePrekWater(
       uSky: { value: col(cfg.skyNoon) },
       uFoam: { value: col(cfg.foam) },
       uDepths: { value: new THREE.Vector2(cfg.shallowDepth, cfg.deepDepth) },
+      uClarity: { value: new THREE.Vector3(cfg.clarity?.[0] ?? 0.72, cfg.clarity?.[1] ?? 0.96, cfg.caustics ?? 0) },
       uFresnel: { value: cfg.fresnelPower },
       uSpec: { value: new THREE.Vector3(cfg.specSize, cfg.specBand, cfg.specStrength) },
       uFoamDepth: { value: cfg.foamDepth },
@@ -181,6 +182,7 @@ export function makePrekWater(
       #include <fog_pars_fragment>
       uniform sampler2D uHeight; uniform float uSize; uniform float uTime; uniform vec3 uSun;
       uniform vec3 uShallow; uniform vec3 uDeep; uniform vec3 uSilt; uniform vec3 uSky; uniform vec3 uFoam;
+      uniform vec3 uClarity;
       uniform vec2 uDepths; uniform float uFresnel; uniform vec3 uSpec; uniform float uFoamDepth; uniform vec3 uRipple;
       varying vec3 vWorld;
       float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -209,7 +211,13 @@ export function makePrekWater(
         // 2. Fresnel sky tint (no reflection of the world), in two hard steps.
         float fres = pow(1.0 - max(dot(n, v), 0.0), uFresnel);
         fres = floor(fres * 3.0 + 0.35) / 3.0;
-        vec3 col = mix(body, uSky, clamp(0.08 + fres * 0.8, 0.0, 0.85));
+        vec3 col = mix(body, uSky, clamp(0.06 + fres * 0.6, 0.0, 0.7));
+        // 2b. Crystal-clear shallows (PK 1.8.0): sunlight dancing on the bed (caustics), bright
+        // where the water is shallow, gone in the deep.
+        vec2 cp = vWorld.xz * 0.9;
+        float ca = abs(sin(cp.x * 2.1 + uTime * 0.9 + sin(cp.y * 1.7 + uTime * 0.6) * 1.6))
+                 * abs(sin(cp.y * 2.3 - uTime * 0.7 + sin(cp.x * 1.3 - uTime * 0.5) * 1.6));
+        col += vec3(0.85, 1.0, 0.95) * smoothstep(0.55, 0.95, ca) * uClarity.z * (1.0 - k);
         // 3. Cel sun glint: Blinn-Phong cut into a sharp band.
         vec3 hv = normalize(uSun + v);
         float sp = dot(n, hv);
@@ -220,7 +228,8 @@ export function makePrekWater(
         float foam = step(depth, uFoamDepth);
         foam = max(foam, step(depth, uFoamDepth * 2.5) * step(0.7, vnoise(vWorld.xz * 3.1 + uTime * 0.6)) * 0.7);
         col = mix(col, uFoam, foam);
-        gl_FragColor = vec4(col, mix(0.72, 0.96, k));
+        // Clear in the shallows (the bed shows through), denser in the deep; foam is opaque.
+        gl_FragColor = vec4(col, max(foam, mix(uClarity.x, uClarity.y, k)));
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
         #include <fog_fragment>

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Keymap, keyLabel } from '../keymap';
 import type { Anachak, Cost, HeroKit, KingdomData } from '@temples/shared';
 import { PLAYER, type KingdomSim, type Unit } from '../sim/sim';
 import type { KingdomScene } from '../view/scene';
@@ -43,6 +44,10 @@ type Quest = Cfg['quests']['list'][number] & { have: number; need: number };
 
 export interface HeroHost {
   readonly data: KingdomData;
+  /** The player's keys (PK 1.8.0); the defaults of controls.json when not given. */
+  readonly keymap?: Keymap;
+  /** The keyboard panel is waiting for a key: the hero leaves the keys alone. */
+  keysWaiting?(): boolean;
   sim(): KingdomSim;
   view(): KingdomScene;
   readonly sound: KingdomSound;
@@ -114,7 +119,9 @@ export class HeroMode {
   private backdrop: Backdrop | null = null;
   /** Grass, bare earth and falling leaves round the hero (PK's forest reference). */
   ground: GroundDetail | null = null;
+  /** The codes (KeyboardEvent.code) held down now. */
   private readonly keys = new Set<string>();
+  private readonly keymap: Keymap;
   /** Presses waiting for the next step (edge-triggered actions). */
   private readonly press = new Set<'attack' | 'skill' | 'jump' | 'dash' | 'work'>();
   private stick = { x: 0, y: 0, id: -1, ox: 0, oy: 0 };
@@ -144,6 +151,7 @@ export class HeroMode {
 
   constructor(private readonly host: HeroHost) {
     this.cfg = host.data.anachak.hero;
+    this.keymap = host.keymap ?? new Keymap(host.data.controls, null);
     void preloadModels(this.cfg.models); // PK's model files, if any (in the background)
     this.el = document.createElement('div');
     this.el.className = 'k-hero';
@@ -233,7 +241,12 @@ export class HeroMode {
       view.scene.add(this.backdrop.group);
       this.backdrop.group.visible = true;
     }
-    this.ground ??= new GroundDetail();
+    // The meadow grass of the scene (PK's Meshy model) replaces the old tufts on open grass.
+    if (this.ground && this.ground.meadowTufts === !!view.sward) {
+      view.scene.remove(this.ground.group);
+      this.ground = null;
+    }
+    this.ground ??= new GroundDetail(!view.sward);
     this.ground.reset();
     view.scene.add(this.ground.group);
     this.prevFog = view.scene.fog;
@@ -348,37 +361,30 @@ export class HeroMode {
   // ------------------------------------------------------------------ input
 
   private bind(): void {
-    // Keys by position (e.code), so a Khmer keyboard layout plays the same (UI review).
-    const keyMap: Record<string, 'attack' | 'skill' | 'jump' | 'dash' | 'work'> = {
-      space: 'jump',
-      keyj: 'attack',
-      keyk: 'skill',
-      keyr: 'skill',
-      keyq: 'dash',
-      keye: 'work',
-    };
-    const codeOf = (e: KeyboardEvent) =>
-      e.code === 'ShiftLeft' || e.code === 'ShiftRight' ? 'shift' : e.code.toLowerCase();
+    // Keys by position (e.code), so a Khmer keyboard layout plays the same (UI review), and
+    // as the player set them (PK 1.8.0: year bar 🎮, config/kingdom/controls.json).
+    const presses = new Set(['attack', 'skill', 'jump', 'dash', 'work'] as const);
+    const moves = new Set(['forward', 'back', 'left', 'right', 'work']);
     window.addEventListener(
       'keydown',
       (e) => {
-        if (!this.active) return;
-        const k = codeOf(e);
-        if (k === 'escape') {
+        if (!this.active || this.host.keysWaiting?.()) return;
+        const a = this.keymap.action('hero', e.code);
+        if (a === 'exit') {
           e.preventDefault();
           e.stopImmediatePropagation();
           this.exit('player');
           return;
         }
-        if (this.watching && (k === 'keye' || k === 'keyw' || k === 'keya' || k === 'keys' || k === 'keyd')) {
+        if (this.watching && a && moves.has(a)) {
           e.preventDefault();
           e.stopImmediatePropagation();
           this.takeControl();
           return;
         }
-        if (keyMap[k] && !e.repeat) this.press.add(keyMap[k]!);
-        this.keys.add(k);
-        if (k === 'space' || k.startsWith('arrow') || k === 'tab') e.preventDefault();
+        if (a && presses.has(a as never) && !e.repeat) this.press.add(a as 'attack');
+        this.keys.add(e.code);
+        if (a || e.code === 'Space' || e.code.startsWith('Arrow') || e.code === 'Tab') e.preventDefault();
         e.stopImmediatePropagation();
       },
       { capture: true },
@@ -387,7 +393,7 @@ export class HeroMode {
       'keyup',
       (e) => {
         if (!this.active) return;
-        this.keys.delete(codeOf(e));
+        this.keys.delete(e.code);
         e.stopImmediatePropagation();
       },
       { capture: true },
@@ -462,8 +468,9 @@ export class HeroMode {
 
   private input(): HeroInput {
     const k = this.keys;
-    let x = (k.has('keyd') ? 1 : 0) - (k.has('keya') ? 1 : 0) + this.stick.x;
-    let y = (k.has('keyw') ? 1 : 0) - (k.has('keys') ? 1 : 0) + this.stick.y;
+    const km = this.keymap;
+    let x = (km.held('hero', 'right', k) ? 1 : 0) - (km.held('hero', 'left', k) ? 1 : 0) + this.stick.x;
+    let y = (km.held('hero', 'forward', k) ? 1 : 0) - (km.held('hero', 'back', k) ? 1 : 0) + this.stick.y;
     const m = Math.hypot(x, y);
     if (m > 1) {
       x /= m;
@@ -472,7 +479,7 @@ export class HeroMode {
     const inp: HeroInput = {
       ...NO_INPUT,
       move: { x, y },
-      run: k.has('shift') || Math.hypot(this.stick.x, this.stick.y) > 0.92,
+      run: km.held('hero', 'run', k) || Math.hypot(this.stick.x, this.stick.y) > 0.92,
     };
     for (const p of this.press) inp[p] = true;
     this.press.clear();
@@ -499,10 +506,11 @@ export class HeroMode {
       return;
     }
     // Arrow keys turn the camera.
-    if (this.keys.has('arrowleft')) core.orbit(dt * 2, 0);
-    if (this.keys.has('arrowright')) core.orbit(-dt * 2, 0);
-    if (this.keys.has('arrowup')) core.orbit(0, dt);
-    if (this.keys.has('arrowdown')) core.orbit(0, -dt);
+    const km = this.keymap;
+    if (km.held('hero', 'camLeft', this.keys)) core.orbit(dt * 2, 0);
+    if (km.held('hero', 'camRight', this.keys)) core.orbit(-dt * 2, 0);
+    if (km.held('hero', 'camUp', this.keys)) core.orbit(0, dt);
+    if (km.held('hero', 'camDown', this.keys)) core.orbit(0, -dt);
     const step = this.hitStop > 0 ? dt * 0.15 : dt;
     this.hitStop = Math.max(0, this.hitStop - dt);
     let acts: HeroAct[] = [];
@@ -1096,6 +1104,10 @@ export class HeroMode {
   /** The HUD's fixed parts (built once per hero, so buttons never change under a finger). */
   private buildHud(): void {
     const kit = this.kit!;
+    // The hints name the player's own keys (PK 1.8.0).
+    const key = (id: string) => this.keymap.keys('hero', id).map(keyLabel).join('/') || '—';
+    const first = (id: string) => (this.keymap.keys('hero', id)[0] ? keyLabel(this.keymap.keys('hero', id)[0]!) : '—');
+    const move = ['forward', 'left', 'back', 'right'].map(first).join('');
     const btn = (a: string, icon: string, kmT: string, en: string) =>
       `<button class="k-hb k-hb-${a}" data-hero="${a}" data-ui><span class="k-hb-i">${icon}</span><span class="k-hb-t">${kmT}<small>${en}</small></span><span class="k-hb-cd" hidden></span></button>`;
     const skillIcon: Record<string, string> = {
@@ -1112,8 +1124,8 @@ export class HeroMode {
         `<div class="k-hero-vig" data-part="vig"></div>` +
         `<div class="k-hero-card" data-part="card"></div>` +
         `<div class="k-hero-watch">🎥 <b>កំពុងមើល</b> · Watching — life goes on by itself</div>` +
-        `<button class="k-hero-exit" data-hero="exit" data-ui>✕ ត្រឡប់ · Back <small>Esc</small></button>` +
-        `<button class="k-hero-take" data-hero="take" data-ui>🎮 <b>លេងខ្លួនឯង</b> · Take control <small>E</small></button>` +
+        `<button class="k-hero-exit" data-hero="exit" data-ui>✕ ត្រឡប់ · Back <small>${esc(key('exit'))}</small></button>` +
+        `<button class="k-hero-take" data-hero="take" data-ui>🎮 <b>លេងខ្លួនឯង</b> · Take control <small>${esc(key('work'))}</small></button>` +
         `<div class="k-hero-floats" data-part="floats"></div>`;
       this.parts.clear();
       this.el.querySelectorAll<HTMLElement>('[data-part]').forEach((e) => this.parts.set(e.dataset.part!, e));
@@ -1127,15 +1139,15 @@ export class HeroMode {
       `<button class="k-hero-exit" data-hero="exit" data-ui>✕ ត្រឡប់ · Back <small>Esc</small></button>` +
       `<div data-part="prompt"></div>` +
       `<div class="k-hero-acts">` +
-      btn('work', '🛠️', 'ធ្វើការ', 'Work · E') +
-      btn('skill', skillIcon[kit.skill.kind] ?? '⭐', esc(kit.skill.km), `${esc(kit.skill.en)} · R`) +
-      btn('dash', '💨', 'គេច', 'Dash · Q') +
-      btn('jump', '⤒', 'លោត', 'Jump · Space') +
-      btn('attack', kit.weapon === 'bow' ? '🏹' : '⚔️', 'វាយ', 'Strike · Click') +
+      btn('work', '🛠️', 'ធ្វើការ', `Work · ${esc(key('work'))}`) +
+      btn('skill', skillIcon[kit.skill.kind] ?? '⭐', esc(kit.skill.km), `${esc(kit.skill.en)} · ${esc(key('skill'))}`) +
+      btn('dash', '💨', 'គេច', `Dash · ${esc(key('dash'))}`) +
+      btn('jump', '⤒', 'លោត', `Jump · ${esc(key('jump'))}`) +
+      btn('attack', kit.weapon === 'bow' ? '🏹' : '⚔️', 'វាយ', `Strike · Click/${esc(key('attack'))}`) +
       `</div>` +
       (this.host.mobile
         ? `<div class="k-hero-stick" data-hero="stick" data-ui><i data-part="knob"></i></div>`
-        : `<div class="k-hero-help">WASD ដើរ · move · Shift រត់ · run · ចុចស្ដាំ+អូស = មើលជុំវិញ · right-drag: turn the camera · Wheel: zoom</div>`) +
+        : `<div class="k-hero-help">${esc(move.length === 4 ? move : ['forward', 'left', 'back', 'right'].map(first).join(' '))} ដើរ · move · ${esc(first('run'))} រត់ · run · ចុចស្ដាំ+អូស = មើលជុំវិញ · right-drag: turn the camera · Wheel: zoom</div>`) +
       `<div class="k-hero-floats" data-part="floats"></div>`;
     this.parts.clear();
     this.el.querySelectorAll<HTMLElement>('[data-part]').forEach((e) => this.parts.set(e.dataset.part!, e));

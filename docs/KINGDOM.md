@@ -201,6 +201,7 @@ On iPhone it is an offline web app added to the Home Screen from Safari (D73): s
 - Menu bar: Idle, Find, Workers, Army, Call, Auto-work, Map, History, New game, About, Sound, Music, music volume. M: the old map. ▼: fold the command bar. Year bar: ⏩ speed, 📜 Orders. Click a bobbing 🥚 basket over a house to take the food.
 - H: royal hall. Y: History. F: Find. O: Orders. Click the king for his orders. + / −: game speed. Space: centre on the selection. Esc: cancel. Delete: cancel a foundation. F5 / F9: quick save / load.
 - Anachak Khmer, 3D hero mode: WASD, Shift, Space, Q, click / J, R / K, E, right-drag, wheel; Esc to come back.
+- These are the default keys (config/kingdom/controls.json). The 🎮 button on the year bar opens the keyboard panel: click a key slot, press the new key (Esc stops, Backspace empties the slot); a key another action had moves to it; two keys per action; Reset brings the defaults back. Kept in the browser (D137).
 
 ## History first
 

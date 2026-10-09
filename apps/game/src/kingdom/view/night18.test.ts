@@ -123,8 +123,9 @@ describe('elephant grass (PK 1.8.0)', () => {
     expect(layElephantGrass(0, 0, 60, 2, 0, () => 'bank', () => true, EG)).toHaveLength(0);
     const shoreAt = (tx: number): Patch => (tx < 0 ? 'water' : 'grass');
     const fringe = layElephantGrass(0, 0, 60, 2, 0, (tx) => shoreAt(tx), () => true, EG);
-    expect(fringe.every((c) => c.x >= 0)).toBe(true);
-    expect(fringe.some((c) => c.x < 2)).toBe(true);
+    // Not on the first land tile (its bank slopes under the water), a fringe on the next.
+    expect(fringe.every((c) => c.x >= 2)).toBe(true);
+    expect(fringe.some((c) => c.x < 4)).toBe(true);
     // Capped at count, nearest first.
     const capped = layElephantGrass(0, 0, 60, 2, 0, grassEverywhere, () => true, { ...EG, count: 10 });
     expect(capped).toHaveLength(10);

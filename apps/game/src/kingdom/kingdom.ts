@@ -64,6 +64,7 @@ import {
 } from './sim/anachak';
 import { GOODS, exchange, quote, trend } from './sim/exchange';
 import { HeroMode } from './hero/heroMode';
+import { Keymap, keysPanelHtml, type KeyGroup } from './keymap';
 import { edgePan } from './edgeScroll';
 import { CelPass, RTS_LOOK } from './hero/celPass';
 import { setToonLook } from './hero/toon';
@@ -136,6 +137,12 @@ export class Kingdom {
   private popMilestone = -1;
   /** The order board is open (Hay Day-style, PK). */
   private ordersOpen = false;
+  /** The player's keys (PK 1.8.0, config/kingdom/controls.json + the browser's copy). */
+  readonly keymap: Keymap;
+  /** The keyboard panel (year bar 🎮): open, its tab, the slot waiting for a key. */
+  private keysOpen = false;
+  private keysTab: KeyGroup = 'map';
+  private keysWait: { group: KeyGroup; id: string; slot: number } | null = null;
   private blessAt = 0;
   /** History timeline open, the card shown (chapter intro, era end, a temple's history). */
   private historyOpen = false;
@@ -187,6 +194,7 @@ export class Kingdom {
     readonly opts: KingdomOptions = {},
   ) {
     this.data = loadKingdom();
+    this.keymap = new Keymap(this.data.controls);
     // PK 1.7.0: the phone build houses fewer people (rules.start.mobileMaxPop).
     if (opts.mobile && this.data.rules.start.mobileMaxPop)
       this.data.rules.start.maxPop = this.data.rules.start.mobileMaxPop;
@@ -237,6 +245,8 @@ export class Kingdom {
       this.hud.root.classList.add('k-anachak');
       this.hero = new HeroMode({
         data: this.data,
+        keymap: this.keymap,
+        keysWaiting: () => !!this.keysWait,
         sim: () => this.sim,
         view: () => this.view,
         sound: this.sound,
@@ -467,6 +477,7 @@ export class Kingdom {
         canFill: s.market.ready().filter((o) => s.market.canFill(o)).length,
         boat: s.market.orders.some((o) => o.buyer === 'boat'),
       },
+      keys: this.opts.mobile ? undefined : this.keysOpen,
     });
   }
 
@@ -748,55 +759,75 @@ export class Kingdom {
       },
       { passive: false },
     );
+    // The keyboard panel waits for a key (capture: before the hero and the map see it).
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if (!this.active || !this.keysWait) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        if (e.repeat) return;
+        const w = this.keysWait;
+        if (e.code === 'Backspace') this.keymap.clear(w.group, w.id, w.slot);
+        else if (e.code !== 'Escape' && e.code) this.keymap.set(w.group, w.id, w.slot, e.code);
+        this.keysWait = null;
+      },
+      { capture: true },
+    );
     window.addEventListener('keydown', (e) => {
       if (!this.active) return;
       this.sound.unlock();
-      const k = e.key.toLowerCase();
-      if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k)) {
+      // Keys by their place on the keyboard (e.code) and the player's own choice (PK 1.8.0).
+      const a = this.keymap.action('map', e.code);
+      if (a === 'panUp' || a === 'panDown' || a === 'panLeft' || a === 'panRight') {
         e.preventDefault();
-        this.keys.add(k);
-      } else if (k === 'escape') {
+        this.keys.add(e.code);
+      } else if (a === 'deselect') {
+        if (this.keysOpen) {
+          this.keysOpen = false;
+          return;
+        }
         this.placing = null;
         this.view.setGhost(null);
         this.selected.clear();
-      } else if (k === 'h') {
+      } else if (a === 'hall') {
         const h = this.hall();
         if (h) {
           this.selected.clear();
           this.selected.add(h.id);
           this.centreOnHall();
         }
-      } else if (k === 'f11' && canFullscreen()) {
-        // The game's own full screen (PK 1.8.0): Esc or F11 again leaves it.
+      } else if (a === 'fullscreen' && canFullscreen()) {
+        // The game's own full screen (PK 1.8.0): Esc or the key again leaves it.
         e.preventDefault();
         void toggleFullscreen();
-      } else if (k === 'f5') {
+      } else if (a === 'quickSave') {
         e.preventDefault();
         this.save('quick');
-      } else if (k === 'f9') {
+      } else if (a === 'quickLoad') {
         e.preventDefault();
         this.load('quick');
-      } else if (k === 'delete') {
+      } else if (a === 'cancel') {
         for (const id of this.selected) this.sim.cancel(id);
-      } else if (k === 'y') {
+      } else if (a === 'history') {
         this.act('history');
-      } else if (k === 'm') {
+      } else if (a === 'map') {
         if (this.ancient.isOpen) this.ancient.close();
         else this.openMap();
-      } else if (k === '+' || k === '=' || k === '-') {
+      } else if (a === 'speedUp' || a === 'speedDown') {
         // Game speed up / down (PK: the timeline speed can be adjusted).
         const n = this.data.rules.speed.options.length;
-        this.speedIdx = Math.max(0, Math.min(n - 1, this.speedIdx + (k === '-' ? -1 : 1)));
-      } else if (k === 'f') {
+        this.speedIdx = Math.max(0, Math.min(n - 1, this.speedIdx + (a === 'speedDown' ? -1 : 1)));
+      } else if (a === 'find') {
         this.findScarce();
-      } else if (k === 'o') {
+      } else if (a === 'orders') {
         this.ordersOpen = !this.ordersOpen;
-      } else if (k === ' ') {
+      } else if (a === 'centre') {
         e.preventDefault();
         this.centreOnSelection();
       }
     });
-    window.addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
+    window.addEventListener('keyup', (e) => this.keys.delete(e.code));
     window.addEventListener('blur', () => {
       this.keys.clear();
       this.edgeCursor = null;
@@ -944,6 +975,30 @@ export class Kingdom {
     }
     if (kind === 'fullscreen') {
       void toggleFullscreen();
+      return;
+    }
+    // The keyboard panel (PK 1.8.0): open/close, tabs, a key slot to change, reset.
+    if (kind === 'keys' || kind === 'keys-close') {
+      this.keysOpen = kind === 'keys' ? !this.keysOpen : false;
+      this.keysWait = null;
+      return;
+    }
+    if (kind === 'keys-tab') {
+      this.keysTab = id === 'hero' ? 'hero' : 'map';
+      this.keysWait = null;
+      return;
+    }
+    if (kind === 'keys-set') {
+      const [, g, action, slot] = a.split(':');
+      const group: KeyGroup = g === 'hero' ? 'hero' : 'map';
+      const w = { group, id: action ?? '', slot: Number(slot) || 0 };
+      const same = this.keysWait && this.keysWait.id === w.id && this.keysWait.group === group && this.keysWait.slot === w.slot;
+      this.keysWait = same ? null : w;
+      return;
+    }
+    if (kind === 'keys-reset') {
+      this.keymap.reset();
+      this.keysWait = null;
       return;
     }
     if (kind === 'music') {
@@ -2374,8 +2429,9 @@ export class Kingdom {
     this.last = now;
     // Camera: arrows / WASD, or the mouse at the window's (or the stage's) edge.
     const k = this.keys;
-    let px = (k.has('arrowright') || k.has('d') ? 1 : 0) - (k.has('arrowleft') || k.has('a') ? 1 : 0);
-    let pz = (k.has('arrowdown') || k.has('s') ? 1 : 0) - (k.has('arrowup') || k.has('w') ? 1 : 0);
+    const keymap = this.keymap;
+    let px = (keymap.held('map', 'panRight', k) ? 1 : 0) - (keymap.held('map', 'panLeft', k) ? 1 : 0);
+    let pz = (keymap.held('map', 'panDown', k) ? 1 : 0) - (keymap.held('map', 'panUp', k) ? 1 : 0);
     if (this.hero?.active)
       px = pz = 0; // the hero's keys move the hero, not the map
     else if (!this.drag && !px && !pz && this.edgeCursor) {
@@ -2735,6 +2791,9 @@ export class Kingdom {
       musicVolume: this.sound.musicVolume,
       fullscreen: !this.opts.mobile && canFullscreen() ? isFullscreen() : undefined,
     });
+    this.hud.renderKeys(
+      this.keysOpen && !this.opts.mobile ? keysPanelHtml(this.keymap, this.keysTab, this.keysWait) : null,
+    );
     if (now >= this.nextMoodCheck) {
       this.nextMoodCheck = now + 1000;
       this.sound.setMood(this.updateMood(now));
