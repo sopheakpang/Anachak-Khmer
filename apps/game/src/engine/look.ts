@@ -101,6 +101,7 @@ const skyFragment = /* glsl */ `
   uniform vec3 ground;
   uniform vec3 sunDir;
   uniform vec3 sunColor;
+  uniform float sunDisc;
   varying vec3 vDir;
   void main() {
     vec3 d = normalize(vDir);
@@ -108,6 +109,8 @@ const skyFragment = /* glsl */ `
     vec3 c = h > 0.0 ? mix(horizon, zenith, pow(h, 0.55)) : mix(horizon, ground, min(1.0, -h * 6.0));
     float s = max(dot(d, normalize(sunDir)), 0.0);
     c += sunColor * (pow(s, 6.0) * 0.25 + pow(s, 64.0) * 0.4);
+    // The sun itself (PK 1.8.0, Anachak Khmer's moving sun): a bright disc, soft at its rim.
+    c += sunColor * sunDisc * (smoothstep(0.99955, 0.99975, s) * 2.2 + pow(s, 900.0) * 0.6);
     // Warm glow along the whole horizon, like late afternoon.
     c += vec3(1.0, 0.78, 0.5) * 0.12 * exp(-abs(h) * 9.0);
     gl_FragColor = vec4(c, 1.0);
@@ -123,6 +126,7 @@ export function skyDome(): THREE.Mesh {
       ground: { value: new THREE.Color(PALETTE.ground).convertLinearToSRGB() },
       sunDir: { value: SUN_DIR.clone() },
       sunColor: { value: new THREE.Color(1, 0.93, 0.8) },
+      sunDisc: { value: 0 },
     },
     vertexShader: skyVertex,
     fragmentShader: skyFragment,

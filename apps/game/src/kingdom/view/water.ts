@@ -140,7 +140,7 @@ export function makePrekWater(
   level: number,
   sunDir: THREE.Vector3,
   cfg: PrekCfg,
-): Water & { setSky(hex: string): void } {
+): Water & { setSky(hex: string): void; setSun(dir: THREE.Vector3, color: THREE.Color, golden: number): void } {
   const col = (h: string) => new THREE.Color(h);
   const uniforms = THREE.UniformsUtils.merge([
     THREE.UniformsLib.fog,
@@ -149,6 +149,8 @@ export function makePrekWater(
       uSize: { value: size },
       uTime: { value: 0 },
       uSun: { value: sunDir.clone().normalize() },
+      uSunCol: { value: new THREE.Color(1.0, 0.93, 0.74) },
+      uGolden: { value: 0 },
       uShallow: { value: col(cfg.shallow) },
       uDeep: { value: col(cfg.deep) },
       uSilt: { value: col(cfg.silt) },
@@ -182,7 +184,7 @@ export function makePrekWater(
       #include <fog_pars_fragment>
       uniform sampler2D uHeight; uniform float uSize; uniform float uTime; uniform vec3 uSun;
       uniform vec3 uShallow; uniform vec3 uDeep; uniform vec3 uSilt; uniform vec3 uSky; uniform vec3 uFoam;
-      uniform vec3 uClarity;
+      uniform vec3 uClarity; uniform vec3 uSunCol; uniform float uGolden;
       uniform vec2 uDepths; uniform float uFresnel; uniform vec3 uSpec; uniform float uFoamDepth; uniform vec3 uRipple;
       varying vec3 vWorld;
       float hash2(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -223,7 +225,16 @@ export function makePrekWater(
         float sp = dot(n, hv);
         float glint = smoothstep(uSpec.x - uSpec.y, uSpec.x + uSpec.y, sp);
         glint += 0.5 * smoothstep(uSpec.x - uSpec.y * 4.0, uSpec.x - uSpec.y * 2.0, sp) * (1.0 - glint);
-        col += vec3(1.0, 0.93, 0.74) * glint * uSpec.z;
+        col += uSunCol * glint * uSpec.z;
+        // 3b. Sunrise and sunset (PK 1.8.0): with the sun low, a broad path of light on the
+        // water runs from the viewer toward the sun, in the sun's colour.
+        if (uGolden > 0.001) {
+          vec3 rv = reflect(-v, n);
+          float path = pow(max(dot(rv, uSun), 0.0), 18.0);
+          float sparkle = step(0.82, vnoise(vWorld.xz * 4.0 + uTime * 1.5));
+          col += uSunCol * (path * (0.55 + 0.9 * sparkle)) * uGolden;
+          col = mix(col, col * uSunCol * 1.25, 0.18 * uGolden);
+        }
         // 4. A crisp foam line where the water meets the bank (no soft blur).
         float foam = step(depth, uFoamDepth);
         foam = max(foam, step(depth, uFoamDepth * 2.5) * step(0.7, vnoise(vWorld.xz * 3.1 + uTime * 0.6)) * 0.7);
@@ -246,6 +257,12 @@ export function makePrekWater(
     },
     setSky(hex: string) {
       (uniforms.uSky!.value as THREE.Color).set(hex);
+    },
+    /** PK 1.8.0: the sun where it stands, its colour, and how much it is sunrise/sunset. */
+    setSun(dir: THREE.Vector3, color: THREE.Color, golden: number) {
+      (uniforms.uSun!.value as THREE.Vector3).copy(dir).normalize();
+      (uniforms.uSunCol!.value as THREE.Color).copy(color);
+      uniforms.uGolden!.value = golden;
     },
   };
 }

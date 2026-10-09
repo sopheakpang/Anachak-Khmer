@@ -235,6 +235,14 @@ export class WeatherFx {
   night = 0;
   /** The moon's light now, 0 (none) .. 1 (full moon high); 0.5 = the night light as configured (PK 1.8.0). */
   moonlight = 0.5;
+  /**
+   * PK 1.8.0: sunrise and sunset 0..1 (the sun low), the sun's colour then and the glow of the
+   * sky round it (linear colours; the season picks them: sim/sunPath.ts).
+   */
+  golden = 0;
+  readonly goldenSun = new THREE.Color(1, 0.75, 0.45);
+  readonly goldenSky = new THREE.Color(1, 0.7, 0.5);
+  private goldenShown = -1;
   private nightLook: {
     sun: number;
     sky: number;
@@ -271,10 +279,18 @@ export class WeatherFx {
         const s0 = (sh.uniforms.sunColor?.value as THREE.Color | undefined)?.clone();
         this.nightBase.push({
           apply: (n) => {
-            (sh.uniforms.zenith!.value as THREE.Color).copy(z0).lerp(NL.zenith, n);
-            (sh.uniforms.horizon!.value as THREE.Color).copy(h0).lerp(NL.horizon, n);
+            // Sunrise and sunset (PK 1.8.0): the horizon glows in the season's colours, the
+            // sky above warms a little, the sun turns gold, orange or rose and burns brighter.
+            const g = this.golden;
+            const sky = this.goldenSky.clone().convertLinearToSRGB();
+            (sh.uniforms.zenith!.value as THREE.Color).copy(z0).lerp(sky, g * 0.25).lerp(NL.zenith, n);
+            (sh.uniforms.horizon!.value as THREE.Color).copy(h0).lerp(sky, g * 0.8).lerp(NL.horizon, n);
             if (g0) (sh.uniforms.ground!.value as THREE.Color).copy(g0).multiplyScalar(1 - 0.75 * n);
-            if (s0) (sh.uniforms.sunColor!.value as THREE.Color).copy(s0).multiplyScalar(1 - n);
+            if (s0)
+              (sh.uniforms.sunColor!.value as THREE.Color)
+                .copy(s0)
+                .lerp(this.goldenSun.clone().convertLinearToSRGB(), g)
+                .multiplyScalar((1 + 1.6 * g) * (1 - n * (1 - 0.85 * g)));
           },
         });
         return;
@@ -378,8 +394,9 @@ export class WeatherFx {
     if (this.hemi) this.hemi.intensity = this.hemiBase * L.sky * skyK + this.flash;
     // The image-based light (environment map) dims at night too.
     if (NL) this.scene.environmentIntensity = 1 - 0.8 * n;
-    if (NL && Math.abs(n - this.nightShown) > 0.004) {
+    if (NL && (Math.abs(n - this.nightShown) > 0.004 || Math.abs(this.golden - this.goldenShown) > 0.004)) {
       this.nightShown = n;
+      this.goldenShown = this.golden;
       for (const b of this.nightBase) b.apply(n);
     }
     const fog = this.scene.fog as THREE.Fog | null;
@@ -388,6 +405,8 @@ export class WeatherFx {
       fog.near = this.heroFog.near * (L.fogNear / clear.fogNear);
       fog.far = this.heroFog.far * (L.fogFar / clear.fogFar);
       this.fogColor.copy(this.heroFog.color).lerp(new THREE.Color(want.fog), id === 'clear' ? 0 : 0.6);
+      // The haze takes the glow of sunrise and sunset (PK 1.8.0).
+      this.fogColor.lerp(this.goldenSky, this.golden * 0.45);
       if (NL) this.fogColor.lerp(NL.fog, n);
       fog.color.lerp(this.fogColor, k);
     } else if (fog) {
@@ -397,6 +416,7 @@ export class WeatherFx {
       fog.near = Math.max(L.fogNear, this.zoom * 2.4 * thick);
       fog.far = Math.max(L.fogFar, fog.near + this.zoom * 4 * thick + 200);
       this.fogColor.setHex(want.fog);
+      this.fogColor.lerp(this.goldenSky, this.golden * 0.3);
       if (NL) this.fogColor.lerp(NL.fog, n * 0.85);
       fog.color.lerp(this.fogColor, k);
     }

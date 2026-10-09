@@ -719,6 +719,34 @@ export const AnachakSchema = z.object({
     horizon: z.string().regex(/^#[0-9a-f]{6}$/i),
     fog: z.string().regex(/^#[0-9a-f]{6}$/i),
     fire: z.object({ day: z.number().min(0), night: z.number().min(0), radius: z.number().positive() }),
+    /**
+     * PK 1.8.0: the sun crosses the sky (east → over the south → west) and the seasons move
+     * sunrise and sunset and their colours (sim/sunPath.ts).
+     */
+    sunPath: z
+      .object({
+        latitude: z.number().min(-60).max(60),
+        yearDays: z.number().int().min(1),
+        startMonth: z.number().int().min(0).max(11),
+        seasonShift: z.number().min(0).max(0.1),
+        lightElevation: z.tuple([z.number().min(0).max(45), z.number().min(10).max(90)]),
+        golden: z.number().min(0.01).max(1),
+        seasons: z
+          .array(
+            z.object({
+              id: z.string(),
+              km: z.string(),
+              en: z.string(),
+              months: z.array(z.number().int().min(0).max(11)).min(1),
+              sunrise: z.string().regex(/^#[0-9a-f]{6}$/i),
+              sunset: z.string().regex(/^#[0-9a-f]{6}$/i),
+              skyRise: z.string().regex(/^#[0-9a-f]{6}$/i),
+              skySet: z.string().regex(/^#[0-9a-f]{6}$/i),
+            }),
+          )
+          .length(2),
+      })
+      .optional(),
     /** PK 1.8.0: torches by the houses, round the work places, in people's hands at night. */
     torches: z.object({
       houses: z.array(z.string()),
@@ -998,6 +1026,12 @@ export const PROP_SLOTS = ['tree.common', 'tree.palm', 'tree.mango', 'dikePalm',
 export type PropSlotId = (typeof PROP_SLOTS)[number];
 export const PropsSchema = z.object({
   slots: z.record(z.enum(PROP_SLOTS), PropSlotSchema),
+  /**
+   * PK 1.8.0: a building drawn from PK's own model instead of the built-in shape, by building
+   * type (buildings.json id), e.g. townCentre = the royal hall. Its front faces +z (the door
+   * side of every building in the game).
+   */
+  buildings: z.record(z.string(), PropSlotSchema).optional(),
 });
 
 /** PK 1.7.0: the Angkor Cel-Diorama look (config/kingdom/diorama.json, docs/VISUAL_BIBLE.md). */

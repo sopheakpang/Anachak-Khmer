@@ -602,6 +602,7 @@ export class HeroMode {
       const u = (this.sky.material as THREE.ShaderMaterial).uniforms;
       u.uTime!.value = now / 1000;
       u.uNight!.value = view.night;
+      (u.uSun!.value as THREE.Vector3).copy(view.sunDir).normalize(); // PK 1.8.0: the sun moves
     }
     this.backdrop?.setNight(view.night);
     // What E would do here (checked a few times a second).

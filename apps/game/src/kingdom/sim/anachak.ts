@@ -1,4 +1,5 @@
 import type { Cost, Resource } from '@temples/shared';
+import { seasonalTwilight } from './sunPath';
 import { PLAYER, RIVAL, type Animal, type Fail, type KingdomSim, type Result, type Unit } from './sim';
 import { templeShortfall } from './decree';
 import { currentCeremony } from './ceremony';
@@ -282,7 +283,9 @@ export function nightness(t: number, N: KingdomSim['data']['anachak']['night']):
     const k = Math.min(1, Math.max(0, (x - a) / (b - a)));
     return k * k * (3 - 2 * k);
   };
-  return ease(N.dusk[0], N.dusk[1], p) * (1 - ease(N.dawn[0], N.dawn[1], p));
+  // PK 1.8.0: the seasons move dusk and dawn (longer days in the wet season).
+  const { dusk, dawn } = seasonalTwilight(t, N);
+  return ease(dusk[0], dusk[1], p) * (1 - ease(dawn[0], dawn[1], p));
 }
 
 /** The rest houses' fires: a little glow by day, bright at night. */

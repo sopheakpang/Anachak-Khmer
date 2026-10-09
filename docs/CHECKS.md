@@ -539,3 +539,17 @@ Note: the test machine has no GPU and renders headless at about 2 FPS, so timing
 | Lawn 0.09–0.11 m on every open grass tile, patches overlap, flat card above the ground bumps, clumps stand on the ground, thins only on worn earth | ✅ | `view/grass18.test.ts`, `docs/screens/k18-lawn-rts.jpg`, `k18-lawn-hero.jpg` |
 | Stone clusters rare, no wind, not pushed | ✅ | `view/grass18.test.ts` |
 | Low meadows (a few cm above the water) grow grass; none on the water | ✅ | `view/grass18.test.ts` (GRASS_DRY), water screenshot (no grass on the water) |
+
+### 1.8.0, fifth part: PK's royal hall, the sun and the seasons (2026-10-09)
+
+**Automated:** `npm run verify` ✅ (lint, types, 663 unit tests in 75 files, build) · e2e KG-02 ✅ (budget 528 398 triangles, 88 draw calls), KG-05 ✅, KG-06 ✅, KG-09 ✅.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Royal hall drawn from PK's model, fitted to the hall's footprint, its own colours, file shipped | ✅ | `view/hall18.test.ts`, `docs/screens/k18-royal-hall.jpg` |
+| A day is an hour: ~30 min daylight at the equinox, longer in June, shorter in December; night ≈ half the hour | ✅ | `sim/sunPath.test.ts` |
+| Sun rises east, crosses over the south (November), sets west; north of west in June, south in December; under the land at night; shading light kept 10°–62° | ✅ | `sim/sunPath.test.ts` |
+| Golden light only near sunrise/sunset; dry and wet season colours differ and blend | ✅ | `sim/sunPath.test.ts`, `docs/screens/k18-sunset-dry.jpg`, `k18-sunset-wet.jpg` |
+| Sun disc in the sky dome; water takes the sun's colour and a path of light | ✅ | `view/hall18.test.ts`, `docs/screens/k18-sunset-water.jpg` |
+
+**Not verified here:** the moving shadows' look over a whole hour of play on the stream laptop.

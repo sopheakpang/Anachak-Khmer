@@ -3,6 +3,7 @@ import { FishSchools, type FishSpot } from './fishSchool';
 import { marketGeometry } from './marketGeo';
 import { anachakHallGeometry } from './royalHall';
 import { fireGlow, nightness, restsActive } from '../sim/anachak';
+import { sunState, type SunState } from '../sim/sunPath';
 import * as THREE from 'three';
 import { NO_GFX, type KingdomGfx } from './gfx';
 import { heightTexture, makeWater, type Water, makePrekWater, skyStep } from './water';
@@ -318,6 +319,13 @@ export class KingdomScene {
   private torchKey = '';
   readonly nightSky: NightSky | null = null;
   private readonly sunColor = new THREE.Color();
+  /** PK 1.8.0: the sun's own colour at midday (sunrise and sunset warm it). */
+  private readonly sunDay = new THREE.Color();
+  /** PK 1.8.0: where the sun really is (the disc in the sky, the path on the water). */
+  private readonly sunSkyDir = SUN_DIR.clone();
+  private readonly goldenColor = new THREE.Color();
+  /** The sun and the season now (Anachak Khmer with a sun path), for the HUD and the tests. */
+  sunNow: SunState | null = null;
   private readonly moonColor = new THREE.Color();
   private readonly lightDir = new THREE.Vector3();
   private smokeAt = 0;
@@ -435,6 +443,7 @@ export class KingdomScene {
       const el = THREE.MathUtils.degToRad(L.elevation);
       const flat = new THREE.Vector2(SUN_DIR.x, SUN_DIR.z).normalize();
       this.sunDirNow.set(flat.x * Math.cos(el), Math.sin(el), flat.y * Math.cos(el));
+      this.sunSkyDir.copy(this.sunDirNow);
       this.sun.position.copy(this.sunDirNow).multiplyScalar(120);
       this.sun.intensity = L.sun;
       if (this.sun.castShadow) {
@@ -488,6 +497,7 @@ export class KingdomScene {
       (this as { nightSky: NightSky | null }).nightSky = sky;
       this.scene.add(sky.group);
       this.sunColor.copy(this.sun.color);
+      this.sunDay.copy(this.sun.color);
       this.moonColor.set(N.heavens.moonlight);
     }
     // Trees, rocks and fruit: instanced, hidden until explored.
@@ -689,6 +699,7 @@ export class KingdomScene {
       set.mesh.userData.seeThrough = true;
       this.scene.add(set.mesh);
     }
+    if (this.gfx.props) this.loadBuildingModels();
     this.scaffold = new THREE.InstancedMesh(scaffoldGeometry(), crowdMaterial(STILL), 24);
     this.scaffold.count = 0;
     this.scaffold.frustumCulled = false;
@@ -1163,6 +1174,17 @@ export class KingdomScene {
     }
   }
 
+  /** PK 1.8.0: buildings drawn from PK's own models (the royal hall), in every look. */
+  private loadBuildingModels(): void {
+    for (const [type, slot] of Object.entries(this.sim.data.props.buildings ?? {})) {
+      const set = this.sets.get(type);
+      if (!set) continue;
+      void loadProp(modelUrl(slot.file)).then((m) => {
+        if (m && applyProp(set.mesh, m, slot)) this.propsOn++;
+      });
+    }
+  }
+
   private syncFog(): void {
     const { visible, explored, size } = this.sim.fog;
     const d = this.fogTex.image.data as Uint8Array;
@@ -1388,7 +1410,8 @@ export class KingdomScene {
       set.mesh.setMatrixAt(i, this.m);
       // Damaged buildings darken.
       const k = 0.55 + 0.45 * Math.min(1, b.hp / b.maxHp / Math.max(0.05, b.progress));
-      const team = this.teamColor(b.team);
+      // PK's own model keeps its colours (white = as made); built-in shapes take the team colour.
+      const team = set.mesh.userData.prop ? 0xffffff : this.teamColor(b.team);
       set.mesh.setColorAt(i, this.c.set(team));
       if (b.progress >= 1 && k < 0.99) {
         // Tint the whole model darker when hurt: move the team colour toward soot.
@@ -2233,8 +2256,50 @@ export class KingdomScene {
 
   /** The sun's direction (the hero mode's sky draws its disc there). */
   get sunDir(): THREE.Vector3 {
-    return this.sunDirNow.clone();
+    return this.sunSkyDir.clone();
   }
+
+  /**
+   * PK 1.8.0: the sun crosses the sky with the hour (east, over the south, west), its light
+   * warms to the season's sunrise and sunset colours, the sky glows round it and the water
+   * carries a path of its light (sim/sunPath.ts; config anachak.json night.sunPath).
+   */
+  private syncSun(N: KingdomSim['data']['anachak']['night']): void {
+    const st = sunState(this.sim.time, N);
+    this.sunNow = st;
+    if (!st) return;
+    this.sunSkyDir.set(st.dir[0], st.dir[1], st.dir[2]);
+    this.sunDirNow.set(st.light[0], st.light[1], st.light[2]);
+    // Cloud and rain dull the sunrise; the night hides it.
+    const w = this.sim.weather.id;
+    const cloud = w === 'storm' ? 0.2 : w === 'rain' ? 0.45 : w === 'clear' ? 1 : 0.75;
+    const g = st.golden * cloud;
+    this.goldenColor.set(st.sunColor);
+    this.sunColor.copy(this.sunDay).lerp(this.goldenColor, g * 0.85);
+    const fx = this.weatherFx;
+    fx.golden = g;
+    fx.goldenSun.copy(this.goldenColor);
+    fx.goldenSky.set(st.skyColor);
+    // The light follows the sun by day (the moon takes over in syncNight).
+    if (this.night <= 0.001) {
+      this.sun.position.copy(this.sun.target.position).addScaledVector(this.sunDirNow, 120);
+      this.sun.color.copy(this.sunColor);
+    }
+    // The sky dome: the disc where the sun is.
+    this.skyDome ??=
+      (this.scene.children.find(
+        (o) => (o as THREE.Mesh).isMesh && !!((o as THREE.Mesh).material as THREE.ShaderMaterial).uniforms?.sunDisc,
+      ) as THREE.Mesh | undefined) ?? null;
+    if (this.skyDome) {
+      const u = (this.skyDome.material as THREE.ShaderMaterial).uniforms;
+      (u.sunDir!.value as THREE.Vector3).copy(this.sunSkyDir);
+      u.sunDisc!.value = st.dir[1] > -0.05 ? 1 : 0;
+    }
+    // The water: the glint from where the sun is, and at sunrise and sunset a path of light.
+    const prek = this.water as (Water & { setSun?: (d: THREE.Vector3, c: THREE.Color, g: number) => void }) | null;
+    prek?.setSun?.(st.dir[1] > 0.02 ? this.sunSkyDir : this.sunDirNow, this.sunColor, g * (1 - this.night));
+  }
+  private skyDome: THREE.Mesh | null = null;
 
   /** Point the camera: target (x, z), distance along a fixed RTS angle (diagonal, AoE II-like: D67). */
   setCamera(x: number, z: number, dist: number): void {
@@ -2293,6 +2358,7 @@ export class KingdomScene {
       const N = this.sim.data.anachak.night;
       this.night = nightness(this.sim.time, N);
       this.weatherFx.night = this.night;
+      this.syncSun(N);
       this.roads?.fire(fireGlow(this.night, N), N.fire.radius, t);
       const T = N.torches;
       this.torchGlow = Math.min(1, Math.max(0, (this.night - T.from) / (1 - T.from)));
@@ -2306,6 +2372,8 @@ export class KingdomScene {
     if (prek?.setSky) {
       const rising = this.night < this.lastNight - 1e-6;
       prek.setSky(skyStep(this.sim.data.diorama.water, this.night, rising));
+      // Sunrise and sunset (PK 1.8.0): the water mirrors the season's glowing sky.
+      if (this.sunNow && this.weatherFx.golden > 0.3 && this.night < 0.5) prek.setSky(this.sunNow.skyColor);
       this.lastNight = this.night;
     }
     this.sway.uniforms.uTime.value = t;
