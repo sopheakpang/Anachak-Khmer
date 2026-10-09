@@ -250,7 +250,18 @@ test('KG-02: Kingdom HUD fits the 16:9 stage, command bar at the bottom, text â‰
       .filter(([, px]) => px < 26),
   );
   expect(small).toEqual([]);
-  await page.waitForFunction(() => window.__temples.stats.frames > 3);
+  // PK 1.8.0: measure with PK's tree models in (they load in the background).
+  await page.waitForFunction(
+    () => {
+      const m = window.__temples.kingdom!.view.models;
+      return !m || m.loaded === m.kinds.size;
+    },
+    null,
+    { timeout: 240_000, polling: 1000 },
+  );
+  await page.waitForTimeout(3000);
+  const f0 = await page.evaluate(() => window.__temples.stats.frames);
+  await page.waitForFunction((f) => window.__temples.stats.frames > f + 3, f0, { timeout: 120_000 });
   const s = await page.evaluate(() => window.__temples.stats);
   console.log(
     `[budget] kingdom: ${s.triangles} triangles, ${s.drawCalls} draw calls; post ${s.postTriangles} / ${s.postCalls}`,

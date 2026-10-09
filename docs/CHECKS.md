@@ -553,3 +553,17 @@ Note: the test machine has no GPU and renders headless at about 2 FPS, so timing
 | Sun disc in the sky dome; water takes the sun's colour and a path of light | ✅ | `view/hall18.test.ts`, `docs/screens/k18-sunset-water.jpg` |
 
 **Not verified here:** the moving shadows' look over a whole hour of play on the stream laptop.
+
+### 1.8.0, sixth part: PK's trees (2026-10-10)
+
+**Automated:** `npm run verify` ✅ (lint, types, 669 unit tests in 76 files, build) · e2e KG-02 ✅ (now waits for the tree models: 546 191 and 560 514 triangles, 91–98 draw calls; world view 193 640), KG-04, KG-05, KG-06, KG-09 ✅.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Every tree kind the rules name has its model and picture cards shipped | ✅ | `view/trees18.test.ts` |
+| Fitted to height, smaller when the crown would be too wide | ✅ | `view/trees18.test.ts` |
+| The nearest trees get the model while the triangle budget lasts, the rest picture cards | ✅ | `view/trees18.test.ts`, `docs/screens/k18-trees-forest.jpg`, `k18-trees-hero.jpg` |
+| Every house of a group of ≥ 3 has a coconut and a banana; lone pairs none; never inside a building | ✅ | `view/trees18.test.ts`, `docs/screens/k18-trees-hamlet.jpg` |
+| Palms and coconuts now and then beside (never on) worn paths near a storehouse | ✅ | `view/trees18.test.ts`, `docs/screens/k18-trees-wayside.jpg` |
+
+**Not verified here:** the frame rate of a dense forest on the stream laptop (software GL here), the first load time of the tree models over the web (4.4 MB).

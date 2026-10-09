@@ -95,6 +95,7 @@ import { GroundDetailRts, hash as detailHash, type Patch } from './detail';
 import { WearMap } from './wear';
 import { ElephantGrass, grassReach } from './elephantGrass';
 import { LightShafts, MistLayer, mistAmount, shaftAmount } from './atmosphere';
+import { ModelTrees, pickWeighted, villageTrees, waysideTrees, type Lot, type TreeSpot } from './treeModels';
 import { addSeeThrough, seeAmount, seeUniforms, setTargets, type SeeUniforms } from './seeThrough';
 import { TorchView, torchSpots, type TorchSite } from './torches';
 import { NightSky } from './nightSky';
@@ -284,6 +285,11 @@ export class KingdomScene {
   private water: Water | null = null;
   private readonly sway = swayMaterial();
   private treeSets: THREE.InstancedMesh[] = [];
+  /** PK 1.8.0: PK's own trees (near and far models), and the yard and wayside trees. */
+  models: ModelTrees | null = null;
+  yardTrees: TreeSpot[] = [];
+  private yardKey = '';
+  private yardAt = -1e9;
   private yards!: THREE.InstancedMesh;
   private dikePalms!: THREE.InstancedMesh;
   private egrets!: THREE.InstancedMesh;
@@ -525,6 +531,15 @@ export class KingdomScene {
     this.trees = this.treeSets[0]!;
     for (const m of this.treeSets) m.userData.seeThrough = true;
     for (const m of this.treeSets.slice(1)) this.scene.add(m);
+    // PK 1.8.0: PK's own trees, loaded in the background (props on: not on lite or the phone).
+    const treeCfg = sim.data.props.trees;
+    if (this.gfx.props && treeCfg?.length && sim.data.props.treePlacement) {
+      this.models = new ModelTrees(treeCfg, this.gfx.wind ? this.sway.uniforms : null, TREE_CAP, true);
+      this.scene.add(this.models.group);
+      void this.models.load(modelUrl).then(() => {
+        this.treesAt = [NaN, NaN, NaN]; // redraw with the models
+      });
+    }
     // The rice year (PK): plants that grow from a seedling bed to golden rows, and the rahat.
     this.rice = new THREE.InstancedMesh(riceTuftGeometry(), figureMaterial, RICE_CAP);
     this.rahatFrames = new THREE.InstancedMesh(rahatFrameGeometry(), figureMaterial, 24);
@@ -1003,6 +1018,42 @@ export class KingdomScene {
     this.fruit.instanceMatrix.needsUpdate = true;
   }
 
+  /**
+   * PK 1.8.0: a coconut and a banana by every house of a hamlet (three houses or more), and
+   * palms and coconuts beside the worn paths to the storehouses (props.json treePlacement).
+   * Re-laid when buildings change, and every few seconds as the paths wear in.
+   */
+  private syncYardTrees(): void {
+    const place = this.sim.data.props.treePlacement;
+    if (!this.models || !place) return;
+    const key = this.landKey();
+    const t = this.sim.time;
+    if (key === this.yardKey && t - this.yardAt < 5) return;
+    this.yardKey = key;
+    this.yardAt = t;
+    const s = this.sim;
+    const T = s.map.tile;
+    const lots: Lot[] = [];
+    const stores: Array<{ x: number; z: number }> = [];
+    for (const b of s.buildings.values()) {
+      if (b.team !== PLAYER) continue;
+      const [x, z] = s.center(b);
+      lots.push({ type: b.type, x, z, w: b.w * T, d: b.d * T });
+      if (b.type === place.wayside.near && b.progress >= 1) stores.push({ x, z });
+    }
+    const dry = (x: number, z: number) => this.groundY(x, z) > WATER_Y + GRASS_DRY + 0.05;
+    const open = (x: number, z: number) => dry(x, z) && !lots.some((b) => Math.abs(x - b.x) < b.w / 2 + 1 && Math.abs(z - b.z) < b.d / 2 + 1);
+    const village = villageTrees(lots, place.village, dry);
+    const wear = this.wear;
+    const way = wear ? waysideTrees(stores, place.wayside, T, this.half, (tx, tz) => wear.at(tx, tz), open) : [];
+    const next = [...village, ...way];
+    const same =
+      next.length === this.yardTrees.length && next.every((a, i) => a.id === this.yardTrees[i]!.id && a.x === this.yardTrees[i]!.x && a.z === this.yardTrees[i]!.z);
+    if (same) return;
+    this.yardTrees = next;
+    this.treesAt = [NaN, NaN, NaN];
+  }
+
   /** Explored trees within reach of the camera, nearest first, up to TREE_CAP. */
   private treesAt: [number, number, number] = [NaN, NaN, NaN];
   private syncTrees(force: boolean): void {
@@ -1032,10 +1083,26 @@ export class KingdomScene {
     const weights = [42, 12, 10, 12, 24].slice(0, this.treeSets.length);
     const total = weights.reduce((a, b) => a + b, 0);
     const counts = this.treeSets.map(() => 0);
+    // PK 1.8.0: PK's own trees once their models are in (the built-in ones stand in till then).
+    const models = this.models && this.models.loaded > 0 ? this.models : null;
+    const place = this.sim.data.props.treePlacement;
+    const spots: TreeSpot[] = [];
     for (const [, x, z, h] of list) {
-      let r = (h * 2654435761) % total;
-      let k = 0;
-      while (r >= weights[k]!) r -= weights[k++]!;
+      let k: number;
+      if (models && place) {
+        const kind = pickWeighted(place.forest, (((h * 2654435761) % 1000) + 1000) % 1000 / 1000);
+        const scale = 0.75 + (h % 10) / 20;
+        if (kind.id !== 'bamboo' && models.has(kind.id)) {
+          spots.push({ id: kind.id, x, y: 0, z, rot: (h * 0.37) % 6.28, scale, shade: 0.9 + ((h * 37) % 100) / 500 });
+          continue;
+        }
+        // Bamboo (and any kind whose model is missing) keeps the built-in shape.
+        k = kind.id === 'bamboo' && this.treeSets.length > 2 ? 2 : 0;
+      } else {
+        let r = (h * 2654435761) % total;
+        k = 0;
+        while (r >= weights[k]!) r -= weights[k++]!;
+      }
       const set = this.treeSets[k]!;
       this.m.makeRotationY((h * 0.37) % 6.28);
       this.m.scale(this.v.setScalar(0.75 + (h % 10) / 20));
@@ -1052,6 +1119,12 @@ export class KingdomScene {
       set.instanceMatrix.needsUpdate = true;
       if (set.instanceColor) set.instanceColor.needsUpdate = true;
     });
+    if (models && place) {
+      // The coconuts and bananas of the hamlets, the palms by the paths: on explored land near the view.
+      for (const t of this.yardTrees)
+        if (Math.abs(t.x - cx) < reach && Math.abs(t.z - cz) < reach && this.exploredAt(t.x, t.z)) spots.push(t);
+      models.draw(spots, cx, cz, this.heroView ? place.nearTris.hero : place.nearTris.rts);
+    }
     // Windy days: leaves fall from the nearest crowns (PK), not from the sky.
     const crowns: number[] = [];
     for (const [, x, z, h] of list.slice(0, 80)) crowns.push(x, 4.3 * (0.75 + (h % 10) / 20), z);
@@ -2346,6 +2419,7 @@ export class KingdomScene {
       if (fresh) this.treesFresh = t;
     }
     this.veil.visible = !this.heroView;
+    this.syncYardTrees();
     this.syncTrees(fresh);
     this.syncNodes(false);
     this.syncMeat();

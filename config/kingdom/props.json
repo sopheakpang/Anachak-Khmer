@@ -94,5 +94,219 @@
       "fit": "width",
       "sink": 0
     }
+  },
+  "trees": [
+    {
+      "id": "a",
+      "en": "Slim forest tree (dense oval crown)",
+      "km": "ដើមឈើ",
+      "source": "Meshy_AI_tree_1002234123_texture.glb",
+      "file": "models/trees/a.glb",
+      "cards": "models/trees/a-cards.webp",
+      "card": 1.02,
+      "height": 6.0,
+      "width": 4.0,
+      "hi": 4500,
+      "tex": 1024
+    },
+    {
+      "id": "b",
+      "en": "Round-crowned forest tree",
+      "km": "ដើមឈើ",
+      "source": "Meshy_AI_tree_1002234235_texture.glb",
+      "file": "models/trees/b.glb",
+      "cards": "models/trees/b-cards.webp",
+      "card": 1.02,
+      "height": 6.5,
+      "width": 4.6,
+      "hi": 6000,
+      "tex": 1024
+    },
+    {
+      "id": "c",
+      "en": "Open-crowned forest tree",
+      "km": "ដើមឈើ",
+      "source": "Meshy_AI_Verdant_Tree_1003154239_texture.glb",
+      "file": "models/trees/c.glb",
+      "cards": "models/trees/c-cards.webp",
+      "card": 1.02,
+      "height": 6.5,
+      "width": 4.2,
+      "hi": 4500,
+      "tex": 1024
+    },
+    {
+      "id": "d",
+      "en": "Old forest giant (gnarled, open crown)",
+      "km": "ដើមឈើ",
+      "source": "Meshy_AI_tree_1003153202_texture.glb",
+      "file": "models/trees/d.glb",
+      "cards": "models/trees/d-cards.webp",
+      "card": 1.02,
+      "height": 7.0,
+      "width": 5.6,
+      "hi": 6000,
+      "tex": 1024
+    },
+    {
+      "id": "e",
+      "en": "Tall forest tree (high round crown)",
+      "km": "ដើមឈើ",
+      "source": "Meshy_AI_tree_1003153231_texture.glb",
+      "file": "models/trees/e.glb",
+      "cards": "models/trees/e-cards.webp",
+      "card": 1.02,
+      "height": 6.5,
+      "width": 4.4,
+      "hi": 6000,
+      "tex": 1024
+    },
+    {
+      "id": "f",
+      "en": "Buttress-rooted forest tree (spreading crown)",
+      "km": "ដើមឈើ",
+      "source": "Meshy_AI_tree_Wood_Organic__1003154032_texture.glb",
+      "file": "models/trees/f.glb",
+      "cards": "models/trees/f-cards.webp",
+      "card": 1.272,
+      "height": 7.0,
+      "width": 6.6,
+      "hi": 6000,
+      "tex": 1024
+    },
+    {
+      "id": "palm",
+      "en": "Forest palm",
+      "source": "Meshy_AI_palm_tree_1003131942_texture.glb",
+      "file": "models/trees/palm.glb",
+      "cards": "models/trees/palm-cards.webp",
+      "card": 1.02,
+      "height": 8.0,
+      "width": 3.6,
+      "hi": 2000,
+      "tex": 1024
+    },
+    {
+      "id": "coconut",
+      "en": "Coconut palm",
+      "km": "ដើមដូង",
+      "source": "Meshy_AI_Palm_Tree_with_Coconu_1009150054_texture.glb",
+      "file": "models/trees/coconut.glb",
+      "cards": "models/trees/coconut-cards.webp",
+      "card": 1.02,
+      "height": 9.0,
+      "width": 4.6,
+      "hi": 2000,
+      "tex": 1024
+    },
+    {
+      "id": "fan",
+      "en": "Fan palm (understory)",
+      "source": "Meshy_AI_Fan_Palm_Tree_1009150354_texture.glb",
+      "file": "models/trees/fan.glb",
+      "cards": "models/trees/fan-cards.webp",
+      "card": 1.02,
+      "height": 3.5,
+      "width": 3.0,
+      "hi": 2000,
+      "tex": 1024
+    },
+    {
+      "id": "banana",
+      "en": "Banana plant",
+      "km": "ដើមចេក",
+      "source": "Meshy_AI_Banana_Tree_1009150322_texture.glb",
+      "file": "models/trees/banana.glb",
+      "cards": "models/trees/banana-cards.webp",
+      "card": 1.02,
+      "height": 3.4,
+      "width": 2.6,
+      "hi": 2000,
+      "tex": 1024
+    },
+    {
+      "id": "banana2",
+      "en": "Banana plant (broad leaves)",
+      "km": "ដើមចេក",
+      "source": "Meshy_AI_Banana_Tree_Beauty_1009150319_texture.glb",
+      "file": "models/trees/banana2.glb",
+      "cards": "models/trees/banana2-cards.webp",
+      "card": 1.02,
+      "height": 3.2,
+      "width": 2.6,
+      "hi": 2000,
+      "tex": 1024
+    }
+  ],
+  "treePlacement": {
+    "$comment": "PK 1.8.0: where PK's trees grow. forest = the kinds of the map's trees (wood to cut) and how often each grows (weight; 'bamboo' would keep the built-in bamboo clump: left out, its low-poly shape did not sit with PK's trees). village = every house (houseTypes) in a group of at least minHouses (houses within linkM m of each other count as one group) has a coconut palm and a banana plant in its yard (PK: houses of three or more always have them). wayside = now and then (share of the tiles) a palm or a coconut beside the worn paths (wear above worn, the tree's own tile below clear) within radius m of a storehouse (PK: along the working way to the ឃ្លាំង). Each tree is scaled to its `height` (m) unless its crown would then be wider than `width` (m): the map's forests stand a tree a tile (2 m), so the crowns are kept to the size of the built-in trees they replace. nearTris = how many triangles the detailed models may take at once (the RTS view, the 3D hero mode): the nearest trees get PK's model itself (`hi` triangles, scripts/models/trees.mjs); every other tree is drawn as crossed picture cards of the same model (`cards`: 6 side views and 2 from above, baked by scripts/models/grassCards.mjs ... turn 0 top; `card` = the picture's size when the tree is 1 tall), 8 triangles a tree, so a whole forest keeps its detail and the frame budget. confidence: GAMEPLAY_ABSTRACTION (coconut and banana in Khmer house yards are an everyday sight; the exact rule is the game's).",
+    "forest": [
+      {
+        "id": "e",
+        "weight": 18
+      },
+      {
+        "id": "b",
+        "weight": 14
+      },
+      {
+        "id": "f",
+        "weight": 9
+      },
+      {
+        "id": "a",
+        "weight": 9
+      },
+      {
+        "id": "c",
+        "weight": 8
+      },
+      {
+        "id": "d",
+        "weight": 6
+      },
+      {
+        "id": "palm",
+        "weight": 10
+      },
+      {
+        "id": "fan",
+        "weight": 8
+      }
+    ],
+    "village": {
+      "houseTypes": [
+        "house",
+        "nobleHouse"
+      ],
+      "minHouses": 3,
+      "linkM": 16,
+      "coconut": "coconut",
+      "banana": [
+        "banana",
+        "banana2"
+      ]
+    },
+    "wayside": {
+      "near": "storehouse",
+      "radius": 50,
+      "worn": 0.4,
+      "clear": 0.15,
+      "share": 0.08,
+      "kinds": [
+        {
+          "id": "palm",
+          "weight": 3
+        },
+        {
+          "id": "coconut",
+          "weight": 2
+        }
+      ]
+    },
+    "nearTris": {
+      "rts": 30000,
+      "hero": 160000
+    }
   }
 }

@@ -1032,6 +1032,51 @@ export const PropsSchema = z.object({
    * side of every building in the game).
    */
   buildings: z.record(z.string(), PropSlotSchema).optional(),
+  /**
+   * PK 1.8.0: PK's own trees: the model itself near the view (scripts/models/trees.mjs) and
+   * picture cards of it further off (scripts/models/grassCards.mjs), `height` m tall in the game.
+   */
+  trees: z
+    .array(
+      z.object({
+        id: z.string().min(1),
+        en: z.string(),
+        km: z.string().optional(),
+        source: z.string(),
+        file: z.string(),
+        /** The picture cards of the same tree (far trees): atlas file, size per 1 of height. */
+        cards: z.string(),
+        card: z.number().positive(),
+        height: z.number().positive(),
+        /** Widest the crown may be (m): the tree is made smaller rather than wider. */
+        width: z.number().positive(),
+        hi: z.number().int().positive(),
+        tex: z.number().int().positive(),
+      }),
+    )
+    .optional(),
+  /** PK 1.8.0: where those trees grow (the forest's kinds, house yards, beside the worn paths). */
+  treePlacement: z
+    .object({
+      forest: z.array(z.object({ id: z.string(), weight: z.number().positive() })).min(1),
+      village: z.object({
+        houseTypes: z.array(z.string()).min(1),
+        minHouses: z.number().int().min(1),
+        linkM: z.number().positive(),
+        coconut: z.string(),
+        banana: z.array(z.string()).min(1),
+      }),
+      wayside: z.object({
+        near: z.string(),
+        radius: z.number().positive(),
+        worn: z.number().min(0).max(1),
+        clear: z.number().min(0).max(1),
+        share: z.number().min(0).max(1),
+        kinds: z.array(z.object({ id: z.string(), weight: z.number().positive() })).min(1),
+      }),
+      nearTris: z.object({ rts: z.number().int().min(0), hero: z.number().int().min(0) }),
+    })
+    .optional(),
 });
 
 /** PK 1.7.0: the Angkor Cel-Diorama look (config/kingdom/diorama.json, docs/VISUAL_BIBLE.md). */

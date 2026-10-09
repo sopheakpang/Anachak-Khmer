@@ -245,6 +245,19 @@ export function swayMaterial(): {
 } {
   const uniforms = { uTime: { value: 0 }, uWind: { value: 0.25 } };
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0 });
+  addSway(m, uniforms, 'sway');
+  return { material: m, uniforms };
+}
+
+/**
+ * The crowns sway (above 1.6 m, more the higher), each tree at its own phase: patched into any
+ * material, so PK's textured tree models sway with the built-in ones (same uniforms).
+ */
+export function addSway(
+  m: THREE.Material,
+  uniforms: { uTime: { value: number }; uWind: { value: number } },
+  key: string,
+): void {
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, uniforms);
     sh.vertexShader = sh.vertexShader
@@ -262,8 +275,7 @@ export function swayMaterial(): {
         transformed.z += cos(uTime * 1.3 + ph * 1.3) * bend * 0.7;`,
       );
   };
-  m.customProgramCacheKey = () => 'sway';
-  return { material: m, uniforms };
+  m.customProgramCacheKey = () => key;
 }
 
 /**
