@@ -15,6 +15,7 @@ import {
 import { makePrekWater } from './water';
 import type { Patch } from './detail';
 import { GroundDetail } from '../hero/ground';
+import { GRASS_DRY } from './scene';
 
 const D = loadKingdom().diorama;
 
@@ -121,6 +122,49 @@ describe("PK 1.8.0: PK's Meshy grass as cards", () => {
     g.mesh.getColorAt(0, c);
     expect(c.g).toBeGreaterThan(c.r);
     expect(c.g).toBeGreaterThan(c.b);
+  });
+
+  it('the lawn (PK: 10 cm, above the foot) fills every green tile; its flat card sits above the bumps', () => {
+    const L = D.lawn;
+    expect(L.height[0]).toBeGreaterThanOrEqual(0.08);
+    expect(L.height[1]).toBeLessThanOrEqual(0.12);
+    expect(L.cover).toBe(1);
+    expect(L.cards?.file).toBe('models/grass/lawn.webp');
+    expect(L.cards!.topAt! * L.height[0]).toBeGreaterThan(0.07); // the ground varies by about ±6 cm
+    expect(L.wearMax).toBeLessThanOrEqual(0.2); // gone before the worn earth shows (ground.soilFrom)
+    expect(L.wearMax).toBeLessThanOrEqual(D.ground.soilFrom);
+    // Patches overlap: 8 a tile, each at least 1 m across seen from above.
+    const across = L.cards!.card * L.height[0] * L.cards!.spread[0];
+    expect(L.perTile * across * across * 0.6).toBeGreaterThan(4);
+    const g = new ElephantGrass(L, false);
+    const pos = g.mesh.geometry.getAttribute('position').array as Float32Array;
+    const kind = g.mesh.geometry.getAttribute('aKind').array as Float32Array;
+    for (let i = 0; i < kind.length; i++) if (kind[i] === 2) expect(pos[i * 3 + 1]).toBeCloseTo(L.cards!.topAt!);
+    // Clumps stand on the ground, not at y = 0.
+    g.lay(0, 0, 10, 2, 0, () => 'grass', () => true, true, () => 0.05);
+    const m = new THREE.Matrix4();
+    g.mesh.getMatrixAt(0, m);
+    expect(m.elements[13]).toBeCloseTo(0.05);
+  });
+
+  it('stone clusters are rare, still in the wind and never pushed aside', () => {
+    const S = D.stones;
+    expect(S.perTile).toBeLessThan(0.1);
+    expect(S.wind.strength).toBe(0);
+    expect(S.trample).toBe(0);
+    const g = new ElephantGrass(S, false);
+    g.frame(1, 1, 0, 0, 30, [0, 0, 1, 1]);
+    expect(g.uniforms.uEgWind.value).toBe(0);
+    expect(g.uniforms.uEgPushN.value).toBe(0);
+    const c = layElephantGrass(0, 0, 60, 2, 0, () => 'grass', () => true, { ...S, count: 100000 });
+    const tiles = Math.PI * 30 * 30;
+    expect(c.length / tiles).toBeLessThan(0.08);
+    expect(c.length).toBeGreaterThan(0);
+  });
+
+  it('the low meadows a few cm above the water grow grass too (GRASS_DRY)', () => {
+    expect(GRASS_DRY).toBeGreaterThan(0);
+    expect(GRASS_DRY).toBeLessThanOrEqual(0.04);
   });
 
   it('in the hero mode the old tufts leave the meadows to the sward (the forest floor keeps them)', () => {

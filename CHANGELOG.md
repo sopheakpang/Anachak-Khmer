@@ -20,6 +20,7 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.8.0-12 | **The king wears his sword at the hip**: sheathed at his waist while he walks, works or rests; he draws it to strike or use his skill and puts it back a moment after the fight (D135). |
 | 1.8.0-13 | **PK's 3D grass in the game**: PK's Meshy grass "Resilient Oasis" is now the elephant grass, and his "mix of cogon" grass covers **every green meadow** as short grass 30 cm high (above the foot, below the knee); both roll in the wind and bend round walkers; from the high camera each tussock is seen from above. The old spiky tufts round the hero are gone from the meadows (D136). |
 | 1.8.0-14 | **Keyboard settings** 🎮 (year bar): every key of the kingdom view and of the 3D hero mode can be changed, two keys per action, Khmer names first; a key already used moves to the action it came from; kept in the browser; Reset brings the defaults back. The hero's buttons and hints name the keys you chose (D137). |
+| 1.8.0-15 | **A 10 cm lawn on every green meadow** (PK's Meshy "make grass for floor"): short dense grass, above the foot, fills the open green ground under the taller grass, from the high camera and round the hero; it thins only where the ground is worn to earth. Now and then a **cluster of stones in the grass** (PK's "Grass and Stones"). The low meadows near the water, bare before, have grass too. The 30 cm tussocks are a little sparser so the lawn shows between them (D138). |
 
 ## 1.7.0 — 2026-10-06
 

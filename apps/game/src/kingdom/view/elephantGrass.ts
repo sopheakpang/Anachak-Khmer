@@ -147,7 +147,7 @@ export function elephantGrassGeometry(blades = 9): THREE.BufferGeometry {
 /** Height of the flat top card, as a share of the grass height. */
 export const TOP_CARD = 0.45;
 
-export function grassCardGeometry(card: number, rows = 4, top = false): THREE.BufferGeometry {
+export function grassCardGeometry(card: number, rows = 4, top = false, topAt = TOP_CARD): THREE.BufferGeometry {
   const cols = top ? 4 : 3;
   const pos: number[] = [];
   const uv: number[] = [];
@@ -183,7 +183,7 @@ export function grassCardGeometry(card: number, rows = 4, top = false): THREE.Bu
       [-0.5, -0.5],
       [0.5, -0.5],
     ] as const) {
-      pos.push(sx * card, TOP_CARD, sz * card);
+      pos.push(sx * card, topAt, sz * card);
       uv.push((3 + sx + 0.5) / 4, 0.5 - sz);
       kind.push(2); // the flat card: shown only to a camera looking down (ELEPHANT_GRASS_VERTEX)
       col.push(1, 1, 1);
@@ -600,7 +600,7 @@ export class ElephantGrass {
     const C = cfg.cards;
     const map = C ? cardTexture(C.file) : null;
     const { material, depth } = elephantGrassMaterials(this.uniforms, map);
-    const geo = C ? grassCardGeometry(C.card, C.rows ?? 4, !!C.top) : elephantGrassGeometry(cfg.blades);
+    const geo = C ? grassCardGeometry(C.card, C.rows ?? 4, !!C.top, C.topAt ?? TOP_CARD) : elephantGrassGeometry(cfg.blades);
     this.cards = !!C;
     this.variant = new THREE.InstancedBufferAttribute(new Float32Array(Math.max(1, cfg.count)), 1);
     geo.setAttribute('aVariant', this.variant);
@@ -630,7 +630,8 @@ export class ElephantGrass {
     U.uEgWind.value = this.cfg.wind.strength * (0.55 + 0.9 * wind);
     U.uEgCenter.value.set(cx, cz);
     U.uEgLod.value.set(radius * this.cfg.lod[0], radius * this.cfg.lod[1]);
-    const n = Math.min(MAX_PUSH, Math.floor(walkers.length / 2));
+    // Nothing bends stones (trample 0): no walkers at all (and no 0-wide smoothstep).
+    const n = this.cfg.trample > 0 ? Math.min(MAX_PUSH, Math.floor(walkers.length / 2)) : 0;
     for (let i = 0; i < n; i++) U.uEgPush.value[i]!.set(walkers[i * 2]!, walkers[i * 2 + 1]!, this.cfg.trample);
     U.uEgPushN.value = n;
   }
@@ -645,6 +646,8 @@ export class ElephantGrass {
     at: (tx: number, tz: number) => Patch,
     clear: (tx: number, tz: number) => boolean,
     force = false,
+    /** The ground's height (m) under a clump: short grass must stand on it, not in it. */
+    ground: (x: number, z: number) => number = () => 0,
   ): boolean {
     const [ax, az, ar] = this.at;
     if (!force && Math.hypot(cx - ax, cz - az) < radius * 0.25 && Math.abs(radius - ar) < ar * 0.3) return false;
@@ -652,7 +655,7 @@ export class ElephantGrass {
     const clumps = layElephantGrass(cx, cz, radius, tile, half, at, clear, this.cfg);
     clumps.forEach((p, i) => {
       this.q.setFromAxisAngle(this.up, p.rot);
-      this.m.compose(this.v.set(p.x, 0, p.z), this.q, this.sc.set(p.w, p.s, p.w));
+      this.m.compose(this.v.set(p.x, ground(p.x, p.z), p.z), this.q, this.sc.set(p.w, p.s, p.w));
       this.mesh.setMatrixAt(i, this.m);
       this.c.copy(p.cogon ? this.cogonTint : this.green).lerp(this.dry, p.dry);
       this.mesh.setColorAt(i, this.c);

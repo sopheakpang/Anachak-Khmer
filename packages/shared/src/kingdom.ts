@@ -1025,6 +1025,8 @@ const GrassFieldSchema = z.object({
         rows: z.number().int().min(1).max(8).optional(),
         /** The atlas has a 4th column, the grass from above, shown on a flat card (the RTS camera). */
         top: z.boolean().optional(),
+        /** Height of that flat card, as a share of the grass height (default 0.45; higher for a short lawn on bumpy ground). */
+        topAt: z.number().min(0.05).max(1).optional(),
         source: z.string(),
       })
       .optional(),
@@ -1034,6 +1036,8 @@ const GrassFieldSchema = z.object({
       height: z.tuple([z.number().positive(), z.number().positive()]),
       tint: Hex,
     }),
+    /** Most wear (0..1) a tile may have and still grow it (default 0.04; worn earth shows from ground.soilFrom). */
+    wearMax: z.number().min(0).max(1).optional(),
     /** Colour every clump is multiplied by (x1.5: may brighten), to match the ground's green. */
     tint: Hex.optional(),
     dry: Hex,
@@ -1154,6 +1158,10 @@ export const DioramaSchema = z.object({
   elephantGrass: GrassFieldSchema,
   /** PK 1.8.0: the short grass (30 cm) that covers every green meadow, same wind (PK's Meshy model). */
   sward: GrassFieldSchema,
+  /** PK 1.8.0: the 10 cm lawn under everything on the open grass (PK's "make grass for floor"). */
+  lawn: GrassFieldSchema,
+  /** PK 1.8.0: a few clusters of stones in the grass (PK's "Grass and Stones"; no wind). */
+  stones: GrassFieldSchema,
   /** PK 1.8.0: ground mist and light shafts through the clouds (view/atmosphere.ts). */
   atmosphere: z.object({
     mist: z.object({

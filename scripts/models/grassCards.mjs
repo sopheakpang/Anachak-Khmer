@@ -10,8 +10,11 @@
 //      grass seen from 3 more sides (30°, 90°, 150°); hue shift = leaves toward green (default 38).
 //      top = a 4th column: the grass seen from straight above (for a flat card the steep RTS
 //      camera sees; the side cards look like thin stars from up there).
+//      round = the top view is cut to a ragged round patch (a square patch of lawn would show its
+//      straight edges from above).
 //      e.g. node scripts/models/grassCards.mjs 5173 sward.glb sward turn 0 top   (PK's 30 cm cogon mix)
-// Output: apps/game/public-mobile/models/grass/<out>.webp (1536 × 1024: 3 views × 2 variants).
+//           node scripts/models/grassCards.mjs 5173 floor.glb lawn turn 0 top round   (the 10 cm lawn)
+// Output: apps/game/public-mobile/models/grass/<out>.webp (1536 × 1024: 3 views × 2 variants; 2048 × 1024 with top).
 import { chromium } from 'playwright';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import sharp from 'sharp';
@@ -23,6 +26,7 @@ const mode = process.argv[5] ?? 'cut';
 const shift = Number(process.argv[6] ?? 38);
 const top = process.argv[7] === 'top';
 const COLS = top ? 4 : 3;
+const round = process.argv[8] === 'round';
 const VIEW = 512;
 const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const page = await b.newPage({ viewport: { width: VIEW, height: VIEW } });
@@ -180,7 +184,26 @@ function pad(data, w, h) {
       }
   return data;
 }
-const tiles = await Promise.all(shots.out.map((s) => greener(Buffer.from(s.split(',')[1], 'base64'))));
+/** Cut a top view to a ragged round patch: radius 0.44 of the tile, ±0.05 by angle, soft rim. */
+async function roundCut(png) {
+  const { data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const w = info.width;
+  const h = info.height;
+  for (let y = 0; y < h; y++)
+    for (let x = 0; x < w; x++) {
+      const dx = (x + 0.5) / w - 0.5;
+      const dy = (y + 0.5) / h - 0.5;
+      const a = Math.atan2(dy, dx);
+      const r = 0.44 + 0.03 * Math.sin(a * 5 + 1) + 0.02 * Math.sin(a * 11 + 2) + 0.01 * Math.sin(a * 23);
+      const k = Math.min(1, Math.max(0, (r - Math.hypot(dx, dy)) / 0.03));
+      data[(y * w + x) * 4 + 3] *= k;
+    }
+  return sharp(data, { raw: info }).png().toBuffer();
+}
+const raws = shots.out.map((s) => Buffer.from(s.split(',')[1], 'base64'));
+const tiles = await Promise.all(
+  raws.map(async (png, i) => greener(round && top && i % COLS === 3 ? await roundCut(png) : png)),
+);
 // Copy the tiles in raw (a composite would blend the padded clear pixels back to black).
 const W = VIEW * COLS;
 const raw = Buffer.alloc(W * VIEW * 2 * 4);

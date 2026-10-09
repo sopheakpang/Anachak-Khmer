@@ -119,6 +119,12 @@ export const TEAM_COLOR: Record<Team, number> = { 0: 0x2f5fa8, 1: 0xb8412f };
 const STILL = { speed: 0, leg: 0, arm: 0, armSync: 0 };
 /** The water plane's height (m). */
 const WATER_Y = -0.12;
+/**
+ * Grass grows where the ground stands this far (m) above the water plane: not on a bank that dips
+ * under it, but on the low meadows, which lie only a few cm higher (PK 1.8.0: the lawn left a
+ * bare band there at 0.08).
+ */
+export const GRASS_DRY = 0.03;
 const TREE_CAP = 1600;
 /** The RTS camera's lens (degrees). */
 const RTS_FOV = 32;
@@ -301,6 +307,9 @@ export class KingdomScene {
   readonly egrass: ElephantGrass | null = null;
   /** PK 1.8.0: the 30 cm meadow grass (diorama.json sward). */
   readonly sward: ElephantGrass | null = null;
+  /** PK 1.8.0: the 10 cm lawn (diorama.json lawn) and the stone clusters (stones). */
+  readonly lawn: ElephantGrass | null = null;
+  readonly stones: ElephantGrass | null = null;
   private readonly egrassKey = new Map<ElephantGrass, string>();
   private readonly egrassClear = new Map<ElephantGrass, Set<number>>();
   readonly see: SeeUniforms | null = null;
@@ -451,10 +460,15 @@ export class KingdomScene {
       this.scene.add(g.group);
     }
     // PK 1.8.0: the short grass (30 cm, PK's Meshy model) over every green meadow.
-    if (this.gfx.diorama && this.gfx.sward && sim.data.diorama.sward.count > 0) {
-      const g = new ElephantGrass(sim.data.diorama.sward, false);
-      (this as { sward: ElephantGrass | null }).sward = g;
-      this.scene.add(g.group);
+    // PK 1.8.0: under it the 10 cm lawn on every green tile, and a few clusters of stones.
+    if (this.gfx.diorama && this.gfx.sward) {
+      const D = sim.data.diorama;
+      for (const [key, cfg] of [['lawn', D.lawn], ['sward', D.sward], ['stones', D.stones]] as const) {
+        if (cfg.count <= 0) continue;
+        const g = new ElephantGrass(cfg, false);
+        (this as unknown as Record<string, ElephantGrass | null>)[key] = g;
+        this.scene.add(g.group);
+      }
     }
     if (this.gfx.seeThrough) (this as { see: SeeUniforms | null }).see = seeUniforms();
     // PK 1.8.0: ground mist and light shafts (the diorama presets).
@@ -2315,6 +2329,8 @@ export class KingdomScene {
     this.syncAir(t);
     this.syncElephantGrass(this.egrass, t, fresh);
     this.syncElephantGrass(this.sward, t, fresh);
+    this.syncElephantGrass(this.lawn, t, fresh);
+    this.syncElephantGrass(this.stones, t, fresh);
     this.syncNight(t);
     this.syncSee(t, selected);
     this.syncEffects(t);
@@ -2453,11 +2469,11 @@ export class KingdomScene {
     const T = s.map.tile;
     const clear = (tx: number, tz: number) =>
       !near.has(tz * N + tx) &&
-      (!this.wear || this.wear.at(tx, tz) < 0.04) &&
+      (!this.wear || this.wear.at(tx, tz) < (g.cfg.wearMax ?? 0.04)) &&
       // Dry land only: where the drawn bank dips under the water plane there is no grass.
-      this.groundY((tx + 0.5) * T - this.half, (tz + 0.5) * T - this.half) > WATER_Y + 0.08;
+      this.groundY((tx + 0.5) * T - this.half, (tz + 0.5) * T - this.half) > WATER_Y + GRASS_DRY;
     const at = this.detailAt ?? this.patchAt(new Set());
-    g.lay(cx, cz, radius, s.map.tile, this.half, at, clear, changed || fresh);
+    g.lay(cx, cz, radius, s.map.tile, this.half, at, clear, changed || fresh, (x, z) => this.groundY(x, z));
   }
 
   /** The night (Anachak Khmer): torches, the stars and the moon, and moonlight. */

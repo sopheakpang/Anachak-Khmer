@@ -529,3 +529,13 @@ Note: the test machine has no GPU and renders headless at about 2 FPS, so timing
 | Keyboard: defaults from config, swap on conflict, Esc/Backspace reserved, kept in the browser (and a blocked store is harmless), Reset; panel Khmer first, text ≥ 26 px; a new key works in the game and the old one stops | ✅ | `kingdom/keymap.test.ts`, e2e KG-09, `docs/screens/k18-keyboard.jpg` |
 
 **Not verified here:** the frame rate with the meadow grass on the stream laptop (software GL here), the keyboard panel with a real Khmer keyboard layout.
+
+### 1.8.0, fourth part: the 10 cm lawn and stones (2026-10-09)
+
+**Automated:** `npm run verify` ✅ (lint, types, 656 unit tests in 73 files, build) · e2e KG-02 ✅ (budget 527 922 triangles, 90 draw calls), KG-09 ✅, KG-05 ✅, KG-06 ✅.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Lawn 0.09–0.11 m on every open grass tile, patches overlap, flat card above the ground bumps, clumps stand on the ground, thins only on worn earth | ✅ | `view/grass18.test.ts`, `docs/screens/k18-lawn-rts.jpg`, `k18-lawn-hero.jpg` |
+| Stone clusters rare, no wind, not pushed | ✅ | `view/grass18.test.ts` |
+| Low meadows (a few cm above the water) grow grass; none on the water | ✅ | `view/grass18.test.ts` (GRASS_DRY), water screenshot (no grass on the water) |
