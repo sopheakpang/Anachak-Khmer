@@ -567,3 +567,9 @@ Note: the test machine has no GPU and renders headless at about 2 FPS, so timing
 | Palms and coconuts now and then beside (never on) worn paths near a storehouse | ✅ | `view/trees18.test.ts`, `docs/screens/k18-trees-wayside.jpg` |
 
 **Not verified here:** the frame rate of a dense forest on the stream laptop (software GL here), the first load time of the tree models over the web (4.4 MB).
+
+### 1.8.0, seventh part: the 889 CE house (2026-10-10)
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| (KG-02 with the new house: 557 716 triangles ✅) The house fits its 4 × 4 m plot, 5.79 m high, 5 684 triangles, thatch colour, team cloth; above the old stilt house, below the officials' house | ✅ | `view/houses.test.ts`, `view/court.test.ts`, `docs/screens/k18-house-889.jpg`, `k18-house-889-model.jpg` |

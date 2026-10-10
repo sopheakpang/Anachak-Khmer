@@ -348,48 +348,318 @@ function spiritHouse(p: THREE.BufferGeometry[], x: number, z: number, s = 1): vo
   p.push(part(place(new THREE.ConeGeometry(0.04 * s, 0.22 * s, 4), [x, 1.95 * s, z]), C.lime));
 }
 
+/** PK 1.8.0 (889 CE brief): the commoner's stilt house materials. */
+const R89 = {
+  bamboo: 0x9e8a62,
+  bambooLight: 0xc2ad80,
+  bambooDark: 0x76623f,
+  /** Weathered thatch: grey-brown, the fresh courses lighter (PK's reference). */
+  thatchOld: 0x8f7d5c,
+  thatchShade: 0x5e5038,
+  hardwood: 0x4a3020,
+  hardwoodLight: 0x6a4630,
+  stone: 0xa49474,
+  stoneDark: 0x80725a,
+  earth: 0x8a6a48,
+  clay: 0x9a5434,
+  basket: 0xb08a4e,
+  straw: 0xd8bc6a,
+  log: 0x5e4028,
+};
+
 /**
- * Pteas Rong (ផ្ទះរោង), the common house: 2 × 2 tiles (4 × 4 m). PK's reference names it
- * the oldest type of the series, going back to Funan (Nokor Phnom). A rectangular body with
- * its long side to the front, raised on three rows of round posts over stone footings (floor
- * at ~2.2 m), under one steep two-sided gable roof of red tile (overall ~5.5 m) with big
- * decorated gable boards and horn finials at both ridge ends; a steep stair on the long side
- * up to the door, small shuttered windows (a team-colour cloth hangs from one), a
- * terracotta ground slab and a spirit house at the north-east corner of the plot.
+ * A carved stone pedestal (ssom) for a stilt: a square plinth, a chamfered block with a
+ * carved band, and a cap; the post stands on top, out of the damp (not buried in the earth).
+ * Returns the height of its top.
+ */
+function pedestal(p: THREE.BufferGeometry[], x: number, z: number): number {
+  p.push(part(place(box(0.42, 0.1, 0.42), [x, 0.05, z]), R89.stoneDark));
+  p.push(part(place(cyl(0.15, 0.2, 0.24, 4), [x, 0.22, z], [0, Math.PI / 4, 0]), R89.stone));
+  p.push(part(place(box(0.27, 0.05, 0.27), [x, 0.25, z]), R89.stoneDark)); // the carved band
+  p.push(part(place(box(0.25, 0.06, 0.25), [x, 0.37, z]), R89.stone)); // cap
+  return 0.4;
+}
+
+/**
+ * A woven bamboo wall panel (thnob), `w` wide and `h` high, centred at `c` along the wall, its
+ * face at `at` along the outward axis: a split-bamboo base with a two-tone twill weave in a
+ * hardwood frame (top, middle and bottom rails). `side`: 'z' = front/back (panel along x),
+ * 'x' = the ends (panel along z).
+ */
+function wovenPanel(
+  p: THREE.BufferGeometry[],
+  side: 'z' | 'x',
+  sign: number,
+  at: number,
+  w: number,
+  y0: number,
+  h: number,
+  c = 0,
+): void {
+  const along = (u: number, y: number, d: number, sw: number, sh: number, col: number) => {
+    const g = side === 'z' ? box(sw, sh, d) : box(d, sh, sw);
+    const pos: V = side === 'z' ? [c + u, y, sign * at] : [sign * at, y, c + u];
+    p.push(part(place(g, pos), col));
+  };
+  along(0, y0 + h / 2, 0.06, w, h, R89.bamboo);
+  const cols = Math.max(2, Math.round(w / 0.34));
+  const rows = Math.max(2, Math.round(h / 0.3));
+  const cw = w / cols;
+  const ch = h / rows;
+  for (let r = 0; r < rows; r++)
+    for (let k = r % 2; k < cols; k += 2)
+      along(-w / 2 + (k + 0.5) * cw, y0 + (r + 0.5) * ch, 0.08, cw * 0.92, ch * 0.5, r % 2 ? R89.bambooLight : R89.bambooDark);
+  for (const y of [y0 + 0.04, y0 + h * 0.45, y0 + h - 0.04]) along(0, y, 0.11, w + 0.06, 0.08, R89.hardwood);
+}
+
+/**
+ * A steep, deep thatch roof with its ridge along x, centred on the origin: two thick shaggy
+ * slabs with layered courses, bamboo battens laid down the slope over the thatch, a ragged
+ * fringe at the low eaves, a bound ridge roll, woven bamboo gable triangles and, at both ridge
+ * ends, carved horn finials curling up (with smaller hooks at the eave corners), as in PK's
+ * reference.
+ */
+function thatchRoof(
+  p: THREE.BufferGeometry[],
+  g: { len: number; half: number; ridge: number; eave: number; base: number; wallHalf: number },
+): void {
+  const { len, half, ridge: R, eave: E, base } = g;
+  const L = len / 2;
+  const rise = R - E;
+  const slope = Math.hypot(half, rise);
+  const t = 0.22;
+  const ny = half / slope;
+  for (const s of [-1, 1]) {
+    const nz = (s * rise) / slope;
+    const top: V[] = [
+      [-L, R + 0.04, -s * 0.05],
+      [L, R + 0.04, -s * 0.05],
+      [L, E, s * half],
+      [-L, E, s * half],
+    ];
+    const bottom = top.map(([x, y, z]) => [x, y - ny * t, z - nz * t] as V);
+    p.push(part(solid([...top, ...bottom], HEXA), R89.thatchOld));
+    // Layered courses, each lapping over the one below, its lower edge in shadow.
+    for (const f of [0.16, 0.32, 0.48, 0.64, 0.8, 0.94]) {
+      const y = R - f * rise + ny * 0.035;
+      const z = s * f * half + nz * 0.035;
+      p.push(part(beam([-L + 0.02, y, z], [L - 0.02, y, z], 0.12, 0.05), f < 0.5 ? C.thatch : C.thatchCourse));
+      p.push(part(beam([-L + 0.02, y - ny * 0.02, z - s * 0.07], [L - 0.02, y - ny * 0.02, z - s * 0.07], 0.05, 0.03), R89.thatchShade));
+    }
+    // Bamboo battens laid down the slope over the thatch, holding it against the wind.
+    const n = Math.max(3, Math.round(len / 0.75));
+    for (let i = 0; i < n; i++) {
+      const x = -L + 0.3 + (i * (len - 0.6)) / (n - 1);
+      const a0: V = [x, R - 0.04 * rise + ny * 0.07, s * 0.04 * half + nz * 0.07];
+      const a1: V = [x, R - 0.97 * rise + ny * 0.07, s * 0.97 * half + nz * 0.07];
+      p.push(part(beam(a0, a1, 0.06, 0.05), R89.log));
+    }
+    // One long batten across, tying them.
+    const yc = R - 0.55 * rise + ny * 0.09;
+    p.push(part(beam([-L + 0.1, yc, s * 0.55 * half + nz * 0.09], [L - 0.1, yc, s * 0.55 * half + nz * 0.09], 0.05, 0.05), R89.log));
+    // The ragged eave fringe.
+    for (let i = 0; i < 9; i++) {
+      const x = -L + (i + 0.5) * (len / 9);
+      const drop = 0.12 + ((i * 37) % 5) * 0.03;
+      p.push(part(place(box(len / 9 + 0.02, drop, 0.14), [x, E - drop / 2 + 0.02, s * (half - 0.02)]), i % 2 ? R89.thatchShade : C.thatchCourse));
+    }
+  }
+  p.push(part(place(cyl(0.16, 0.16, len + 0.1, 6), [0, R + 0.1, 0], [0, 0, Math.PI / 2]), C.thatchRidge));
+  for (const x of [-L * 0.66, -L * 0.22, L * 0.22, L * 0.66])
+    p.push(part(place(cyl(0.18, 0.18, 0.06, 6), [x, R + 0.1, 0], [0, 0, Math.PI / 2]), R89.hardwood));
+  for (const sx of [-1, 1]) {
+    const x = sx * (L - 0.3);
+    const bh = R - 0.1 - base;
+    const bw = Math.min(g.wallHalf + 0.1, (half * (R - base)) / rise - 0.08);
+    const tri: V[] = [
+      [x - 0.03, base, -bw],
+      [x - 0.03, base, bw],
+      [x - 0.03, base + bh, 0],
+      [x + 0.03, base, -bw],
+      [x + 0.03, base, bw],
+      [x + 0.03, base + bh, 0],
+    ];
+    p.push(part(solid(tri, [[0, 1, 2], [3, 4, 5], [0, 1, 4, 3], [1, 2, 5, 4], [2, 0, 3, 5]]), R89.bamboo));
+    for (const f of [0.3, 0.62]) {
+      const hw = bw * (1 - f) - 0.05;
+      p.push(part(place(box(0.08, 0.1, hw * 2), [x + sx * 0.01, base + f * bh, 0]), R89.bambooLight));
+    }
+    // Barge boards along both verges, dark hardwood.
+    const ex = sx * (L + 0.02);
+    for (const s of [-1, 1]) p.push(part(beam([ex, R + 0.12, 0], [ex, E + 0.05, s * (half + 0.03)], 0.1, 0.08), R89.hardwood));
+    // Horn finial at the apex: rising, then curling outward (the reference's naga horn).
+    const horn = [
+      new THREE.Vector3(ex, R + 0.1, 0),
+      new THREE.Vector3(ex + sx * 0.08, R + 0.32, 0),
+      new THREE.Vector3(ex + sx * 0.05, R + 0.55, 0),
+      new THREE.Vector3(ex + sx * 0.2, R + 0.68, 0),
+    ];
+    p.push(part(taperedTube(horn, 0.08, 0.02, 6, 6), R89.hardwood));
+    // Small hooks curling up at the eave corners.
+    for (const s of [-1, 1]) {
+      const ez = s * (half + 0.03);
+      const hook = [
+        new THREE.Vector3(ex, E + 0.05, ez),
+        new THREE.Vector3(ex + sx * 0.06, E + 0.18, ez + s * 0.06),
+        new THREE.Vector3(ex + sx * 0.02, E + 0.36, ez + s * 0.08),
+      ];
+      p.push(part(taperedTube(hook, 0.05, 0.015, 4, 5), R89.hardwood));
+    }
+  }
+}
+
+/** A thatch roof as above, turned so its ridge runs along z (gable ends to the front and back). */
+function thatchGableZ(
+  p: THREE.BufferGeometry[],
+  x: number,
+  z: number,
+  g: { len: number; half: number; ridge: number; eave: number; base: number; wallHalf: number },
+): void {
+  const q: THREE.BufferGeometry[] = [];
+  thatchRoof(q, g);
+  for (const m of q) p.push(m.rotateY(Math.PI / 2).translate(x, 0, z));
+}
+
+/** A window with a woven awning shutter propped open on a stick (PK's reference). */
+function awningWindow(p: THREE.BufferGeometry[], side: 'z' | 'x', sign: number, at: number, u: number, y: number): void {
+  const q: THREE.BufferGeometry[] = [];
+  q.push(part(place(box(0.55, 0.42, 0.05), [0, 0, 0.02]), C.opening));
+  q.push(part(place(box(0.65, 0.06, 0.08), [0, -0.24, 0.05]), R89.hardwood)); // sill
+  q.push(part(place(box(0.64, 0.05, 0.46), [0, 0.32, 0.2], [0.55, 0, 0]), R89.bamboo)); // awning
+  q.push(part(beam([0.28, -0.22, 0.06], [0.28, 0.2, 0.4], 0.025, 0.025), R89.log)); // prop stick
+  for (const g of q) {
+    g.translate(0, y, 0);
+    if (side === 'z') {
+      if (sign < 0) g.rotateY(Math.PI);
+      g.translate(u, 0, sign * at);
+    } else {
+      g.rotateY((sign * Math.PI) / 2);
+      g.translate(sign * at, 0, u);
+    }
+    p.push(g);
+  }
+}
+
+/**
+ * Pteas Rong (ផ្ទះរោង), the commoner's house: 2 × 2 tiles (4 × 4 m), PK 1.8.0 after his 889 CE
+ * brief and reference picture (late Chenla, early Angkor): two steep, deep thatch gables side by
+ * side with a valley between, their gable ends to the front, bamboo battens over the thatch and
+ * horn finials curling up at the apexes; woven bamboo walls in a hardwood frame with propped
+ * awning windows; a veranda with a railing before the door under the right gable, reached by a
+ * wooden stair with handrails; square hardwood stilts on carved stone pedestals (not buried in
+ * the earth, out of the damp); under the house the farm's daily life: stacked firewood, baskets,
+ * an ox cart, clay water jars, straw, a fish trap. A team-colour cloth hangs at a window. No
+ * wooden house of the period survives: a reconstruction.
  */
 export function rongHouseGeometry(): THREE.BufferGeometry {
   const p: THREE.BufferGeometry[] = [];
-  const H = 2.2;
-  const floorTop = H + 0.08;
-  const wallTop = 3.62;
-  p.push(part(place(box(3.8, 0.06, 3.3), [0, 0.03, 0]), C.slab));
-  posts(p, [-1.45, 0, 1.45], [-1.05, 0, 1.05], H - 0.08, 0.1);
-  p.push(part(place(box(3.5, 0.16, 2.7), [0, H, 0]), C.floor));
-  plankWalls(p, 3.2, 2.4, floorTop, wallTop - floorTop);
-  // Door on the long side, with a lighter frame.
-  p.push(part(place(box(0.74, 1.3, 0.05), [-0.7, floorTop + 0.66, 1.22]), C.batten));
-  p.push(part(place(box(0.6, 1.2, 0.06), [-0.7, floorTop + 0.6, 1.23]), C.opening));
-  const wy = floorTop + 0.78;
-  windowAt(p, 'z+', 0.35, wy, 1.2);
-  windowAt(p, 'z+', 1.05, wy, 1.2, true);
-  windowAt(p, 'z-', -0.75, wy, 1.2);
-  windowAt(p, 'z-', 0.75, wy, 1.2);
-  windowAt(p, 'x+', 0, wy, 1.6);
-  windowAt(p, 'x-', 0, wy, 1.6);
-  gableRoof(p, {
-    len: 3.9,
-    half: 1.7,
-    ridge: 5.0,
-    eave: 3.25,
-    base: wallTop - 0.04,
-    // Commoners were not allowed tiles: palm-leaf thatch (Zhou Daguan; PK's research, D78).
-    tile: C.thatch,
-    course: C.thatchCourse,
-    ridgeColor: C.thatchRidge,
-    horn: 0.8,
-  });
-  stair(p, -0.7, 0.66, floorTop, 1.36, 2.35, 6);
-  spiritHouse(p, 2.15, 2.15);
+  const H = 1.85; // floor
+  const floorTop = H + 0.1;
+  const wallTop = 3.55;
+  const wh = wallTop - floorTop;
+  const XL = -1.6; // left wall
+  const XR = 1.6; // right wall
+  const XM = 0.1; // between the two rooms (under the valley)
+  const ZB = -1.35; // back wall
+  const ZF = 1.45; // front of the left room and of the veranda
+  const ZV = 0.45; // the right room's front wall (the back of the veranda)
+  // Packed earth and straw under the house.
+  p.push(part(place(box(3.8, 0.04, 3.4), [0, 0.02, 0.05]), R89.earth));
+  p.push(part(place(box(1.1, 0.06, 0.8), [0.8, 0.05, 0.9]), R89.straw));
+  // Square hardwood stilts on carved stone pedestals; the veranda's front posts run on up to
+  // the eave.
+  const stilts: Array<[number, number, number]> = [];
+  for (const x of [XL, XM, XR]) for (const z of [ZB, -0.45, ZV]) stilts.push([x, z, H]);
+  stilts.push([XL, ZF, H], [XM, ZF, 3.25], [XR, ZF, 3.25]);
+  for (const [x, z, top] of stilts) {
+    const base = pedestal(p, x, z);
+    p.push(part(place(box(0.16, top - base, 0.16), [x, base + (top - base) / 2, z]), R89.hardwood));
+  }
+  // Bearers and joists.
+  for (const z of [ZB, -0.45, ZV, ZF]) p.push(part(place(box(3.4, 0.14, 0.14), [0, H - 0.12, z]), R89.hardwood));
+  for (const x of [XL, XM, XR]) p.push(part(place(box(0.12, 0.1, ZF - ZB + 0.2), [x, H - 0.02, (ZF + ZB) / 2]), R89.hardwoodLight));
+  // Floors: the rooms and the veranda (split bamboo).
+  p.push(part(place(box(XR - XL + 0.2, 0.08, ZF - ZB + 0.2), [0, H + 0.06, (ZF + ZB) / 2]), R89.bambooDark));
+  // Corner posts of the rooms.
+  for (const [x, z] of [
+    [XL, ZB], [XR, ZB], [XL, ZF], [XM, ZF], [XM, ZV], [XR, ZV], [XM, ZB],
+  ] as const)
+    p.push(part(place(box(0.14, wh + 0.1, 0.14), [x, floorTop + wh / 2, z]), R89.hardwood));
+  // Woven walls. Left room: front, left side, its right side along the veranda.
+  wovenPanel(p, 'z', 1, ZF, XM - XL, floorTop, wh, (XL + XM) / 2);
+  wovenPanel(p, 'x', -1, -XL, ZF - ZB, floorTop, wh, (ZF + ZB) / 2);
+  wovenPanel(p, 'x', 1, XM, ZF - ZV, floorTop, wh, (ZF + ZV) / 2);
+  // Back wall and the right room's side.
+  wovenPanel(p, 'z', -1, -ZB, XR - XL, floorTop, wh);
+  wovenPanel(p, 'x', 1, XR, ZV - ZB, floorTop, wh, (ZV + ZB) / 2);
+  // The right room's front, onto the veranda, with the door.
+  const doorX = 0.75;
+  const doorW = 0.7;
+  const lw = doorX - doorW / 2 - XM;
+  const rw = XR - (doorX + doorW / 2);
+  wovenPanel(p, 'z', 1, ZV, lw, floorTop, wh, XM + lw / 2);
+  wovenPanel(p, 'z', 1, ZV, rw, floorTop, wh, XR - rw / 2);
+  p.push(part(place(box(doorW, 1.3, 0.05), [doorX, floorTop + 0.65, ZV + 0.01]), C.opening));
+  p.push(part(place(box(doorW + 0.14, 0.08, 0.1), [doorX, floorTop + 1.34, ZV + 0.03]), R89.hardwood));
+  // Awning windows, the team cloth under one.
+  awningWindow(p, 'z', 1, ZF + 0.02, (XL + XM) / 2 - 0.35, floorTop + 0.9);
+  awningWindow(p, 'z', 1, ZF + 0.02, (XL + XM) / 2 + 0.45, floorTop + 0.9);
+  awningWindow(p, 'x', -1, -XL + 0.02, -0.6, floorTop + 0.9);
+  p.push(part(place(box(0.46, 0.34, 0.03), [(XL + XM) / 2 - 0.35, floorTop + 0.42, ZF + 0.07]), 0xffffff, CLOTH));
+  // Veranda railing: top rail and balusters, open at the stair (on the left).
+  const railY = floorTop + 0.6;
+  p.push(part(beam([XM + 0.62, railY, ZF], [XR, railY, ZF], 0.07, 0.07), R89.hardwood));
+  p.push(part(beam([XR, railY, ZF], [XR, railY, ZV], 0.07, 0.07), R89.hardwood));
+  for (let i = 0; i <= 6; i++) p.push(part(place(box(0.04, 0.6, 0.04), [XM + 0.62 + (i * (XR - XM - 0.62)) / 6, floorTop + 0.3, ZF]), R89.hardwoodLight));
+  for (let i = 1; i < 4; i++) p.push(part(place(box(0.04, 0.6, 0.04), [XR, floorTop + 0.3, ZV + (i * (ZF - ZV)) / 4]), R89.hardwoodLight));
+  // A rolled bamboo blind under the veranda eave.
+  p.push(part(place(cyl(0.07, 0.07, XR - XM - 0.2, 6), [(XM + XR) / 2, 3.1, ZF + 0.05], [0, 0, Math.PI / 2]), R89.bambooLight));
+  // Two thatch gables side by side, gable ends front and back, a valley between.
+  const roof = { ridge: 5.1, eave: 3.2, base: wallTop - 0.04, len: ZF - ZB + 0.95 };
+  const zc = (ZF + ZB) / 2 + 0.05;
+  thatchGableZ(p, (XL + XM) / 2 - 0.05, zc, { ...roof, half: 1.32, wallHalf: (XM - XL) / 2 });
+  thatchGableZ(p, (XM + XR) / 2 + 0.05, zc, { ...roof, half: 1.32, wallHalf: (XR - XM) / 2 });
+  // Wooden stair with handrails, from the ground in front up to the veranda's open side.
+  const sx = XM + 0.32;
+  const sz0 = ZF;
+  const sz1 = ZF + 1.05;
+  for (const s of [-1, 1]) {
+    const x = sx + s * 0.28;
+    p.push(part(beam([x, 0.05, sz1], [x, floorTop, sz0], 0.06, 0.16), R89.hardwoodLight));
+    p.push(part(beam([x, 0.85, sz1], [x, floorTop + 0.72, sz0], 0.05, 0.05), R89.hardwood));
+    p.push(part(place(box(0.07, 0.9, 0.07), [x, 0.45, sz1]), R89.hardwood));
+  }
+  for (let k = 1; k <= 7; k++) {
+    const f = k / 8;
+    p.push(part(place(box(0.56, 0.05, 0.2), [sx, f * floorTop, sz1 + (sz0 - sz1) * f]), R89.hardwoodLight));
+  }
+  // Under the house: stacked firewood, baskets, an ox cart, clay jars, a fish trap.
+  for (let r = 0; r < 3; r++)
+    for (let i = 0; i < 4 - r; i++)
+      p.push(part(place(cyl(0.06, 0.06, 1.1, 5), [XL + 0.35, 0.1 + r * 0.11, -0.9 + i * 0.13 + r * 0.06], [0, 0, Math.PI / 2]), R89.log));
+  p.push(part(place(cyl(0.2, 0.15, 0.32, 7), [-0.75, 0.2, 0.05]), R89.basket));
+  p.push(part(place(cyl(0.17, 0.13, 0.28, 7), [-0.4, 0.18, 0.3]), R89.basket));
+  // Ox cart: two spoked wheels (rims), axle, bed and the long shafts resting on the ground.
+  const cx = 1.0;
+  const cz = -0.75;
+  for (const s of [-1, 1]) {
+    p.push(part(place(new THREE.TorusGeometry(0.42, 0.04, 4, lpSeg(14, 8)), [cx + s * 0.45, 0.46, cz], [0, Math.PI / 2, 0]), R89.hardwoodLight));
+    for (const a of [0, Math.PI / 3, (2 * Math.PI) / 3])
+      p.push(part(place(box(0.03, 0.82, 0.03), [cx + s * 0.45, 0.46, cz], [a, 0, 0]), R89.hardwood));
+  }
+  p.push(part(place(box(0.95, 0.05, 0.05), [cx, 0.46, cz]), R89.hardwood));
+  p.push(part(place(box(0.75, 0.06, 0.9), [cx, 0.56, cz + 0.05]), R89.hardwoodLight));
+  for (const s of [-1, 1]) p.push(part(beam([cx + s * 0.18, 0.56, cz + 0.45], [cx + s * 0.1, 0.06, cz + 1.4], 0.05, 0.05), R89.hardwood));
+  for (const [x, z, r] of [
+    [1.25, 0.95, 0.24],
+    [1.35, 0.4, 0.2],
+  ] as const) {
+    p.push(part(place(new THREE.SphereGeometry(r, lpSeg(8, 5), lpSeg(6, 4)), [x, r * 1.15, z], [0, 0, 0], [1, 1.15, 1]), R89.clay));
+    p.push(part(place(cyl(r * 0.42, r * 0.5, 0.08, 8), [x, r * 2.3 + 0.02, z]), R89.clay));
+  }
+  // A fish trap and a sieve hanging from the joists.
+  p.push(part(place(cyl(0.1, 0.18, 0.45, 6), [0.35, 1.45, -0.1]), R89.bambooLight));
+  p.push(part(place(cyl(0.2, 0.2, 0.04, 8), [-0.2, 1.6, -0.6], [Math.PI / 2, 0, 0]), R89.bamboo));
   return mergeGeometries(p)!;
 }
 
