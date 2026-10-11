@@ -1,4 +1,4 @@
-/** Test-event builders for the host panel (prompt 06). Pure functions: easy to test. */
+/** Test-event builders for the host panel. Pure functions: easy to test. */
 
 export interface SimUser {
   id: string;

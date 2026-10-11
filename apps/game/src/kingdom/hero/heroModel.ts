@@ -974,6 +974,8 @@ export class HeroModel {
   }
 
   dispose(): void {
+    // PK's model (the rig) first: its geometry is the loaded model's, shared, so it is kept.
+    this.rig?.dispose();
     this.group.traverse((o) => {
       if (o instanceof THREE.Mesh) o.geometry.dispose();
     });

@@ -75,3 +75,33 @@ describe('WeatherFx', () => {
     expect(origin.getY(0)).toBe(0);
   });
 });
+
+describe('1.8.0 optimisation: the night and golden light are throttled', () => {
+  it('recolours the sky at most once per LIGHT_EVERY seconds, and catches up after', async () => {
+    const { LIGHT_EVERY } = await import('./weather');
+    const scene = new THREE.Scene();
+    const sky = new THREE.Mesh(
+      new THREE.SphereGeometry(),
+      new THREE.ShaderMaterial({
+        uniforms: {
+          zenith: { value: new THREE.Color(0x3366cc) },
+          horizon: { value: new THREE.Color(0xaaccee) },
+        },
+      }),
+    );
+    sky.renderOrder = -10;
+    scene.add(sky);
+    const fx = new WeatherFx(scene);
+    fx.setNight({ sun: 0.2, sky: 0.3, zenith: '#000010', horizon: '#101020', fog: '#101018' });
+    const zenith = (sky.material as THREE.ShaderMaterial).uniforms.zenith!.value as THREE.Color;
+    fx.night = 0;
+    fx.update('clear', 0, 0, 0, 0.016);
+    const day = zenith.getHex();
+    fx.night = 1;
+    fx.update('clear', LIGHT_EVERY / 2, 0, 0, 0.016);
+    expect(zenith.getHex()).toBe(day);
+    fx.update('clear', LIGHT_EVERY * 1.1, 0, 0, 0.016);
+    expect(zenith.getHex()).not.toBe(day);
+    expect(LIGHT_EVERY).toBeLessThanOrEqual(0.1);
+  });
+});

@@ -46,7 +46,7 @@ const MIGRATIONS: Record<number, string> = {
     );
     CREATE TABLE likes (day TEXT PRIMARY KEY, n INTEGER NOT NULL);
   `,
-  // Prompt 10: which carved slot a named stone took ('normal' block or 'big' piece).
+  // Which carved slot a named stone took ('normal' block or 'big' piece).
   2: `
     ALTER TABLE stones ADD COLUMN slot_kind TEXT;
     CREATE INDEX stones_slots ON stones (temple_id, slot_kind);
@@ -56,7 +56,7 @@ const MIGRATIONS: Record<number, string> = {
 type Write = () => void;
 
 /**
- * The saved world (prompt 05, AC-16): data/temples.db.
+ * The saved world (AC-16): data/temples.db.
  * Writes are queued and committed together every 500 ms (one transaction), so a burst of
  * gifts doesn't hit the disk hundreds of times. Every read flushes first, so reads are exact.
  */

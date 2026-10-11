@@ -275,6 +275,8 @@ export class KingdomSim {
   readonly fish: ResourceNode[];
   /** Bumped each time the fog is recomputed (the view redraws its veil then). */
   fogVersion = 0;
+  /** Bumped only when new land is explored (1.8.0: the view re-lays its ground only then). */
+  exploredVersion = 0;
   private fogAt = 0;
   private wildAt = 0;
   /** Next time shy animals and predators look around for people (twice a second, D75). */
@@ -1809,6 +1811,7 @@ export class KingdomSim {
     const { size, visible, explored } = this.fog;
     visible.fill(0);
     const T = this.map.tile;
+    let found = false;
     const mark = (x: number, z: number, r: number) => {
       const [cx, cz] = worldToTile(this.map, x, z);
       const rt = Math.ceil(r / T);
@@ -1818,8 +1821,12 @@ export class KingdomSim {
           const tx = cx + dx;
           const tz = cz + dz;
           if (tx < 0 || tz < 0 || tx >= size || tz >= size) continue;
-          visible[tz * size + tx] = 1;
-          explored[tz * size + tx] = 1;
+          const i = tz * size + tx;
+          visible[i] = 1;
+          if (!explored[i]) {
+            explored[i] = 1;
+            found = true;
+          }
         }
     };
     for (const u of this.units.values()) if (u.team === PLAYER) mark(u.x, u.z, this.def(u.type).vision);
@@ -1830,6 +1837,7 @@ export class KingdomSim {
         const [x, z] = this.center(b);
         mark(x, z, this.bdef(b.type).vision + Math.max(b.w, b.d));
       }
+    if (found) this.exploredVersion++;
   }
 
   isVisible(x: number, z: number): boolean {

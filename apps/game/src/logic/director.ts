@@ -23,7 +23,7 @@ export interface DirectorView {
 const TIER_RANK: Record<TierName, number> = { small: 0, medium: 1, large: 2, huge: 3 };
 
 /**
- * Camera director (prompt 12, spec: Camera director rules). Pure: every method takes `now`.
+ * Camera director (spec: Camera director rules). Pure: every method takes `now`.
  * - Base loop: map → quarry → river → hauling → site, seconds from config/camera.json.
  * - Large/Huge stones cut to the site full screen for `cut.seconds`, at most one cut start
  *   per `cooldownSec`; extra cuts queue (max `queueMax`, biggest first), the rest go to PiP.

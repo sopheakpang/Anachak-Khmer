@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import type { WeatherId } from '../sim/sim';
 
+/** How often the night and golden light recolour the materials (s): 1.8.0 throttle. */
+export const LIGHT_EVERY = 0.1;
+
 /**
  * Weather in the Kingdom tab (PK: changes every 30 minutes, D64): the light, the haze and
  * falling rain follow the simulation's weather. Everything is animated in vertex shaders
@@ -243,6 +246,8 @@ export class WeatherFx {
   readonly goldenSun = new THREE.Color(1, 0.75, 0.45);
   readonly goldenSky = new THREE.Color(1, 0.7, 0.5);
   private goldenShown = -1;
+  /** When the night and golden colours were last laid on the materials (s, the update's t). */
+  private lightAt = -1e9;
   private nightLook: {
     sun: number;
     sky: number;
@@ -394,7 +399,14 @@ export class WeatherFx {
     if (this.hemi) this.hemi.intensity = this.hemiBase * L.sky * skyK + this.flash;
     // The image-based light (environment map) dims at night too.
     if (NL) this.scene.environmentIntensity = 1 - 0.8 * n;
-    if (NL && (Math.abs(n - this.nightShown) > 0.004 || Math.abs(this.golden - this.goldenShown) > 0.004)) {
+    // Throttled — recalculates once per 0.1 s not per frame (1.8.0): the night and the golden
+    // light change over minutes, and each pass recolours every material of the scene.
+    if (
+      NL &&
+      (t - this.lightAt >= LIGHT_EVERY || t < this.lightAt) &&
+      (Math.abs(n - this.nightShown) > 0.004 || Math.abs(this.golden - this.goldenShown) > 0.004)
+    ) {
+      this.lightAt = t;
       this.nightShown = n;
       this.goldenShown = this.golden;
       for (const b of this.nightBase) b.apply(n);

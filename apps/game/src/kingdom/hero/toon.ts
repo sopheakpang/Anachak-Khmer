@@ -15,10 +15,6 @@ export type ToonLook = 'anime' | 'build';
 let toonLook: ToonLook = 'anime';
 const inks = new Set<THREE.Material>();
 
-export function toonLookNow(): ToonLook {
-  return toonLook;
-}
-
 /** Facets for the figures in the Build look (the low-poly style, D41). */
 export function toonFlat(): boolean {
   return toonLook === 'build' && lowPoly();

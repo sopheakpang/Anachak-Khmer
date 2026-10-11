@@ -1767,6 +1767,8 @@ export class Kingdom {
     this.seenEvents = sim.events.length;
     this.card = null;
     this.historyOpen = false;
+    // Free the old world before the new one is built (1.8.0: New Game / Load no longer leak it).
+    this.view.dispose();
     this.view = this.makeView();
     this.centreOnHall();
   }

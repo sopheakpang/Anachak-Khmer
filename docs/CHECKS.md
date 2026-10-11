@@ -573,3 +573,22 @@ Note: the test machine has no GPU and renders headless at about 2 FPS, so timing
 | Check | Result | Evidence |
 | --- | --- | --- |
 | (KG-02 with the new house: 557 716 triangles ✅) The house fits its 4 × 4 m plot, 5.79 m high, 5 684 triangles, thatch colour, team cloth; above the old stilt house, below the officials' house | ✅ | `view/houses.test.ts`, `view/court.test.ts`, `docs/screens/k18-house-889.jpg`, `k18-house-889-model.jpg` |
+
+### 1.8.0, eighth part: the optimisation pass (2026-10-11)
+
+PK's "master optimization prompt", checked against the code first; parts that did not fit the code were put to PK, who chose (D143).
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| `disposeNode` frees each geometry, material, instance buffer, depth material, bone texture and shadow map once; spares shared and kept resources; textures only when asked; safe twice and with nothing | ✅ | `engine/dispose.test.ts` |
+| New Game frees the old world: graphics memory level over three New Games (before: +117 geometries, +25 textures each) | ✅ | e2e KG-10; side-by-side run: 121 → 238 → 355 → 439 geometries before, 120 → 120 → 120 after |
+| After a New Game the world draws as before (royal hall model, court, grass fields, trees, rocks); no console warnings or errors | ✅ | `docs/screens/k18-optimised-newgame.jpg` |
+| Grass: a field knows whether it would re-plant; one field a frame, the longest-waiting first; ground and grass re-laid on new exploration only | ✅ | `view/perf18.test.ts` (`wouldLay`, `exploredVersion`) |
+| Night and golden light recolour at most every 0.1 s and catch up after; the sun placed every 0.05 s | ✅ | `view/weather.test.ts`, `view/perf18.test.ts` |
+| Trees: model, lighter copy, picture cards by distance and budget; every tree's lighter copy ships | ✅ | `view/trees18.test.ts` |
+| Frame budget (Low) with the middle tree step | ✅ 585 442 triangles, 104 calls | e2e KG-02 (40 000 mid + 30 000 near was 606 903: rebalanced to 30 000 + 20 000) |
+| CPU work per frame, drawing off, old and new served side by side, three 20 s pans each | ✅ p99 51–62 → 16–21 ms; worst 95–141 → 47–62 ms; worst grass frame 53–71 → 24–29 ms | scratchpad harness (not shipped) |
+| `npm run verify` (lint, typecheck, 78 test files / 677 tests, build) | ✅ | |
+| e2e: KG-01…KG-10, KM-01…KM-04, AX-01, AX-02, smoke | ✅ | |
+
+**Not done (PK's choice):** WebGPU, a 600-clump grass cap, per-tree `THREE.LOD`, the model re-simplifier. **Not verified here:** frame times on the stream laptop's GTX 1660 Super (software GL here, so only the game's own CPU work was measured).

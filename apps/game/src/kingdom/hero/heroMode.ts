@@ -29,6 +29,7 @@ import {
   type WorkTarget,
 } from './heroSim';
 import './hero.css';
+import { disposeAndRemove } from '../../engine/dispose';
 
 /**
  * The 3D hero mode (PK, Anachak Khmer D92): any character — a villager, a soldier, the
@@ -243,7 +244,7 @@ export class HeroMode {
     }
     // The meadow grass of the scene (PK's Meshy model) replaces the old tufts on open grass.
     if (this.ground && this.ground.meadowTufts === !!view.sward) {
-      view.scene.remove(this.ground.group);
+      disposeAndRemove(view.scene, this.ground.group);
       this.ground = null;
     }
     this.ground ??= new GroundDetail(!view.sward);

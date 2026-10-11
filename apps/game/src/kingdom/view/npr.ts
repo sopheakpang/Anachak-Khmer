@@ -16,6 +16,7 @@
 import * as THREE from 'three';
 import type { Diorama } from '@temples/shared';
 import { LIMB_VERTEX } from '../../engine/figures';
+import { disposeNode } from '../../engine/dispose';
 
 export type NprCfg = Diorama['units'];
 
@@ -204,8 +205,9 @@ export class NprUnits {
       const hull = this.hulls[i]!;
       const of = hull.userData.outlineOf as THREE.InstancedMesh;
       if (!of.parent) {
-        // The figures were removed (e.g. the court redressed for a new era): so is the ink.
-        hull.removeFromParent();
+        // The figures were removed (e.g. the court redressed for a new era): so is the ink,
+        // and its outline material is freed (1.8.0; the geometry is the figures' own).
+        disposeNode(hull, { keep: new Set([hull.geometry]) });
         this.hulls.splice(i, 1);
         continue;
       }

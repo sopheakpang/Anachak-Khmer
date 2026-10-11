@@ -174,7 +174,7 @@ describe('AC-16: saved world survives a restart', () => {
   });
 });
 
-describe('carved slots are saved (prompt 10)', () => {
+describe('carved slots are saved', () => {
   it('survive a restart and a reset clears them', () => {
     const file = join(tmp(), 'temples.db');
     const a = new SqliteStore(file, configs, { flushMs: 0 });

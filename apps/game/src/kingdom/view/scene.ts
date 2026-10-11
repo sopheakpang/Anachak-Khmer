@@ -102,6 +102,15 @@ import { NightSky } from './nightSky';
 import { FallenTrees, boatGeometry, paddleGeometry, paddleMatrix } from './actions';
 import { modelUrl } from '../hero/glbModel';
 import type { PropSlotId } from '@temples/shared';
+import { disposeNode } from '../../engine/dispose';
+
+/** A fog texel (grey a, alpha 255) as one little-endian 32-bit word. */
+export function fogTexel(a: number): number {
+  return ((255 << 24) | (a << 16) | (a << 8) | a) >>> 0;
+}
+
+/** How often the sun, its light, the sky disc and the water's glint are placed (s): 1.8.0 throttle. */
+export const SUN_EVERY = 0.05;
 
 /**
  * The Kingdom tab's 3D view: terrain, water, forests, rocks, buildings in construction
@@ -199,7 +208,7 @@ export function teamUnitGeometry(
   return extra.length ? mergeGeometries([base, ...extra])! : base;
 }
 
-/** What a villager is doing, as a job with its own tool (PK prompt 29, tool-to-job). */
+/** What a villager is doing, as a job with its own tool (tool-to-job). */
 export function jobOf(u: Unit): Job {
   const t = u.task;
   if (u.anim === 'walk' && u.carry && u.carry.n > 0) return 'porter';
@@ -1123,7 +1132,14 @@ export class KingdomScene {
       // The coconuts and bananas of the hamlets, the palms by the paths: on explored land near the view.
       for (const t of this.yardTrees)
         if (Math.abs(t.x - cx) < reach && Math.abs(t.z - cz) < reach && this.exploredAt(t.x, t.z)) spots.push(t);
-      models.draw(spots, cx, cz, this.heroView ? place.nearTris.hero : place.nearTris.rts);
+      const mid = place.midTris;
+      models.draw(
+        spots,
+        cx,
+        cz,
+        this.heroView ? place.nearTris.hero : place.nearTris.rts,
+        mid ? (this.heroView ? mid.hero : mid.rts) : 0,
+      );
     }
     // Windy days: leaves fall from the nearest crowns (PK), not from the sky.
     const crowns: number[] = [];
@@ -1228,11 +1244,30 @@ export class KingdomScene {
   /** How many of PK's prop models are on the map now (the tests read it). */
   propsOn = 0;
 
+  /** Freed (dispose): a new game or a loaded save builds a new scene, this one is done. */
+  disposed = false;
+
+  /**
+   * Give back everything this world holds on the graphics card (1.8.0 optimisation pass): a new
+   * game or a loaded save builds a whole new world, and three.js keeps the old one's buffers
+   * and textures until they are freed, so every New Game used to add the size of a world.
+   * The environment map (the Kingdom's own, scene.environment) stays.
+   */
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true;
+    // Textures held only in shader uniforms (not found by walking the scene): the grass wind
+    // noise, the worn-ground map, the fog of war.
+    for (const g of [this.egrass, this.sward, this.lawn, this.stones]) g?.dispose();
+    this.wear?.texture.dispose();
+    this.fogTex.dispose();
+    for (const o of [...this.scene.children]) disposeNode(o, { textures: true });
+    this.scene.clear();
+  }
+
   private loadProps(): void {
     const targets: Partial<Record<PropSlotId, THREE.InstancedMesh>> = {
-      'tree.common': this.treeSets[0],
       'tree.palm': this.treeSets[3],
-      'tree.mango': this.treeSets[4],
       dikePalm: this.dikePalms,
       'rock.stone': this.rocks.stone,
       'rock.gold': this.rocks.gold,
@@ -1261,28 +1296,45 @@ export class KingdomScene {
   private syncFog(): void {
     const { visible, explored, size } = this.sim.fog;
     const d = this.fogTex.image.data as Uint8Array;
+    // One 32-bit write a texel (1.8.0 optimisation: this runs a few times a second).
+    const px = (this.fogPx ??= new Uint32Array(d.buffer, d.byteOffset, d.length >> 2));
     const N = this.fogTex.image.width;
     const k = size / N; // tiles per texel (1 or 2)
-    for (let tz = 0; tz < N; tz++)
+    // Explored land stays clear (PK: no grey filter when zoomed out); only land nobody has seen
+    // is dark. RGB = a, A = 255 (little-endian: alpha is the high byte).
+    const SEEN = fogTexel(0);
+    const DIM = fogTexel(22);
+    const DARK = fogTexel(238);
+    let dirty = false;
+    for (let tz = 0; tz < N; tz++) {
+      // Texture rows run south → north on the plane; fog rows run north → south.
+      const row = (N - 1 - tz) * N;
       for (let tx = 0; tx < N; tx++) {
         let vis = 0;
         let exp = 0;
-        for (let j = 0; j < k; j++)
-          for (let i = 0; i < k; i++) {
-            const idx = (tz * k + j) * size + tx * k + i;
-            vis |= visible[idx]!;
-            exp |= explored[idx]!;
+        if (k === 1) {
+          const idx = tz * size + tx;
+          vis = visible[idx]!;
+          exp = explored[idx]!;
+        } else
+          for (let j = 0; j < k; j++) {
+            const idx = (tz * k + j) * size + tx * k;
+            for (let i = 0; i < k; i++) {
+              vis |= visible[idx + i]!;
+              exp |= explored[idx + i]!;
+            }
           }
-        // Explored land stays clear (PK: no grey filter when zoomed out); only land nobody has
-        // seen is dark.
-        const a = vis ? 0 : exp ? 22 : 238;
-        // Texture rows run south → north on the plane; fog rows run north → south.
-        const o = ((N - 1 - tz) * N + tx) * 4;
-        d[o] = d[o + 1] = d[o + 2] = a;
-        d[o + 3] = 255;
+        const v = vis ? SEEN : exp ? DIM : DARK;
+        if (px[row + tx] !== v) {
+          px[row + tx] = v;
+          dirty = true;
+        }
       }
-    this.fogTex.needsUpdate = true;
+    }
+    // Upload only when the picture changed.
+    if (dirty) this.fogTex.needsUpdate = true;
   }
+  private fogPx: Uint32Array | null = null;
 
   /** The fish round the fishing spots near the view (the list is refreshed twice a second). */
   private syncSchools(t: number): void {
@@ -1706,10 +1758,7 @@ export class KingdomScene {
     const era = eraLookOf(this.sim.era.id);
     if (era !== this.courtEra) {
       this.courtEra = era;
-      for (const m of this.court.values()) {
-        this.scene.remove(m);
-        m.geometry.dispose();
-      }
+      for (const m of this.court.values()) disposeNode(m);
       this.court.clear();
       const geos: Record<CourtRole, THREE.BufferGeometry> = {
         king: kingGeometry(era),
@@ -2337,7 +2386,16 @@ export class KingdomScene {
    * warms to the season's sunrise and sunset colours, the sky glows round it and the water
    * carries a path of its light (sim/sunPath.ts; config anachak.json night.sunPath).
    */
-  private syncSun(N: KingdomSim['data']['anachak']['night']): void {
+  /** When the sun was last placed (s, the view's clock) and at what game time. */
+  private sunAt = -1e9;
+  private sunSimAt = -1;
+
+  private syncSun(N: KingdomSim['data']['anachak']['night'], t: number): void {
+    // Throttled — recalculates once per 0.05 s not per frame (1.8.0): the sun crosses the sky
+    // in half an hour. A jump in game time (a loaded save, a time skip) places it at once.
+    if (t - this.sunAt < SUN_EVERY && t >= this.sunAt && Math.abs(this.sim.time - this.sunSimAt) < 5) return;
+    this.sunAt = t;
+    this.sunSimAt = this.sim.time;
     const st = sunState(this.sim.time, N);
     this.sunNow = st;
     if (!st) return;
@@ -2406,6 +2464,8 @@ export class KingdomScene {
 
   private fogAt = -1;
   private treesFresh = -1e9;
+  private landExplored = -1;
+  private landFreshAt = -1e9;
   update(t: number, now: number, selected: Set<number>): void {
     let fresh = false;
     if (this.sim.fogVersion !== this.fogAt) {
@@ -2417,6 +2477,15 @@ export class KingdomScene {
       // Trees change when land is explored or a tree is cut down (checked a few times a second).
       fresh = t - this.treesFresh > 1.5;
       if (fresh) this.treesFresh = t;
+    }
+    // The ground detail and the grass hang on explored land, not on what is in sight now
+    // (1.8.0 optimisation: they were re-laid every 1.5 s while anyone walked about). A slow
+    // catch-all (6 s) still follows anything else that changes the ground.
+    let landFresh = false;
+    if (fresh && (this.sim.exploredVersion !== this.landExplored || t - this.landFreshAt > 6)) {
+      this.landExplored = this.sim.exploredVersion;
+      this.landFreshAt = t;
+      landFresh = true;
     }
     this.veil.visible = !this.heroView;
     this.syncYardTrees();
@@ -2432,7 +2501,7 @@ export class KingdomScene {
       const N = this.sim.data.anachak.night;
       this.night = nightness(this.sim.time, N);
       this.weatherFx.night = this.night;
-      this.syncSun(N);
+      this.syncSun(N, t);
       this.roads?.fire(fireGlow(this.night, N), N.fire.radius, t);
       const T = N.torches;
       this.torchGlow = Math.min(1, Math.max(0, (this.night - T.from) / (1 - T.from)));
@@ -2465,14 +2534,17 @@ export class KingdomScene {
     this.syncCourt(t);
     this.syncUnits(t, selected);
     this.syncNpr();
-    this.syncDetail(t, fresh);
+    this.syncDetail(t, landFresh);
     this.syncWear();
     this.syncWet(t);
     this.syncAir(t);
-    this.syncElephantGrass(this.egrass, t, fresh);
-    this.syncElephantGrass(this.sward, t, fresh);
-    this.syncElephantGrass(this.lawn, t, fresh);
-    this.syncElephantGrass(this.stones, t, fresh);
+    // 1.8.0 optimisation: at most one grass field is re-planted a frame (each takes some ms;
+    // all four at once made a hitch whenever the view moved on or new land was explored).
+    // The field that has waited longest goes first, so none is starved on a slow machine.
+    this.grassLaidNow = false;
+    const fields = [this.egrass, this.sward, this.lawn, this.stones].filter((g): g is ElephantGrass => !!g);
+    fields.sort((a, b) => (this.grassLaidAt.get(a) ?? -1) - (this.grassLaidAt.get(b) ?? -1));
+    for (const g of fields) this.syncElephantGrass(g, t, landFresh);
     this.syncNight(t);
     this.syncSee(t, selected);
     this.syncEffects(t);
@@ -2569,6 +2641,16 @@ export class KingdomScene {
   }
 
   /** Elephant grass: planted round the view, wind from the weather, trampled by walkers. */
+  /** A grass field was re-planted this frame (the others wait for the next frames). */
+  private grassLaidNow = false;
+  /** Grass fields owed a full re-plant (the land changed, or new land was explored). */
+  private readonly grassDue = new Set<ElephantGrass>();
+  /** How many grass re-plants were put off to a later frame (for the tests). */
+  grassDeferred = 0;
+  /** When each field was last re-planted (a running count), for the turn order. */
+  private readonly grassLaidAt = new Map<ElephantGrass, number>();
+  private grassLays = 0;
+
   private syncElephantGrass(g: ElephantGrass | null, t: number, fresh: boolean): void {
     if (!g) return;
     const s = this.sim;
@@ -2614,8 +2696,17 @@ export class KingdomScene {
       (!this.wear || this.wear.at(tx, tz) < (g.cfg.wearMax ?? 0.04)) &&
       // Dry land only: where the drawn bank dips under the water plane there is no grass.
       this.groundY((tx + 0.5) * T - this.half, (tz + 0.5) * T - this.half) > WATER_Y + GRASS_DRY;
+    if (changed || fresh) this.grassDue.add(g);
+    if (this.grassLaidNow) {
+      if (this.grassDue.has(g) || g.wouldLay(cx, cz, radius)) this.grassDeferred++;
+      return;
+    }
     const at = this.detailAt ?? this.patchAt(new Set());
-    g.lay(cx, cz, radius, s.map.tile, this.half, at, clear, changed || fresh, (x, z) => this.groundY(x, z));
+    if (g.lay(cx, cz, radius, s.map.tile, this.half, at, clear, this.grassDue.has(g), (x, z) => this.groundY(x, z))) {
+      this.grassLaidNow = true;
+      this.grassDue.delete(g);
+      this.grassLaidAt.set(g, ++this.grassLays);
+    }
   }
 
   /** The night (Anachak Khmer): torches, the stars and the moon, and moonlight. */

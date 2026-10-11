@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { loadKingdom } from '@temples/shared';
-import { fitTree, nearOrFar, pickWeighted, villageTrees, waysideTrees, type Lot, type TreeSpot } from './treeModels';
+import { FAR, MID, NEAR, fitTree, nearOrFar, pickWeighted, treeLevels, villageTrees, waysideTrees, type Lot, type TreeSpot } from './treeModels';
 
 const P = loadKingdom().props;
 const T = P.trees!;
@@ -42,6 +42,29 @@ describe("PK 1.8.0: PK's trees", () => {
     expect(near.slice(0, 4).every(Boolean)).toBe(true);
     expect(near.slice(4).some(Boolean)).toBe(false);
     expect(L.nearTris.hero).toBeGreaterThan(L.nearTris.rts);
+  });
+
+  it('1.8.0: three steps out from the camera: the model, its lighter copy, then picture cards', () => {
+    const spots: TreeSpot[] = Array.from({ length: 30 }, (_, i) => ({ id: i % 5 === 4 ? 'x' : 'e', x: i * 3, y: 0, z: 0, rot: 0, scale: 1, shade: 1 }));
+    // 'x' has no lighter copy: it goes from the model straight to cards.
+    const lv = treeLevels(spots, 0, 0, 25_000, () => 6000, 6_000, (id) => (id === 'x' ? Infinity : 1500));
+    expect([...lv.slice(0, 4)]).toEqual([NEAR, NEAR, NEAR, NEAR]);
+    expect(lv.filter((l) => l === MID).length).toBe(4);
+    const firstFar = lv.indexOf(FAR);
+    expect(lv[4]).toBe(FAR); // spot 4 is an 'x'
+    expect([...lv.slice(5, 9)]).toEqual([MID, MID, MID, MID]);
+    expect([...lv.slice(9)].every((l) => l === FAR)).toBe(true);
+    expect(firstFar).toBe(4);
+    // No middle budget: the two-step rule, as before.
+    expect([...treeLevels(spots, 0, 0, 25_000, () => 6000)].filter((l) => l === MID).length).toBe(0);
+    // Every tree has a lighter copy that ships, lighter than the model; the middle budget is set.
+    const shipped = Object.keys(import.meta.glob('../../../public-mobile/models/trees/*'));
+    for (const t of T) {
+      expect(t.mid).toBeLessThan(t.hi / 2);
+      expect(shipped.some((f) => f.endsWith(t.midFile!))).toBe(true);
+    }
+    expect(L.midTris!.rts).toBeGreaterThan(0);
+    expect(L.midTris!.hero).toBeGreaterThan(0);
   });
 
   it('weighted picks follow the weights', () => {

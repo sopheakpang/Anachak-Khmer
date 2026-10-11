@@ -192,10 +192,50 @@ export function waysideTrees(
   return out;
 }
 
+/** How a tree is drawn: the model itself, its lighter copy, or picture cards. */
+export const NEAR = 0;
+export const MID = 1;
+export const FAR = 2;
+
 /**
- * Near or far: the trees nearest (cx, cz) get the detailed model while the triangles they
- * cost stay within `budget`; the rest get the light one. Returns a flag per spot.
+ * Near, middle or far (1.8.0: three steps): out from (cx, cz), the trees get the detailed model
+ * while its triangles stay within `budget`, then the lighter copy while those stay within
+ * `midBudget`, and the rest picture cards. A kind with no lighter copy (`midTrisOf` Infinity)
+ * goes from the model straight to cards. Returns a level per spot.
  */
+export function treeLevels(
+  spots: readonly TreeSpot[],
+  cx: number,
+  cz: number,
+  budget: number,
+  trisOf: (id: string) => number,
+  midBudget = 0,
+  midTrisOf: (id: string) => number = () => Infinity,
+): Uint8Array {
+  const order = spots.map((s, i) => [Math.hypot(s.x - cx, s.z - cz), i] as const).sort((a, b) => a[0] - b[0]);
+  const level = new Uint8Array(spots.length).fill(FAR);
+  let used = 0;
+  let k = 0;
+  for (; k < order.length; k++) {
+    const i = order[k]![1];
+    const t = trisOf(spots[i]!.id);
+    if (used + t > budget) break;
+    used += t;
+    level[i] = NEAR;
+  }
+  let mid = 0;
+  for (; k < order.length; k++) {
+    const i = order[k]![1];
+    const t = midTrisOf(spots[i]!.id);
+    if (!Number.isFinite(t)) continue; // no lighter copy: cards
+    if (mid + t > midBudget) break;
+    mid += t;
+    level[i] = MID;
+  }
+  return level;
+}
+
+/** Near or far only (the two-step rule): a flag per spot, true = the detailed model. */
 export function nearOrFar(
   spots: readonly TreeSpot[],
   cx: number,
@@ -203,25 +243,20 @@ export function nearOrFar(
   budget: number,
   trisOf: (id: string) => number,
 ): boolean[] {
-  const order = spots.map((s, i) => [Math.hypot(s.x - cx, s.z - cz), i] as const).sort((a, b) => a[0] - b[0]);
-  const near = new Array<boolean>(spots.length).fill(false);
-  let used = 0;
-  for (const [, i] of order) {
-    const t = trisOf(spots[i]!.id);
-    if (used + t > budget) break;
-    used += t;
-    near[i] = true;
-  }
-  return near;
+  return [...treeLevels(spots, cx, cz, budget, trisOf)].map((l) => l === NEAR);
 }
 
 interface Kind {
   cfg: TreeCfg;
   near: THREE.InstancedMesh;
+  /** The lighter copy (1.8.0), drawn with the near model's material. */
+  mid: THREE.InstancedMesh;
   far: THREE.InstancedMesh;
   /** Which of the two sets of views each far tree shows. */
   variant: THREE.InstancedBufferAttribute;
   nearTris: number;
+  /** Infinity until the lighter copy is in (or when the tree has none). */
+  midTris: number;
   ready: boolean;
 }
 
@@ -279,9 +314,11 @@ export class ModelTrees {
       this.kinds.set(cfg.id, {
         cfg,
         near: mk(Math.min(capacity, 400)),
+        mid: mk(Math.min(capacity, 800)),
         far: mk(capacity),
         variant: new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1),
         nearTris: cfg.hi,
+        midTris: Infinity,
         ready: false,
       });
     }
@@ -293,12 +330,18 @@ export class ModelTrees {
    */
   load(url: (file: string) => string): Promise<void> {
     const one = async (kind: Kind) => {
-      const [model, cards] = await Promise.all([
+      const [model, cards, lighter] = await Promise.all([
         new GLTFLoader()
           .loadAsync(url(kind.cfg.file))
           .then((g) => meshOf(g.scene))
           .catch(() => null),
         new THREE.TextureLoader().loadAsync(url(kind.cfg.cards)).catch(() => null),
+        kind.cfg.midFile
+          ? new GLTFLoader()
+              .loadAsync(url(kind.cfg.midFile))
+              .then((g) => meshOf(g.scene))
+              .catch(() => null)
+          : Promise.resolve(null),
       ]);
       if (!model || !cards) return;
       // Near: PK's model itself, fitted to the tree's height (and crown width).
@@ -315,6 +358,20 @@ export class ModelTrees {
       (kind.near.material as THREE.Material).dispose();
       kind.near.material = mat;
       kind.nearTris = (fitted.index ? fitted.index.count : fitted.getAttribute('position').count) / 3;
+      // Middle: the lighter copy, fitted the same way, in the near model's material (its texture).
+      if (lighter) {
+        const lg = lighter.geometry.clone();
+        lg.applyMatrix4(lighter.matrixWorld);
+        const fm = fitTree(lg, kind.cfg.height, kind.cfg.width);
+        lg.dispose();
+        lighter.geometry.dispose();
+        (lighter.material as THREE.Material).dispose();
+        kind.mid.geometry.dispose();
+        kind.mid.geometry = fm;
+        (kind.mid.material as THREE.Material).dispose();
+        kind.mid.material = mat;
+        kind.midTris = (fm.index ? fm.index.count : fm.getAttribute('position').count) / 3;
+      }
       // Far: crossed picture cards of the same model, as tall as the fitted model.
       fitted.computeBoundingBox();
       const h = fitted.boundingBox!.max.y - fitted.boundingBox!.min.y;
@@ -350,25 +407,37 @@ export class ModelTrees {
     return !!this.kinds.get(id)?.ready;
   }
 
-  /** Draw these trees: the nearest in detail within `budget` triangles, the rest light. */
-  draw(spots: readonly TreeSpot[], cx: number, cz: number, budget: number): void {
-    const near = nearOrFar(spots, cx, cz, budget, (id) => this.kinds.get(id)?.nearTris ?? Infinity);
+  /**
+   * Draw these trees: the nearest in detail within `budget` triangles, the next lighter within
+   * `midBudget`, the rest as picture cards.
+   */
+  draw(spots: readonly TreeSpot[], cx: number, cz: number, budget: number, midBudget = 0): void {
+    const level = treeLevels(
+      spots,
+      cx,
+      cz,
+      budget,
+      (id) => this.kinds.get(id)?.nearTris ?? Infinity,
+      midBudget,
+      (id) => this.kinds.get(id)?.midTris ?? Infinity,
+    );
     const counts = new Map<THREE.InstancedMesh, number>();
     spots.forEach((t, i) => {
       const k = this.kinds.get(t.id);
       if (!k?.ready) return;
-      const mesh = near[i] ? k.near : k.far;
+      const far = level[i] === FAR;
+      const mesh = level[i] === NEAR ? k.near : far ? k.far : k.mid;
       const n = counts.get(mesh) ?? 0;
       if (n >= mesh.instanceMatrix.count) return;
       this.q.setFromAxisAngle(this.up, t.rot);
       this.m.compose(this.p.set(t.x, t.y, t.z), this.q, this.s.setScalar(t.scale));
       mesh.setMatrixAt(n, this.m);
       mesh.setColorAt(n, this.c.setScalar(t.shade));
-      if (!near[i]) k.variant.setX(n, hash(Math.round(t.x * 3), Math.round(t.z * 3), 7) < 0.5 ? 0 : 1);
+      if (far) k.variant.setX(n, hash(Math.round(t.x * 3), Math.round(t.z * 3), 7) < 0.5 ? 0 : 1);
       counts.set(mesh, n + 1);
     });
     for (const k of this.kinds.values())
-      for (const mesh of [k.near, k.far]) {
+      for (const mesh of [k.near, k.mid, k.far]) {
         mesh.count = counts.get(mesh) ?? 0;
         mesh.instanceMatrix.needsUpdate = true;
         if (mesh === k.far) k.variant.needsUpdate = true;
@@ -376,11 +445,11 @@ export class ModelTrees {
       }
   }
 
-  /** Triangles drawn now (near and far), for the budget check. */
+  /** Triangles drawn now (near, middle and far), for the budget check. */
   triangles(): number {
     let t = 0;
     for (const k of this.kinds.values())
-      for (const mesh of [k.near, k.far]) {
+      for (const mesh of [k.near, k.mid, k.far]) {
         const g = mesh.geometry;
         const n = g.index ? g.index.count : (g.getAttribute('position')?.count ?? 0);
         t += (n / 3) * mesh.count;

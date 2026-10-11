@@ -1,6 +1,6 @@
 import { PORTS, type BridgeMessage } from '@temples/shared';
 
-/** WebSocket to the bridge with automatic reconnect (prompt 07). */
+/** WebSocket to the bridge with automatic reconnect. */
 export class BridgeClient {
   private ws: WebSocket | null = null;
   private retry = 500;

@@ -896,3 +896,40 @@ test('KG-09: PK 1.8.0: the keyboard panel: pick a key for an action, it works, R
   await page.locator('#k-keys [data-act="keys-reset"]').dispatchEvent('pointerdown');
   expect(await hallBy('h')).toBe(true);
 });
+
+test('KG-10: 1.8.0 optimisation: New Game frees the old world (graphics memory stays level)', async ({ page }) => {
+  await page.goto('/?mode=kingdom&offline=1');
+  await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.kingdom, null, {
+    timeout: 180_000,
+    polling: 500,
+  });
+  if (await page.locator('#k-card').isVisible())
+    await page.locator('#k-card .k-card-x').dispatchEvent('pointerdown');
+  const memory = () =>
+    page.evaluate(() => {
+      const k = window.__temples.kingdom! as unknown as { renderer: { info: { memory: { geometries: number; textures: number } } } };
+      return { ...k.renderer.info.memory };
+    });
+  const fresh = async () => {
+    await page.evaluate(() => window.__temples.kingdom!.newGame('normal'));
+    // Measure once the new world's models and pictures are in (they load in the background).
+    await page.waitForFunction(
+      () => {
+        const v = window.__temples.kingdom!.view as unknown as { models: { loaded: number; kinds: Map<string, unknown> } | null };
+        return !v.models || v.models.loaded >= v.models.kinds.size;
+      },
+      null,
+      { timeout: 120_000, polling: 500 },
+    );
+    await page.waitForTimeout(4000);
+    return memory();
+  };
+  const first = await fresh();
+  const second = await fresh();
+  const third = await fresh();
+  // Before 1.8.0 every New Game kept the old world: about +110 geometries and +25 textures.
+  for (const m of [second, third]) {
+    expect(m.geometries).toBeLessThanOrEqual(first.geometries + 10);
+    expect(m.textures).toBeLessThanOrEqual(first.textures + 3);
+  }
+});

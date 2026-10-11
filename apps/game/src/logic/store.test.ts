@@ -43,7 +43,7 @@ const stone = (p: Partial<StonePlaced>): StonePlaced => ({
   ...p,
 });
 
-describe('game store (prompt 07)', () => {
+describe('game store', () => {
   it('applies state, names and stones', () => {
     const m = emptyModel();
     reduce(m, state(), 0);
@@ -104,7 +104,7 @@ describe('game store (prompt 07)', () => {
   });
 });
 
-describe('activity (prompt 11)', () => {
+describe('activity', () => {
   it('counts the last 60 s per tier and scales convoys', () => {
     const a = new Activity();
     for (let i = 0; i < 20; i++) a.add(i * 1000, 'small');

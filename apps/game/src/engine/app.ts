@@ -26,7 +26,7 @@ export function qualityFrom(search: string): { name: PresetName; q: Quality } {
 const PIP = (layoutJson.zones as Record<string, { x: number; y: number; w: number; h: number }>).pip!;
 
 /**
- * Owns the renderer and the scenes (prompt 07). Only the scene on screen is rendered;
+ * Owns the renderer and the scenes. Only the scene on screen is rendered;
  * the PiP window renders the site scene into its own viewport.
  */
 export class GameApp {

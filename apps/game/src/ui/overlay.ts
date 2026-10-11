@@ -21,7 +21,7 @@ const GUILDS: Record<string, { km: string; en: string }> = {
 };
 
 /**
- * On-screen text (prompt 13), Khmer first. Everything sits inside the zones in
+ * On-screen text, Khmer first. Everything sits inside the zones in
  * config/layout.json and never in TikTok's own areas (AC-21). The help pop-up is neutral:
  * no gift prices, no "send X to unlock".
  */
@@ -271,13 +271,6 @@ export class Overlay {
     const html = items.join('');
     if (this.el.toasts!.innerHTML !== html) this.el.toasts!.innerHTML = html;
   }
-}
-
-/** Zones TikTok covers; used by tests and the safe-zone overlay. */
-export function keepClearZones(): Array<Zone & { name: string }> {
-  return Object.entries(zones)
-    .filter(([, z]) => z.keepClear)
-    .map(([name, z]) => ({ name, ...z }));
 }
 
 /** Short counts for the resource pills: 950, 1.2k, 34k, 1.5M. */

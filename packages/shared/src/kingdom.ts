@@ -1022,7 +1022,7 @@ export const PropSlotSchema = z.object({
   en: z.string(),
 });
 export type PropSlot = z.infer<typeof PropSlotSchema>;
-export const PROP_SLOTS = ['tree.common', 'tree.palm', 'tree.mango', 'dikePalm', 'rock.stone', 'rock.gold', 'fruit'] as const;
+export const PROP_SLOTS = ['tree.palm', 'dikePalm', 'rock.stone', 'rock.gold', 'fruit'] as const;
 export type PropSlotId = (typeof PROP_SLOTS)[number];
 export const PropsSchema = z.object({
   slots: z.record(z.enum(PROP_SLOTS), PropSlotSchema),
@@ -1051,6 +1051,9 @@ export const PropsSchema = z.object({
         /** Widest the crown may be (m): the tree is made smaller rather than wider. */
         width: z.number().positive(),
         hi: z.number().int().positive(),
+        /** 1.8.0: the lighter copy for the middle distance (triangles, file; no texture of its own). */
+        mid: z.number().int().positive().optional(),
+        midFile: z.string().optional(),
         tex: z.number().int().positive(),
       }),
     )
@@ -1075,6 +1078,10 @@ export const PropsSchema = z.object({
         kinds: z.array(z.object({ id: z.string(), weight: z.number().positive() })).min(1),
       }),
       nearTris: z.object({ rts: z.number().int().min(0), hero: z.number().int().min(0) }),
+      /** 1.8.0: the middle step (a lighter copy of the model) between the model and the cards. */
+      midTris: z
+        .object({ $comment: z.string().optional(), rts: z.number().int().min(0), hero: z.number().int().min(0) })
+        .optional(),
     })
     .optional(),
 });
@@ -1084,6 +1091,7 @@ const Hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 /** A field of wind-blown grass (view/elephantGrass.ts): the tall stands and the short sward. */
 const GrassFieldSchema = z.object({
     count: z.number().int().min(0),
+    /** Leaves of the built-in clump. Ignored when `cards` is set (the cards are the clump). */
     blades: z.number().int().min(3).max(24),
     reach: z.number().positive(),
     standTiles: z.number().positive(),
@@ -1092,7 +1100,10 @@ const GrassFieldSchema = z.object({
     bank: z.number().min(0).max(1),
     keepAway: z.number().int().min(0).max(12),
     height: z.tuple([z.number().positive(), z.number().positive()]),
-    /** Width of a tussock (m): it is wider than tall, so stands read as a dense mass. */
+    /**
+     * Width of a tussock (m): it is wider than tall, so stands read as a dense mass. Ignored
+     * when `cards` is set: `cards.spread` (width per height) is used instead.
+     */
     spread: z.tuple([z.number().positive(), z.number().positive()]),
     /** PK 1.8.0: PK's Meshy grass baked into cards (atlas file, card size per 1 of grass height, width share). */
     cards: z
@@ -1400,7 +1411,7 @@ export interface HistoricalWarning {
 }
 
 /**
- * The historical validation tool (prompt 32): checks that everything an era offers exists,
+ * The historical validation tool: checks that everything an era offers exists,
  * belongs to that era, cites known sources, and that anything not confirmed says why in a
  * note. Content marked GAMEPLAY_ABSTRACTION or FICTIONAL is allowed but must say so.
  */
@@ -1613,10 +1624,10 @@ export const VILLAGER_JOBS = [
 ] as const;
 
 /**
- * The historical character validator (prompt 34): every occupation cites known sources,
- * explains anything not confirmed, carries a tool readable at RTS distance (prompt 29),
+ * The historical character validator: every occupation cites known sources,
+ * explains anything not confirmed, carries a tool readable at RTS distance,
  * belongs to known eras, points at a real unit or villager job, and children are never
- * soldiers (prompt 26). Warnings are shown as HISTORICAL WARNING lines.
+ * soldiers. Warnings are shown as HISTORICAL WARNING lines.
  */
 export function validateCharacters(data: KingdomData): HistoricalWarning[] {
   const out: HistoricalWarning[] = [];

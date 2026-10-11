@@ -57,7 +57,7 @@ The game saves by itself (autosave) and when the phone switches away from it.
 ## ៥. ផ្នែកបច្ចេកទេស · Technical notes
 
 - Wrapper: Capacitor 8.5 (`apps/android`, appId `com.sopheakpang.khmerkingdoms`, name នគរខ្មែរ). New dependency, reason: it packs the existing web game into an Android app without rewriting it.
-- Page: `apps/game/mobile.html` → `src/mobile.ts`: only the Kingdom; `Kingdom(..., { mobile: true })` turns on touch (`kingdom/touch.ts`), the `k-mobile` layout (text ≥ 36 stage px, buttons ≥ 110 px, ☰ menu) and turns off the viewers' council. `setLandscapeWidth()` widens the 16:9 stage to the phone (1920–2560 × 1080). `config/quality.json` `mobile`: 75 % render size, no antialias, no shadows.
+- Page: `apps/game/mobile.html` → `src/mobile.ts`: only the Kingdom; `Kingdom(..., { mobile: true })` turns on touch (`kingdom/touch.ts`), the `k-mobile` layout (text ≥ 36 stage px, buttons ≥ 110 px, ☰ menu) and turns off the viewers' council. `setLandscapeSize()` widens the 16:9 stage to the phone (1920–2560 × 1080). `config/quality.json` `mobile`: 75 % render size, no antialias, no shadows.
 - Android: landscape only (`sensorLandscape`), immersive fullscreen, screen kept on, cut-out used, back button → `window.__kingdomBack()`; icon and splash drawn by `apps/android/tools/icons.py`.
 - Credits: `config/credits.json` (About card, start screen, splash).
 - Test in a browser: `npm run dev -w @temples/game`, then open `http://localhost:5173/mobile.html` with the browser's phone mode; e2e `KM-01`.

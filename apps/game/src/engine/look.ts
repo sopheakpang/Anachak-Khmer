@@ -82,6 +82,15 @@ export function setupRenderer(r: THREE.WebGLRenderer): void {
   r.shadowMap.enabled = look.shadows;
   r.shadowMap.type = THREE.PCFSoftShadowMap;
   r.localClippingEnabled = true; // Kingdom temples rise behind a clipping plane (D54)
+  // 1.8.0 optimisation: checking every shader for errors makes the browser finish compiling it
+  // at once (a stall each time a new material is first drawn: entering the hero mode, a new
+  // building). The dev server keeps the checks; the built game skips them.
+  r.debug.checkShaderErrors = isDev();
+}
+
+/** Running from the dev server (or the tests), not the built game. */
+export function isDev(): boolean {
+  return (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV !== false;
 }
 
 // ---------------------------------------------------------------- sky

@@ -9,14 +9,6 @@ export type Layout = 'portrait' | 'landscape';
 export const LANDSCAPE_SIZE: { width: number; height: number } = { width: 1920, height: 1080 };
 
 /**
- * Widen the 16:9 stage to the screen's own shape (the Android build on 20:9 phones, D72).
- * Call before the Kingdom is built: its camera and HUD read LANDSCAPE_SIZE once.
- */
-export function setLandscapeWidth(width: number): void {
-  setLandscapeSize(width, LANDSCAPE_SIZE.height);
-}
-
-/**
  * Fit the landscape stage to the screen's shape: wider on long phones (D72), taller on
  * iPads (4:3 → 1920 × 1440, D74). Call before the Kingdom is built.
  */
@@ -35,10 +27,6 @@ let stageEl: HTMLDivElement | null = null;
 
 export function stageSize(layout: Layout = current): { width: number; height: number } {
   return layout === 'landscape' ? LANDSCAPE_SIZE : RENDER_SIZE;
-}
-
-export function currentLayout(): Layout {
-  return current;
 }
 
 export function createStage(root: HTMLElement): {

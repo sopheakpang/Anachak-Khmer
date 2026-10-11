@@ -1,7 +1,7 @@
 import type { TierName } from '@temples/shared';
 
 /**
- * Counts stones per tier in the last 60 s (prompt 11: convoys scale with activity).
+ * Counts stones per tier in the last 60 s (convoys scale with activity).
  * Pure and time-injected so it is testable.
  */
 export class Activity {

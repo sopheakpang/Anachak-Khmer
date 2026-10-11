@@ -49,7 +49,7 @@ describe("PK's 3D props (1.6.0)", () => {
     const geo = new THREE.BoxGeometry(1, 1, 1);
     geo.setAttribute('color', new THREE.Float32BufferAttribute(new Array(geo.attributes.position!.count * 3).fill(0.5), 3));
     const root = new THREE.Group().add(new THREE.Mesh(geo));
-    const slot = data.props.slots['tree.common']!;
+    const slot = data.props.slots['tree.palm']!;
     expect(applyProp(mesh, root, slot)).toBe(true);
     mesh.geometry.computeBoundingBox();
     expect(mesh.geometry.boundingBox!.max.y).toBeCloseTo(4);

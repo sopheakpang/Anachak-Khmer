@@ -20,6 +20,7 @@
 import * as THREE from 'three';
 import type { Diorama } from '@temples/shared';
 import { hash, type Patch } from './detail';
+import { disposeNode } from '../../engine/dispose';
 
 export type ElephantGrassCfg = Diorama['elephantGrass'];
 
@@ -636,6 +637,18 @@ export class ElephantGrass {
     U.uEgPushN.value = n;
   }
 
+  /** Free the field (1.8.0): its mesh and materials, the card picture and the wind noise. */
+  dispose(): void {
+    disposeNode(this.group, { textures: true });
+    this.uniforms.uEgNoise.value.dispose();
+  }
+
+  /** Would `lay` re-plant for this view (it has moved on by a quarter of the radius, or zoomed)? */
+  wouldLay(cx: number, cz: number, radius: number): boolean {
+    const [ax, az, ar] = this.at;
+    return !(Math.hypot(cx - ax, cz - az) < radius * 0.25 && Math.abs(radius - ar) < ar * 0.3);
+  }
+
   /** Plant round the view when it has moved on by a quarter of the radius (or `force`). */
   lay(
     cx: number,
@@ -649,8 +662,7 @@ export class ElephantGrass {
     /** The ground's height (m) under a clump: short grass must stand on it, not in it. */
     ground: (x: number, z: number) => number = () => 0,
   ): boolean {
-    const [ax, az, ar] = this.at;
-    if (!force && Math.hypot(cx - ax, cz - az) < radius * 0.25 && Math.abs(radius - ar) < ar * 0.3) return false;
+    if (!force && !this.wouldLay(cx, cz, radius)) return false;
     this.at = [cx, cz, radius];
     const clumps = layElephantGrass(cx, cz, radius, tile, half, at, clear, this.cfg);
     clumps.forEach((p, i) => {

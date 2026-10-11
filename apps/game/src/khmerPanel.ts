@@ -3,7 +3,7 @@ import { fontStack, fontWeight, missingInMainFont, type FontsConfig } from '@tem
 
 const config = fonts as FontsConfig;
 
-/** Test lines from prompt 02. The long word has stacked subscripts and vowels (AC-20). */
+/** Khmer test lines. The long word has stacked subscripts and vowels (AC-20). */
 export const TEST_LINES = ['សាងប្រាសាទ', 'ស្ថាបត្យករហ្លួង', 'ព្រះគោ', 'The Temples 879'] as const;
 
 /** One row per font: Moulpali (title) and Kantumruy Pro (names, bold). */

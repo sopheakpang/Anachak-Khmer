@@ -6,6 +6,9 @@
 //   node scripts/models/grassCards.mjs <port> <id>.glb <id>-cards turn 0 top
 // then move models/grass/<id>-cards.webp to models/trees/ (its printed `card` goes in the config).
 //   node scripts/models/trees.mjs "<raw folder>" [id ...]
+// 1.8.0 optimisation: the middle distance gets a lighter copy of the near model (`mid`
+// triangles, written to `midFile`, no texture of its own: the game gives it the near model's):
+//   node scripts/models/trees.mjs --mid [id ...]
 import { readFileSync, existsSync, statSync } from 'node:fs';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
@@ -15,6 +18,7 @@ import sharp from 'sharp';
 
 const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
 const [raw, ...only] = process.argv.slice(2);
+const midMode = raw === '--mid';
 if (!raw) {
   console.log('usage: node scripts/models/trees.mjs "<raw folder>" [id ...]');
   process.exit(1);
@@ -28,9 +32,14 @@ const triCount = (doc) => {
   return t;
 };
 
-/** Read, clean and simplify one model to `tris` triangles with a `tex` px colour map. */
+/** Read, clean and simplify one model to `tris` triangles with a `tex` px colour map (0: no texture). */
 async function make(src, out, tris, tex) {
   const doc = await io.read(src);
+  if (!tex) {
+    for (const t of doc.getRoot().listTextures()) t.dispose();
+    // No texture left: no texture extension either (a reader would otherwise demand it).
+    for (const e of doc.getRoot().listExtensionsUsed()) if (/texture/i.test(e.extensionName)) e.dispose();
+  }
   for (const m of doc.getRoot().listMaterials()) {
     m.setMetallicRoughnessTexture(null);
     m.setNormalTexture(null);
@@ -40,7 +49,7 @@ async function make(src, out, tris, tex) {
     m.setMetallicFactor(0);
     m.setRoughnessFactor(1);
   }
-  await doc.transform(flatten(), join(), weld(), prune());
+  await doc.transform(flatten(), join(), weld(), prune({ keepAttributes: !tex }));
   const before = triCount(doc);
   await MeshoptSimplifier.ready;
   for (const mesh of doc.getRoot().listMeshes())
@@ -66,15 +75,21 @@ async function make(src, out, tris, tex) {
       compactPrimitive(prim);
     }
   await doc.transform(
-    prune(),
+    prune({ keepAttributes: !tex }),
     dedup(),
-    textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [tex, tex], quality: 82 }),
+    ...(tex ? [textureCompress({ encoder: sharp, targetFormat: 'webp', resize: [tex, tex], quality: 82 })] : []),
   );
   await io.write(out, doc);
   return { before, after: triCount(doc), kb: Math.round(statSync(out).size / 1024) };
 }
 
 for (const t of cfg.trees ?? []) {
+  if (midMode) {
+    if ((only.length && !only.includes(t.id)) || !t.mid || !t.midFile) continue;
+    const m = await make(`apps/game/public-mobile/${t.file}`, `apps/game/public-mobile/${t.midFile}`, t.mid, 0);
+    console.log(t.id, 'mid', Math.round(m.before), '→', Math.round(m.after), `triangles, ${m.kb} KB`);
+    continue;
+  }
   if (only.length && !only.includes(t.id)) continue;
   const src = `${raw}/${t.source}`;
   if (!existsSync(src)) {

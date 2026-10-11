@@ -235,7 +235,7 @@ describe('state', () => {
   });
 });
 
-describe('carved slots (prompt 10)', () => {
+describe('carved slots', () => {
   it('named stones get a slot; likes do not', () => {
     send('gift', { giftName: 'Rose', giftCoins: 1 }); // 5 units → blocks 0-1, carved on block 1
     for (let i = 0; i < 10; i++) send('like');

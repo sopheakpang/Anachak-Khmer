@@ -107,7 +107,10 @@ export function applyProp(mesh: THREE.InstancedMesh, model: THREE.Object3D, slot
   if (slot.bake !== 'vertex') {
     const map = (src.material as THREE.MeshStandardMaterial).map ?? null;
     if (map) map.colorSpace = THREE.SRGBColorSpace;
+    const was = mesh.material as THREE.Material;
     mesh.material = soft({ map, color: new THREE.Color(slot.tint ?? '#ffffff'), roughness: 0.9 }, 0.15);
+    // The built-in shape's material is no longer drawn (1.8.0: freed, unless a cache shares it).
+    if (!was.userData.shared) was.dispose();
   } else if (!fitted.getAttribute('color')) {
     return false;
   } else {

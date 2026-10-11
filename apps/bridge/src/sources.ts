@@ -1,6 +1,6 @@
 /**
  * Where viewer events come from. The pipeline doesn't care which source is used:
- * simulator (host panel) now; TikTok and TikFinity adapters arrive in prompt 18.
+ * simulator (host panel) now; TikTok and TikFinity adapters arrive later.
  */
 export interface EventSource {
   readonly name: 'simulator' | 'tiktok' | 'tikfinity';

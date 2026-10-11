@@ -109,8 +109,16 @@ export class WearMap {
   upload(): boolean {
     if (!this.dirty) return false;
     this.dirty = false;
-    for (let j = 0; j < this.bytes.length; j++)
-      this.bytes[j] = Math.max(this.yard[j]!, Math.round(Math.min(1, this.data[j]!) * 255));
+    // (1.8.0: plain arithmetic in the loop, it covers every tile of the map.)
+    const out = this.bytes;
+    const yard = this.yard;
+    const data = this.data;
+    for (let j = 0; j < out.length; j++) {
+      const d = data[j]!;
+      const v = d >= 1 ? 255 : (d * 255 + 0.5) | 0;
+      const y = yard[j]!;
+      out[j] = v > y ? v : y;
+    }
     this.texture.needsUpdate = true;
     return true;
   }

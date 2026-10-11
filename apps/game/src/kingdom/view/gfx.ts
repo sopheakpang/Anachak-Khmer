@@ -184,7 +184,7 @@ export class KingdomPost {
   }
 
   private build(w: number, h: number): void {
-    this.composer?.dispose();
+    this.free();
     const c = new EffectComposer(this.renderer);
     c.setPixelRatio(1);
     c.setSize(w, h);
@@ -264,7 +264,17 @@ export class KingdomPost {
   }
 
   dispose(): void {
-    this.composer?.dispose();
+    this.free();
+  }
+
+  /**
+   * Free the chain (1.8.0): EffectComposer.dispose() frees only its own two buffers, not the
+   * passes' (the glow keeps ten render targets, the AO its own): each pass is freed as well.
+   */
+  private free(): void {
+    if (!this.composer) return;
+    for (const p of this.composer.passes) p.dispose();
+    this.composer.dispose();
     this.composer = null;
   }
 }

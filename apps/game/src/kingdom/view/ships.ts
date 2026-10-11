@@ -32,7 +32,8 @@ function hull(): THREE.BufferGeometry {
   g.rotateY(-Math.PI / 2);
   g.translate(2.1, 0, 0);
   g.deleteAttribute('uv');
-  return g.toNonIndexed();
+  // (An extrusion has no index already: no copy, and no three.js warning.)
+  return g.index ? g.toNonIndexed() : g;
 }
 
 /** A battened lug sail: matting with bamboo battens across it. */

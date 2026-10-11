@@ -38,7 +38,7 @@ interface Combo {
 }
 
 /**
- * Turns raw source events into game messages (spec: Core loop; prompt 04).
+ * Turns raw source events into game messages (spec: Core loop).
  * validate → dedupe → likes batched per user → per-user limits → units/tier → temple → messages.
  * Time is passed in (`now`) so every rule is testable without waiting.
  */

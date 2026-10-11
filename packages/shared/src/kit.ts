@@ -1,5 +1,5 @@
 /**
- * Temple kits as pure data (prompt 09). No 3D library here, so the bridge can assign
+ * Temple kits as pure data. No 3D library here, so the bridge can assign
  * slots to named stones and the game can draw the same slots.
  *
  * Units are metres. x = left/right, y = up, z = toward the viewer (the temple's front).
@@ -301,7 +301,7 @@ export function frontierY(kit: TempleKit, filled: number): number {
 export type SlotRef = { kind: 'normal' | 'big'; index: number };
 
 /**
- * Which slot carries a named stone's carving (prompt 10).
+ * Which slot carries a named stone's carving.
  * Large/Huge stones take the next big piece whose support is built; otherwise the
  * top-most block this stone filled. Returns null when the stone only went to the stockpile.
  */

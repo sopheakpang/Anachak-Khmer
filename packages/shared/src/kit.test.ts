@@ -3,7 +3,7 @@ import { assignSlot, filledSlots, frontierY, kitFor, unitsPerSlot } from './kit'
 
 const kit = kitFor('preah-ko')!;
 
-describe('Preah Ko kit (prompt 09)', () => {
+describe('Preah Ko kit', () => {
   it('exists; other temples have no kit yet', () => {
     expect(kit.templeId).toBe('preah-ko');
     expect(kitFor('angkor-wat')).toBeNull();
@@ -62,7 +62,7 @@ describe('Preah Ko kit (prompt 09)', () => {
   });
 });
 
-describe('filling and slot assignment (prompt 10)', () => {
+describe('filling and slot assignment', () => {
   it('filled slots follow progress and reach all at 100%', () => {
     expect(filledSlots(kit, 3000, 0)).toBe(0);
     expect(filledSlots(kit, 3000, 3)).toBe(1);

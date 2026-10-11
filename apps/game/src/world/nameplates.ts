@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 /**
- * Carved names (prompt 10). One 2048×2048 canvas holds up to 128 names (256×128 cells);
+ * Carved names. One 2048×2048 canvas holds up to 128 names (256×128 cells);
  * all plates are one mesh rebuilt when the set changes — one draw call for every name.
  * Cells are reused oldest-first, so the newest names always have a place.
  */

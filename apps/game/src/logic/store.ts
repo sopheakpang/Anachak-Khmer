@@ -54,7 +54,7 @@ export function emptyModel(): GameModel {
 let toastId = 0;
 
 /**
- * Pure reducer: apply one bridge message to the model (prompt 07).
+ * Pure reducer: apply one bridge message to the model.
  * Returns the same model object, mutated, plus what changed — so the renderer and UI
  * can react without re-reading everything.
  */

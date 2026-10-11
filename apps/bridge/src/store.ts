@@ -40,8 +40,8 @@ export interface NamedSlot {
 }
 
 /**
- * Everything the bridge remembers. MemoryStore (tests, prompt 04) and SqliteStore
- * (prompt 05, saved across streams) both implement this.
+ * Everything the bridge remembers. MemoryStore (tests) and SqliteStore
+ * (saved across streams) both implement this.
  */
 export interface WorldStore {
   progress(): TempleProgress;

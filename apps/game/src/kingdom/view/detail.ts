@@ -83,7 +83,7 @@ export function lotusGeometry(): THREE.BufferGeometry {
  * pitted, with moss on its top. 1 m across; instance scale sizes it.
  */
 export function mossyRockGeometry(): THREE.BufferGeometry {
-  const g = new THREE.IcosahedronGeometry(0.5, 1).toNonIndexed();
+  const g = new THREE.IcosahedronGeometry(0.5, 1); // (already without an index)
   const p = g.getAttribute('position') as THREE.BufferAttribute;
   // A lumpy block: each corner pushed in or out by a hash of where it is (shared corners move together).
   for (let i = 0; i < p.count; i++) {

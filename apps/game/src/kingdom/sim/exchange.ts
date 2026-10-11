@@ -15,10 +15,6 @@ export const GOODS: readonly Resource[] = ['food', 'wood', 'stone', 'gold'];
 /** Today's prices (in "value" units): they move with trade, between min and max × value. */
 export type Prices = Record<Resource, number>;
 
-export function basePrices(sim: KingdomSim): Prices {
-  return { ...sim.data.anachak.market.value };
-}
-
 /** Is there a finished market of the player's? */
 export function hasMarket(sim: KingdomSim): boolean {
   const id = sim.data.anachak.market.building;

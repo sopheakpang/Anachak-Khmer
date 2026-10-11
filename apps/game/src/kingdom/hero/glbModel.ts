@@ -128,7 +128,7 @@ export function registerModel(url: string, scene: THREE.Object3D | null): void {
   loaded.set(url, scene);
 }
 
-let inkCache = new Map<number, THREE.MeshBasicMaterial>();
+const inkCache = new Map<number, THREE.MeshBasicMaterial>();
 /** An ink outline for skinned meshes: the back faces pushed out by `w` model units. */
 function inkFor(w: number): THREE.MeshBasicMaterial {
   const key = Math.round(w * 1e5);
@@ -145,10 +145,6 @@ function inkFor(w: number): THREE.MeshBasicMaterial {
     inkCache.set(key, m);
   }
   return m;
-}
-/** Testing hook: forget cached outline materials. */
-export function resetInk(): void {
-  inkCache = new Map();
 }
 
 /**
@@ -167,6 +163,8 @@ export class HeroRig {
   readonly mapped: number;
   /** The rig's arms already hang down as modelled (not a T-pose): calibrate them to the idle. */
   readonly armsAsModeled: boolean;
+  /** The toon materials made for this copy of the model (freed by dispose). */
+  private readonly ownMats: THREE.Material[] = [];
 
   constructor(
     source: THREE.Object3D,
@@ -205,6 +203,7 @@ export class HeroRig {
           side: s.side,
         });
       });
+      this.ownMats.push(...mats);
       m.material = Array.isArray(m.material) ? mats : mats[0]!;
       const w = 0.012 / Math.max(1e-6, k * worldScale(m.parent));
       const ink = (m as THREE.SkinnedMesh).isSkinnedMesh
@@ -303,6 +302,20 @@ export class HeroRig {
   /** Where the head is (the sheet's close-up). */
   headWorld(): THREE.Vector3 | null {
     return this.bones.head?.getWorldPosition(new THREE.Vector3()) ?? null;
+  }
+
+  /**
+   * Free this copy of the model (1.8.0): its toon materials and bone textures. The geometry and
+   * colour maps are the loaded model's, shared by every copy, and the ink materials are cached,
+   * so those stay.
+   */
+  dispose(): void {
+    for (const m of this.ownMats) m.dispose();
+    this.ownMats.length = 0;
+    this.root.traverse(
+      (o) => (o as THREE.SkinnedMesh).isSkinnedMesh && (o as THREE.SkinnedMesh).skeleton?.dispose(),
+    );
+    this.root.removeFromParent();
   }
 }
 
