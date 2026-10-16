@@ -654,3 +654,15 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | The king's four buttons, the great skill fires on 3, cooldown shown, yantra canopy above him | ✅ | e2e KG-14, `docs/screens/k-hero-ultimate.png` |
 | `npm run verify` (lint, typecheck, 85 test files / 729 tests, build) | ✅ | |
 | e2e KG-12, KG-14 | ✅ | |
+
+## 1.9.0-15 yantra effects for every hero (D151) — 2026-10-16
+
+| Check | Result | How |
+| --- | --- | --- |
+| Every skill of every hero has known effects; fighters have a guardian; great skills ≥ 2 effects | ✅ | `hero/skillVfx.test.ts` |
+| Plans: rain lands inside its radius, dash streak start→end, crescents round / fan, pillars round him, yantra art never under his feet, under half of `maxLive` | ✅ | `hero/skillVfx.test.ts` |
+| Art sheet: 7 yantra, 6 guardians, weapons, script, wave, petal | ✅ | `/heroSheet.html?yantra=1` |
+| Each hero's great skill plays its effects in game (king, swordsman, spearman, archer, horseman, war elephant, watchman) | ✅ | e2e KG-15, `docs/screens/k-vfx-*.png`; KG-14 still passes |
+
+**To change (D152, PK's choice):** the unalom and chedi spires go for 9th-century motifs; the script pillars are faint and will be brightened with the PC realistic look.
+| `npm run verify` (lint, typecheck, 86 test files / 743 tests, build) | ✅ | |

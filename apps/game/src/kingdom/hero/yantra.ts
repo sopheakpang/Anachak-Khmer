@@ -9,187 +9,36 @@ import * as THREE from 'three';
  * as a halo behind the hero or a canopy over the place the skill touches.
  */
 
-export type YantraKind = 'lotus' | 'spiral' | 'grid';
+import { artSize, drawArt, type ArtKey, type YantraKind } from './yantraArt';
 
-const CONSONANTS = 'កខគឃងចឆជឈញដឋឌឍណតថទធនបផពភមយរលវសហឡអ';
+export type { YantraKind } from './yantraArt';
 
-/** An unalom: a spiral at the foot, loops climbing, a straight line up to a point. */
-function unalom(g: CanvasRenderingContext2D, x: number, y: number, h: number): void {
-  const s = h / 10;
-  g.beginPath();
-  for (let a = 0; a < Math.PI * 5; a += 0.15) {
-    const r = s * (1.6 - (a / (Math.PI * 5)) * 1.4);
-    const px = x + Math.cos(a) * r;
-    const py = y - Math.sin(a) * r;
-    if (a === 0) g.moveTo(px, py);
-    else g.lineTo(px, py);
-  }
-  let cy = y - s * 2;
-  for (let i = 0; i < 3; i++) {
-    g.lineTo(x + s * 1.2, cy - s * 0.6);
-    g.lineTo(x - s * 1.2, cy - s * 1.2);
-    cy -= s * 1.4;
-  }
-  g.lineTo(x, cy);
-  g.lineTo(x, y - h);
-  g.stroke();
-}
-
-/** Letters round a circle, upright to the centre. */
-function letterRing(
-  g: CanvasRenderingContext2D,
-  c: number,
-  r: number,
-  n: number,
-  size: number,
-  from = 0,
-): void {
-  g.font = `${size}px 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif`;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  for (let i = 0; i < n; i++) {
-    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
-    g.save();
-    g.translate(c + Math.cos(a) * r, c + Math.sin(a) * r);
-    g.rotate(a + Math.PI / 2);
-    g.fillText(CONSONANTS[(i + from) % CONSONANTS.length]!, 0, 0);
-    g.restore();
-  }
-}
-
-function drawLotus(g: CanvasRenderingContext2D, S: number): void {
-  const c = S / 2;
-  g.lineWidth = S / 200;
-  // Eight petals (pointed arches) round the circle.
-  for (let i = 0; i < 8; i++) {
-    const a = (i / 8) * Math.PI * 2;
-    g.save();
-    g.translate(c, c);
-    g.rotate(a);
-    g.beginPath();
-    g.moveTo(-S * 0.11, -S * 0.2);
-    g.quadraticCurveTo(-S * 0.12, -S * 0.36, 0, -S * 0.44);
-    g.quadraticCurveTo(S * 0.12, -S * 0.36, S * 0.11, -S * 0.2);
-    g.stroke();
-    unalom(g, 0, -S * 0.235, S * 0.15);
-    // A spiral and a stroke beyond each petal tip.
-    g.beginPath();
-    g.arc(0, -S * 0.46, S * 0.012, 0, Math.PI * 2);
-    g.moveTo(0, -S * 0.475);
-    g.lineTo(0, -S * 0.495);
-    g.stroke();
-    g.restore();
-  }
-  g.beginPath();
-  g.arc(c, c, S * 0.2, 0, Math.PI * 2);
-  g.arc(c, c, S * 0.15, 0, Math.PI * 2);
-  g.stroke();
-  letterRing(g, c, S * 0.175, 22, S * 0.032);
-  // The cross in the middle with an unalom up its centre.
-  g.beginPath();
-  g.moveTo(c - S * 0.12, c);
-  g.lineTo(c + S * 0.12, c);
-  g.moveTo(c, c - S * 0.12);
-  g.lineTo(c, c + S * 0.12);
-  g.stroke();
-  unalom(g, c, c + S * 0.1, S * 0.2);
-}
-
-function drawSpiral(g: CanvasRenderingContext2D, S: number): void {
-  const c = S / 2;
-  g.lineWidth = S / 220;
-  // Letters along a spiral, as on the round yantra.
-  g.font = `${S * 0.026}px 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif`;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  let k = 0;
-  for (let a = 0.6; a < Math.PI * 9; a += 0.32 - a * 0.006) {
-    const r = S * 0.04 + a * S * 0.0115;
-    if (r > S * 0.36) break;
-    g.save();
-    g.translate(c + Math.cos(a) * r, c + Math.sin(a) * r);
-    g.rotate(a + Math.PI / 2);
-    g.fillText(CONSONANTS[k++ % CONSONANTS.length]!, 0, 0);
-    g.restore();
-  }
-  g.beginPath();
-  g.arc(c, c, S * 0.38, 0, Math.PI * 2);
-  g.stroke();
-  // Rays with a small loop at each end.
-  for (let i = 0; i < 48; i++) {
-    const a = (i / 48) * Math.PI * 2;
-    g.beginPath();
-    g.moveTo(c + Math.cos(a) * S * 0.39, c + Math.sin(a) * S * 0.39);
-    g.lineTo(c + Math.cos(a) * S * 0.46, c + Math.sin(a) * S * 0.46);
-    g.stroke();
-    if (i % 2 === 0) {
-      g.beginPath();
-      g.arc(c + Math.cos(a) * S * 0.475, c + Math.sin(a) * S * 0.475, S * 0.009, 0, Math.PI * 2);
-      g.stroke();
-    }
-  }
-  g.beginPath();
-  g.arc(c, c, S * 0.03, 0, Math.PI * 2);
-  g.stroke();
-}
-
-function drawGrid(g: CanvasRenderingContext2D, S: number): void {
-  const c = S / 2;
-  g.lineWidth = S / 200;
-  // A stepped square of letter cells in each corner (as on the corner grids), a ring between.
-  const cell = S * 0.07;
-  g.font = `${cell * 0.62}px 'Kantumruy Pro', 'Noto Sans Khmer', sans-serif`;
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  let k = 0;
-  for (const [sx, sy] of [
-    [1, 1],
-    [-1, 1],
-    [1, -1],
-    [-1, -1],
-  ] as const) {
-    for (let row = 0; row < 4; row++)
-      for (let col = 0; col < 4 - row; col++) {
-        const x = sx > 0 ? S * 0.06 + col * cell : S * 0.94 - (col + 1) * cell;
-        const y = sy > 0 ? S * 0.06 + row * cell : S * 0.94 - (row + 1) * cell;
-        g.strokeRect(x, y, cell, cell);
-        g.fillText(CONSONANTS[k++ % CONSONANTS.length]!, x + cell / 2, y + cell / 2);
-      }
-  }
-  g.beginPath();
-  g.arc(c, c, S * 0.2, 0, Math.PI * 2);
-  g.arc(c, c, S * 0.25, 0, Math.PI * 2);
-  g.stroke();
-  letterRing(g, c, S * 0.225, 18, S * 0.03, 7);
-  unalom(g, c, c + S * 0.14, S * 0.3);
-}
-
-const cache = new Map<YantraKind, THREE.CanvasTexture | null>();
-/** The yantra drawn white on clear (tinted by the material), or null without a canvas. */
-export function yantraTexture(kind: YantraKind, size = 512): THREE.Texture | null {
-  if (cache.has(kind)) return cache.get(kind)!;
+const cache = new Map<string, THREE.CanvasTexture | null>();
+/** Any of the skills' line art (yantraArt.ts) as a white texture, or null without a canvas. */
+export function artTexture(key: ArtKey, size = 512): THREE.Texture | null {
+  const id = `${key}@${size}`;
+  if (cache.has(id)) return cache.get(id)!;
   if (typeof document === 'undefined') {
-    cache.set(kind, null);
+    cache.set(id, null);
     return null;
   }
   const cv = document.createElement('canvas');
-  cv.width = cv.height = size;
+  [cv.width, cv.height] = artSize(key, size);
   const g = cv.getContext('2d');
   if (!g) {
-    cache.set(kind, null);
+    cache.set(id, null);
     return null;
   }
-  g.strokeStyle = '#fff';
-  g.fillStyle = '#fff';
-  g.lineCap = 'round';
-  g.lineJoin = 'round';
-  if (kind === 'lotus') drawLotus(g, size);
-  else if (kind === 'spiral') drawSpiral(g, size);
-  else drawGrid(g, size);
+  drawArt(g, key, size);
   const t = new THREE.CanvasTexture(cv);
   t.colorSpace = THREE.SRGBColorSpace;
-  cache.set(kind, t);
+  cache.set(id, t);
   return t;
+}
+
+/** The yantra drawn white on clear (tinted by the material), or null without a canvas. */
+export function yantraTexture(kind: YantraKind, size = 512): THREE.Texture | null {
+  return artTexture(`yantra:${kind}`, size);
 }
 
 /** Which yantra a skill shows. */

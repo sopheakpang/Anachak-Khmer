@@ -15,6 +15,8 @@ import { Slashes } from './slash';
 import { TigerModel } from './tiger';
 import { heroModelFor, phoneModels, preloadModels } from './glbModel';
 import { YantraFx, yantraFor } from './yantra';
+import { SkillFx } from './skillFx';
+import { fxWeaponFor, planSkillVfx } from './skillVfx';
 import { tigerEncounter } from '../sim/anachak';
 import {
   doWork,
@@ -102,6 +104,8 @@ export class HeroMode {
   readonly slashes = new Slashes();
   /** Yantra light for the skills (PK: Khmer yantra magic), in the air, never underfoot. */
   readonly yantra = new YantraFx();
+  /** The skills' effects (D151): weapon rains, waves, guardian spirits, pillars, rings. */
+  skillFx: SkillFx | null = null;
   /** The tiger out of the forest (PK), and when the next may come (sim seconds). */
   tigerId: number | null = null;
   private tigerAt = 0;
@@ -237,6 +241,8 @@ export class HeroMode {
     if (this.watching) this.core.camDist = this.host.data.anachak.danger.watchDist;
     view.scene.add(this.slashes.group);
     view.scene.add(this.yantra.group);
+    this.skillFx = new SkillFx(() => this.host.view().particles, this.cfg.vfx.maxLive);
+    view.scene.add(this.skillFx.group);
     for (const r of [this.aimRingMesh, this.goalRingMesh]) {
       r.visible = false;
       r.renderOrder = 5;
@@ -388,6 +394,11 @@ export class HeroMode {
     view.scene.remove(this.slashes.group);
     this.yantra.clear();
     view.scene.remove(this.yantra.group);
+    if (this.skillFx) {
+      this.skillFx.clear();
+      view.scene.remove(this.skillFx.group);
+      this.skillFx = null;
+    }
     view.scene.remove(this.aimRingMesh, this.goalRingMesh);
     this.hoverFoe = null;
     this.rpress = null;
@@ -721,6 +732,7 @@ export class HeroMode {
     this.updateDog(dt, body, sim, now);
     this.slashes.update(dt);
     this.yantra.update(dt, view.camera);
+    this.skillFx?.update(dt, view.camera);
     this.updateRings(now);
     if (!this.watching) this.updateTiger(dt, body, sim);
     this.showTiger(dt, body, sim, now);
@@ -857,6 +869,7 @@ export class HeroMode {
     if (a.kind !== 'skill') return;
     const S = kitSkills(kit)[a.slot] ?? kit.skill;
     this.yantraFor(S, body, ahead);
+    const from = [core.x, core.z] as const;
     // Its own sound first (D146 ខ៥), then the kind's usual one below.
     if (S.sound && SFX_NAMES.includes(S.sound as SfxName)) this.host.sound.play(S.sound as SfxName, { gain: 0.9 });
     switch (S.kind) {
@@ -981,6 +994,38 @@ export class HeroMode {
         break;
       }
     }
+    this.playVfx(S, from, ahead);
+  }
+
+  /** The skill's effects (D151), after it acted (a dash has moved him). */
+  private playVfx(S: HeroSkill, from: readonly [number, number], ahead: (d: number) => XZ): void {
+    const kit = this.kit!;
+    const core = this.core!;
+    if (!this.skillFx || !S.vfx.length) return;
+    this.skillFx.play(
+      planSkillVfx({
+        skill: S,
+        guardian: kit.guardian,
+        weapon: fxWeaponFor(kit.weapon, kit.fxWeapon),
+        color: this.skillColor(S),
+        from,
+        to: [core.x, core.z],
+        heading: core.heading,
+        lift: this.model?.lift ?? 0,
+        area: ahead(this.cfg.tuning.volleyAhead),
+        cfg: this.cfg.vfx,
+        seed: Math.floor(performance.now()),
+      }),
+    );
+  }
+
+  /** A skill's light colour: its own, else gold for the king and blessings, moonlight blue. */
+  private skillColor(S: HeroSkill): number {
+    return S.color
+      ? parseInt(S.color.slice(1), 16)
+      : this.kit!.id === 'king' || S.kind === 'heal'
+        ? 0xffcf6a
+        : 0x9fd8ff;
   }
 
   /**
@@ -994,11 +1039,7 @@ export class HeroMode {
     const skill = S.kind;
     const radius = S.radius;
     // Each skill may name its own colour and yantra (D146 ខ៥); otherwise by kind.
-    const color = S.color
-      ? parseInt(S.color.slice(1), 16)
-      : kit.id === 'king' || skill === 'heal'
-        ? 0xffcf6a
-        : 0x9fd8ff;
+    const color = this.skillColor(S);
     const kind = S.yantra ?? yantraFor(skill);
     const bx = body.x - Math.sin(body.heading) * 0.45;
     const bz = body.z - Math.cos(body.heading) * 0.45;

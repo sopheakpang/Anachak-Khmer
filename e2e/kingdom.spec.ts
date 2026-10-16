@@ -1160,3 +1160,39 @@ test('KG-14: PK 1.9.0 (D146 ខ៥, D150): the king’s four skills, the great o
   expect(left).toBeGreaterThan(30);
   await page.keyboard.press('Escape');
 });
+
+test('KG-15: PK 1.9.0 (D151): every hero’s great skill plays its yantra effects', async ({ page }) => {
+  test.setTimeout(600_000);
+  await page.goto('/?mode=anachak&offline=1&preset=lite');
+  await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.anachak, null, {
+    timeout: 180_000,
+    polling: 500,
+  });
+  if (await page.locator('.k-anachak #k-card').isVisible())
+    await page.locator('.k-anachak #k-card .k-card-x').dispatchEvent('pointerdown');
+  const ui = page.locator('.k-anachak');
+  for (const type of ['king', 'swordsman', 'spearman', 'archer', 'horseman', 'warElephant', 'watchman']) {
+    await page.evaluate((type) => {
+      const k = window.__temples.anachak!;
+      if (type === 'king') return k.act('hero:king');
+      const s = k.sim;
+      for (const u of [...s.units.values()]) if (u.team !== 0) s.units.delete(u.id);
+      const hall = [...s.buildings.values()].find((b) => b.team === 0 && b.type === 'townCentre')!;
+      const u = s.spawnNear(hall, type, 0);
+      k.act(`hero:${u.id}`);
+    }, type);
+    await expect(ui.locator('.k-hb-skill4')).toBeVisible({ timeout: 60_000 });
+    await page.evaluate(() => {
+      const c = window.__temples.anachak!.hero!.core!;
+      c.camYaw = c.heading + 0.5;
+      c.camDist = 9;
+    });
+    await page.waitForTimeout(400);
+    await page.keyboard.press('Digit3');
+    await page.waitForFunction(() => (window.__temples.anachak!.hero!.skillFx?.count ?? 0) > 0, null, { timeout: 10_000 });
+    await page.waitForTimeout(type === 'archer' || type === 'watchman' ? 550 : 420);
+    await page.screenshot({ path: `docs/screens/k-vfx-${type}.png` });
+    await page.keyboard.press('Escape');
+    await expect(ui.locator('.k-hb-skill4')).toBeHidden({ timeout: 30_000 });
+  }
+});

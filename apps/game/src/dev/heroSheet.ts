@@ -5,7 +5,8 @@ import { HeroModel, lookFor } from '../kingdom/hero/heroModel';
 import { kitFor } from '../kingdom/hero/heroCore';
 import { TigerModel } from '../kingdom/hero/tiger';
 import { heroModelFor, preloadModels } from '../kingdom/hero/glbModel';
-import { yantraTexture, type YantraKind } from '../kingdom/hero/yantra';
+import { artTexture } from '../kingdom/hero/yantra';
+import type { ArtKey } from '../kingdom/hero/yantraArt';
 import '../fonts.css';
 
 /**
@@ -17,7 +18,7 @@ import '../fonts.css';
  * - /heroSheet.html?all=1 — every character side by side (PK: so the reviewers can check
  *   every costume).
  * - /heroSheet.html?tiger=1 — the encounter tiger from four sides, prowling and swiping.
- * - /heroSheet.html?yantra=1 — the three yantra of the skills' light (lotus, spiral, grid).
+ * - /heroSheet.html?yantra=1 — the skills' line art: seven yantra, six guardians, weapons (D151).
  */
 const q = new URLSearchParams(location.search);
 setLook({ style: 'lowpoly' });
@@ -256,34 +257,63 @@ function tigerPage(): void {
   draw();
 }
 
-/** The skills' yantra, drawn gold and moonlight blue on night blue. */
+/**
+ * The skills' line art (D106, D151): the seven yantra, the six guardians, the spectral weapons,
+ * the crescent, the petal and the script column, each in its light's colour on night blue.
+ */
 function yantraPage(): void {
   renderer.domElement.style.display = 'none';
   document.body.style.background = '#0d1630';
-  title.textContent = 'យ័ន្ត · Yantra light for the skills (lotus · spiral · grid)';
+  title.textContent = 'យ័ន្ត · Yantra light for the heroes’ skills — layouts, guardians, weapons';
   title.style.color = '#ffe2a0';
-  const kinds: Array<[YantraKind, string, string]> = [
-    ['lotus', '#ffcf6a', 'ផ្កាឈូក · Lotus — the King’s blessing, the war cry'],
-    ['spiral', '#9fd8ff', 'វង់ · Spiral — sweeps, charges, the mighty chop'],
-    ['grid', '#9fd8ff', 'ក្រឡា · Grid — the rain of arrows, the dog'],
+  const items: Array<[ArtKey, string, string]> = [
+    ['yantra:lotus', '#ffcf6a', 'ផ្កាឈូក · Lotus'],
+    ['yantra:spiral', '#9fd8ff', 'វង់ · Spiral'],
+    ['yantra:grid', '#9fd8ff', 'ក្រឡា · Grid'],
+    ['yantra:spires', '#ffe7a0', 'កំពូល · Spires'],
+    ['yantra:mandala', '#ffcf4a', 'មណ្ឌល · Mandala'],
+    ['yantra:star', '#7fc8ff', 'ផ្កាយ · Star'],
+    ['yantra:sun', '#9fe8ff', 'ព្រះអាទិត្យ · Sun'],
+    ['emblem:naga', '#ffcf4a', 'នាគ · Naga'],
+    ['emblem:garuda', '#9fd8ff', 'គ្រុឌ · Garuda'],
+    ['emblem:hongsa', '#d0f0ff', 'ហង្ស · Hongsa'],
+    ['emblem:singha', '#ffb070', 'សិង្ហ · Singha'],
+    ['emblem:gaja', '#d8b070', 'ឯរាវ័ណ · Erawan'],
+    ['emblem:tiger', '#a0f0a0', 'ខ្លា · Tiger'],
+    ['weapon:sword', '#ffd27a', 'ព្រះខ័ន · sword'],
+    ['weapon:spear', '#9fd8ff', 'លំពែង · spear'],
+    ['weapon:arrow', '#d0f0ff', 'ព្រួញ · arrow'],
+    ['rows', '#ffd27a', 'ជួរអក្សរ · script'],
+    ['crescent', '#6fe0d0', 'រលក · wave'],
+    ['petal', '#ffe7a0', 'ត្របកឈូក · petal'],
   ];
-  kinds.forEach(([k, color, name], i) => {
-    const src = yantraTexture(k, 560)!.image as HTMLCanvasElement;
+  // Row 1 the seven yantra, row 2 the six guardians, row 3 the weapons and the rest.
+  const S = 236;
+  items.forEach(([k, color, name], i) => {
+    const row = i < 7 ? 0 : i < 13 ? 1 : 2;
+    const col = row === 0 ? i : row === 1 ? i - 7 : i - 13;
+    const src = artTexture(k, 472)!.image as HTMLCanvasElement;
     const cv = document.createElement('canvas');
-    cv.width = cv.height = 560;
+    [cv.width, cv.height] = [src.width, src.height];
     const g = cv.getContext('2d')!;
     g.drawImage(src, 0, 0);
     g.globalCompositeOperation = 'source-in';
     g.fillStyle = color;
-    g.fillRect(0, 0, 560, 560);
+    g.fillRect(0, 0, cv.width, cv.height);
+    const w = (src.width / 472) * S;
+    const h = (src.height / 472) * S;
+    const cx = 40 + col * 268 + S / 2;
+    const top = 110 + row * 315;
     Object.assign(cv.style, {
       position: 'absolute',
-      left: `${60 + i * 620}px`,
-      top: '150px',
-      filter: `drop-shadow(0 0 8px ${color})`,
+      left: `${cx - w / 2}px`,
+      top: `${top + (S - h) / 2}px`,
+      width: `${w}px`,
+      height: `${h}px`,
+      filter: `drop-shadow(0 0 6px ${color})`,
     });
     document.body.append(cv);
-    label(name, 60 + i * 620 + 280, 740);
+    label(name, cx, top + S + 26);
   });
   document.querySelectorAll<HTMLElement>('.label').forEach((e) => (e.style.color = '#e8eefc'));
 }

@@ -696,6 +696,20 @@ const Pt = z.tuple([z.number(), z.number()]);
  * does; `ultimate` strikes everything round the hero under a great yantra canopy (never under
  * the feet, out of respect).
  */
+/** PK 1.9.0 (D151): the yantra layouts drawn by the game (the first three since D106). */
+export const YANTRA_KINDS = ['lotus', 'spiral', 'grid', 'spires', 'mandala', 'star', 'sun'] as const;
+/** PK 1.9.0 (D151): the heroes' guardian creatures, drawn as yantra. */
+export const GUARDIANS = ['naga', 'garuda', 'tiger', 'gaja', 'singha', 'hongsa'] as const;
+/**
+ * PK 1.9.0 (D151): the skills' effects (light only; what a skill does stays its `kind`).
+ * wave = crescents of light flying out; rain = spectral weapons falling on the place; spirit =
+ * the hero's guardian rushing out (or rising over him); pillars = columns of script rising
+ * round him; shock = rings of force on the ground; dome = a bell of light over him; petals =
+ * lotus petals falling; orbit = spectral weapons wheeling round him; trail = a streak of light
+ * along a dash or a shot.
+ */
+export const SKILL_VFX = ['wave', 'rain', 'spirit', 'pillars', 'shock', 'dome', 'petals', 'orbit', 'trail'] as const;
+
 export const HeroSkillSchema = z.object({
   id: z.string(),
   ...Bi,
@@ -704,7 +718,9 @@ export const HeroSkillSchema = z.object({
   power: z.number().positive(),
   kind: z.enum(['chop', 'spin', 'dash', 'volley', 'heal', 'dog', 'ultimate']),
   /** The yantra drawn for it (default by kind). */
-  yantra: z.enum(['lotus', 'spiral', 'grid']).optional(),
+  yantra: z.enum(YANTRA_KINDS).optional(),
+  /** Its effects (D151), played in this order with its yantra. */
+  vfx: z.array(z.enum(SKILL_VFX)).default([]),
   /** Its light colour, #rrggbb (default: gold for the king and healing, sky blue otherwise). */
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   /** Its sound (KingdomSound effect name; default by kind). */
@@ -931,6 +947,15 @@ export const AnachakSchema = z.object({
     }),
     attackMul: z.number().positive(),
     armorBonus: z.number().nonnegative(),
+    /** PK 1.9.0 (D151): how many pieces the skills' effects use (the frame budget). */
+    vfx: z.object({
+      rain: z.number().int().positive(),
+      waves: z.number().int().positive(),
+      pillars: z.number().int().positive(),
+      petals: z.number().int().positive(),
+      orbit: z.number().int().positive(),
+      maxLive: z.number().int().positive(),
+    }),
     /** The 🤖 auto mode (PK k6). */
     auto: z.object({
       fightRange: z.number().positive(),
@@ -961,6 +986,10 @@ export const AnachakSchema = z.object({
            * the last of four is the big one (`ultimate`).
            */
           skills: z.array(HeroSkillSchema).max(3).default([]),
+          /** PK 1.9.0 (D151): the guardian creature of the kit's spirit effects. */
+          guardian: z.enum(GUARDIANS).optional(),
+          /** The spectral weapon of its rains and wheels (default by weapon). */
+          fxWeapon: z.enum(['sword', 'spear', 'arrow']).optional(),
         }),
       )
       .min(1),

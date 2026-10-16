@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { loadKingdom } from '@temples/shared';
+import { YANTRA_KINDS, loadKingdom } from '@temples/shared';
 import { HeroCore, NO_INPUT, kitFor, kitSkills, type HeroAct, type HeroInput } from './heroCore';
 import { Keymap } from '../keymap';
 import { SFX_NAMES, type SfxName } from '../view/sound';
@@ -31,7 +31,7 @@ describe('hero skills (ខ៥ B)', () => {
         expect(ids.has(S.id), S.id).toBe(false);
         ids.add(S.id);
         if (S !== k.skill) {
-          expect(['lotus', 'spiral', 'grid']).toContain(S.yantra);
+          expect(YANTRA_KINDS).toContain(S.yantra);
           expect(S.color).toMatch(/^#[0-9a-f]{6}$/i);
           expect(SFX_NAMES).toContain(S.sound as SfxName);
         }
