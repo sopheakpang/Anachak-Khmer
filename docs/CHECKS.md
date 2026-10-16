@@ -592,3 +592,20 @@ PK's "master optimization prompt", checked against the code first; parts that di
 | e2e: KG-01…KG-10, KM-01…KM-04, AX-01, AX-02, smoke | ✅ | |
 
 **Not done (PK's choice):** WebGPU, a 600-clump grass cap, per-tree `THREE.LOD`, the model re-simplifier. **Not verified here:** frame times on the stream laptop's GTX 1660 Super (software GL here, so only the game's own CPU work was measured).
+
+### 1.9.0, Sprint 1, first part: the 3D hero's controls (2026-10-16)
+
+PK said "Let start" on the upgrade plan; the six decisions follow the proposals (D144). Controls: D145.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| A / D step sideways, S steps back at the back speed, he keeps facing ahead, legs run backward on S | ✅ | `hero/heroControls.test.ts` |
+| Ten seconds of A with the camera rule on: a straight line, the camera never turns (the old spin) | ✅ | `hero/heroControls.test.ts`; e2e KG-05 (A held: mode `side`, camera yaw unchanged, heading ahead) |
+| The touch stick still turns him toward where it points | ✅ | `hero/heroControls.test.ts` |
+| Right click vs right drag; walks to the clicked point and stops; a move key takes over; gives up at a wall; walking up to a foe ends in a strike | ✅ | `hero/heroControls.test.ts` |
+| Gold ring in reach, red beyond; a click strikes or walks up; the cursor picks raiders and animals, never a friend | ✅ | `hero/heroControls.test.ts` |
+| Landing dust: fall speed reported; 20 puffs (30 after a hard fall) lifted 0.35 m above the 10 cm lawn, ochre on earth, green on grass, a splash on water; particles take the colours and spread in a ring | ✅ | `hero/heroControls.test.ts` |
+| `npm run verify` (lint, typecheck, 79 test files / 693 tests, build) | ✅ | |
+| e2e KG-05 (levy, overview, 3D hero: W, A, strike, Esc, the king) | ✅ 1 passed (3.5 min) | `docs/screens/k-hero.png` |
+
+**Not done (D145):** "Q W E R skills at the cursor" and "arrow keys walk" (those keys are already Dodge, Forward, Work, Skill and the camera). The walk to a clicked point goes straight with wall sliding, not along a path round obstacles. **Not seen here:** the rings and dust at full speed on PK's PC (software GL in the test).
