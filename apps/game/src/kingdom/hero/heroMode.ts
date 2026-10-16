@@ -570,7 +570,7 @@ export class HeroMode {
     const inp: HeroInput = {
       ...NO_INPUT,
       move: { x, y },
-      // Keys strafe and step back (decision k2); the touch stick turns him as before.
+      // Keys: A / S / D turn him and walk that way without the camera chasing him (D146).
       keys: (kx !== 0 || ky !== 0) && Math.hypot(this.stick.x, this.stick.y) < 0.15,
       run: km.held('hero', 'run', k) || Math.hypot(this.stick.x, this.stick.y) > 0.92,
     };
@@ -613,7 +613,7 @@ export class HeroMode {
       core.follow(u.x, u.z, u.heading, u.anim ?? 'idle', dt);
     } else acts = core.step(step, this.input(), { open: (x, z) => heroOpen(sim, x, z) });
     // The camera drifts behind the hero while he walks ahead (or to a clicked point) and nobody
-    // turns it. Never while he steps sideways or back: that chased him round in circles (PK).
+    // turns it. Never while he walks sideways or toward it: that chased him round in circles (PK).
     const ahead = core.speed > 0.5 && (core.moveMode === 'forward' || core.moveMode === 'goal');
     if ((ahead || this.watching) && now > this.autoCamAt) {
       let d = core.heading + Math.PI - core.camYaw;

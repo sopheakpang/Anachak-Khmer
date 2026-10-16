@@ -625,7 +625,7 @@ test('KG-05: Anachak Khmer: the king calls villagers to arms, his overview, the 
     { timeout: 120_000, polling: 500 },
   );
   await page.keyboard.up('w');
-  // PK 1.9.0 (decision k2): A steps sideways, he keeps facing ahead and the camera stays put.
+  // PK 1.9.0 (D146): A turns him to the camera's left and he walks that way; the camera stays put.
   const side = await page.evaluate(() => {
     const c = window.__temples.anachak!.hero!.core!;
     return { x: c.x, z: c.z, yaw: c.camYaw, heading: c.heading };
@@ -647,7 +647,7 @@ test('KG-05: Anachak Khmer: the king calls villagers to arms, his overview, the 
   const turn = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
   expect(strafe.mode).toBe('side');
   expect(turn(strafe.yaw, side.yaw)).toBeLessThan(0.05);
-  expect(turn(strafe.heading, side.yaw + Math.PI)).toBeLessThan(0.3);
+  expect(turn(strafe.heading, side.yaw + Math.PI + Math.PI / 2)).toBeLessThan(0.3);
   await page.keyboard.press('j');
   // A three-quarter view from the front for the screenshot.
   await page.evaluate(() => {
@@ -955,4 +955,47 @@ test('KG-10: 1.8.0 optimisation: New Game frees the old world (graphics memory s
     expect(m.geometries).toBeLessThanOrEqual(first.geometries + 10);
     expect(m.textures).toBeLessThanOrEqual(first.textures + 3);
   }
+});
+
+test('KG-11: PK 1.9.0 (D147): Preah Ko built in play shows whole the moment it is finished', async ({ page }) => {
+  await page.goto('/?mode=kingdom&offline=1&preset=lite');
+  await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.kingdom, null, {
+    timeout: 180_000,
+    polling: 500,
+  });
+  await page.evaluate(() => {
+    const k = window.__temples.kingdom!;
+    k.newGame('easy');
+    k.sim.ai.nextRaid = 1e9;
+    const s = k.sim;
+    const [x, z] = s.monumentSpot();
+    s.addBuilding('monument', 0, x, z, 0.2, 'preah-ko');
+  });
+  type T = { filled: number; kit: { slots: unknown[] }; group: { visible: boolean } };
+  const temple = () =>
+    page.evaluate(() => {
+      const t = (window.__temples.kingdom!.view as unknown as { temple: T }).temple;
+      return { filled: t.filled, total: t.kit.slots.length, visible: t.group.visible };
+    });
+  // The build rises a little at a time, as in play.
+  for (const p of [0.21, 0.22, 0.5, 0.51, 0.99]) {
+    await page.evaluate((p) => {
+      for (const b of window.__temples.kingdom!.sim.buildings.values()) if (b.type === 'monument') b.progress = p;
+    }, p);
+    await page.waitForTimeout(400);
+  }
+  const mid = await temple();
+  expect(mid.visible).toBe(true);
+  expect(mid.filled).toBeGreaterThan(mid.total * 0.9);
+  await page.evaluate(() => {
+    for (const b of window.__temples.kingdom!.sim.buildings.values()) if (b.type === 'monument') b.progress = 1;
+  });
+  await page.waitForFunction(
+    () => {
+      const t = (window.__temples.kingdom!.view as unknown as { temple: T }).temple;
+      return t.filled === t.kit.slots.length;
+    },
+    null,
+    { timeout: 5_000, polling: 100 },
+  );
 });

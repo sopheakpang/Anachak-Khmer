@@ -853,9 +853,6 @@ export const AnachakSchema = z.object({
     move: z.object({
       walk: z.number().positive(),
       run: z.number().positive(),
-      /** Speed share when stepping sideways (A/D) or backward (S): he keeps facing ahead. */
-      strafe: z.number().positive().max(1),
-      back: z.number().positive().max(1),
       jump: z.number().positive(),
       gravity: z.number().positive(),
       dash: z.number().positive(),

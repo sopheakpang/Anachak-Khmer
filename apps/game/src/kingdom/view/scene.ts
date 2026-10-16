@@ -42,6 +42,7 @@ import { riderGeometry } from '../../expedition/jungleArt';
 import { soft, SUN_DIR } from '../../engine/look';
 import { repeated, textures } from '../../engine/textures';
 import { TempleView } from '../../world/temple';
+import { bigsDue, growStep } from '../../world/templeGrow';
 import { tileToWorld, worldToTile, type XZ } from '../sim/map';
 import { PLAYER, RIVAL, type Building, type KingdomSim, type Team, type Unit } from '../sim/sim';
 import {
@@ -1960,12 +1961,15 @@ export class KingdomScene {
     this.temple.group.visible = true;
     const target = this.temple.kit.slots.length;
     const shown = Math.round(b.progress * target);
-    if (shown !== this.monumentShown) {
-      // A big jump (a loaded save, a finished temple, the demo) appears at once.
-      const jump = Math.abs(shown - this.monumentShown) > 12;
+    const step = growStep(this.monumentShown, shown, b.progress);
+    if (step !== 'none') {
+      // New stones fly into place; a loaded save, a big jump or the finished temple appear at
+      // once (D147: before, small rises were never shown and the temple only came on a reload).
       this.monumentShown = shown;
       this.temple.setProgress(target, shown);
-      if (jump) this.temple.snap();
+      if (step === 'snap') this.temple.snap();
+      else this.temple.place(null, 'small', now);
+      this.temple.showBigs(bigsDue(this.temple.kit, this.temple.filled), step === 'fly', now);
     }
     this.temple.update(now);
   }

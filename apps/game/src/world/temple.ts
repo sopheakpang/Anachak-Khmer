@@ -123,6 +123,11 @@ export class TempleView {
     }
   }
 
+  /** Show the big pieces whose support is built (the Kingdom's monument, D147). */
+  showBigs(indexes: number[], animate: boolean, now: number): void {
+    for (const i of indexes) this.showBig(i, animate, now);
+  }
+
   /** Show filled blocks instantly (no animation), e.g. after (re)connecting. */
   snap(): void {
     for (let i = this.shownNormal; i < this.targetNormal; i++) this.show(i);

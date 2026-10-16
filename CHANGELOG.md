@@ -9,6 +9,8 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.9.0-01 | **3D hero: A / D / S fixed** (PK's bug): A and D now step sideways and S steps back while the hero keeps facing ahead; the camera stays where it is. Before, the camera swung round behind him at every step, so "left" kept changing and he and the camera spun in circles. W still walks ahead and the camera follows (D145). |
 | 1.9.0-02 | **3D hero with the mouse**: right-click the ground and he walks there by himself (a gold ring marks the spot; any move key stops him); hold the right button and drag to turn the camera as before; left-click a raider or a wild animal to strike it (he walks up first if it is too far); the ring under the animal or raider at the cursor is gold when he can reach it, red when not; the wheel zooms (D145). |
 | 1.9.0-03 | **Dust when the hero lands**: a ring of dust you can see above the grass, red earth on roads and bare ground, pale green on grass, bigger after a high fall, and a splash in shallow water (D145). |
+| 1.9.0-04 | **3D hero: A / S / D turn him round** (PK): A turns him to the left, D to the right and S round toward the camera, and he walks that way showing his side or his face — no more walking with his back to you. The camera stays put (only W and a walk to a clicked point move it), so it still never spins (D146). |
+| 1.9.0-05 | **Preah Ko appears the moment it is finished** (PK's bug): the stones now rise one by one while the temple is built, and the whole temple with its crowns, lintels and Nandi shows at once when the work ends; before, it only showed after loading a save (D147). |
 
 ## 1.8.0 — 2026-10-09
 

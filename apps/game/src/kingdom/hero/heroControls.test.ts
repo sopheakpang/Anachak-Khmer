@@ -16,8 +16,8 @@ import { KingdomSim, PLAYER, RIVAL } from '../sim/sim';
 import { tileToWorld } from '../sim/map';
 
 /**
- * PK 1.9.0, Sprint 1: the 3D hero's controls. A/D step sideways and S steps back while he keeps
- * facing ahead (the camera no longer chases him round); a right click walks him to a point; a
+ * PK 1.9.0, Sprint 1: the 3D hero's controls. A / S / D turn him to face the way he walks while
+ * the camera stays put (D146); a right click walks him to a point; a
  * left click strikes the foe under the cursor; landing throws dust that shows above the lawn.
  */
 
@@ -36,24 +36,33 @@ const core = () => {
   return c;
 };
 
-describe('keys: A / D strafe and S steps back, facing ahead (decision k2)', () => {
-  it('A steps to the camera’s left and he keeps facing forward', () => {
+const turnTo = (h: number, want: number) => Math.abs(Math.atan2(Math.sin(h - want), Math.cos(h - want)));
+
+describe('keys: A / S / D turn him to face the way he walks (PK, D146)', () => {
+  it('A turns him to the camera’s left and he walks that way, face shown in profile', () => {
     const c = core();
     run(c, { move: { x: -1, y: 0 }, keys: true }, 1);
-    expect(c.x).toBeGreaterThan(H.move.walk * H.move.strafe * 0.8);
+    expect(c.x).toBeGreaterThan(H.move.walk * 0.8);
     expect(Math.abs(c.z)).toBeLessThan(0.2);
-    expect(Math.abs(c.heading)).toBeLessThan(0.05);
+    expect(turnTo(c.heading, Math.PI / 2)).toBeLessThan(0.05);
     expect(c.moveMode).toBe('side');
   });
 
-  it('S steps back at the back speed, still facing forward, legs running backward', () => {
+  it('D turns him to the camera’s right', () => {
+    const c = core();
+    run(c, { move: { x: 1, y: 0 }, keys: true }, 1);
+    expect(c.x).toBeLessThan(-H.move.walk * 0.8);
+    expect(turnTo(c.heading, -Math.PI / 2)).toBeLessThan(0.05);
+  });
+
+  it('S turns him round to face the camera and walks toward it at full speed, legs forward', () => {
     const c = core();
     run(c, { move: { x: 0, y: -1 }, keys: true }, 1);
-    expect(c.z).toBeLessThan(-H.move.walk * H.move.back * 0.8);
-    expect(c.speed).toBeCloseTo(H.move.walk * H.move.back, 5);
-    expect(Math.abs(c.heading)).toBeLessThan(0.05);
+    expect(c.z).toBeLessThan(-H.move.walk * 0.8);
+    expect(c.speed).toBeCloseTo(H.move.walk, 5);
+    expect(turnTo(c.heading, Math.PI)).toBeLessThan(0.05);
     expect(c.moveMode).toBe('back');
-    expect(c.stride).toBeLessThan(0);
+    expect(c.stride).toBeGreaterThan(0);
   });
 
   it('W walks ahead and is the only key the camera follows', () => {
@@ -74,13 +83,21 @@ describe('keys: A / D strafe and S steps back, facing ahead (decision k2)', () =
         c.camYaw += d * (1.2 / 30);
       }
     }
-    // Ten seconds of A: a straight line to the left, camera untouched.
+    // Ten seconds of A: a straight line to the left, camera untouched, his side to the camera.
     expect(c.camYaw).toBeCloseTo(Math.PI, 5);
-    expect(c.x).toBeGreaterThan(H.move.walk * H.move.strafe * 9);
+    expect(c.x).toBeGreaterThan(H.move.walk * 9);
     expect(Math.abs(c.z)).toBeLessThan(0.5);
+    expect(turnTo(c.heading, Math.PI / 2)).toBeLessThan(0.05);
   });
 
-  it('the touch stick still turns him toward where it points', () => {
+  it('W after S turns him back round to walk away from the camera', () => {
+    const c = core();
+    run(c, { move: { x: 0, y: -1 }, keys: true }, 0.5);
+    run(c, { move: { x: 0, y: 1 }, keys: true }, 0.5);
+    expect(turnTo(c.heading, 0)).toBeLessThan(0.05);
+  });
+
+  it('the touch stick turns him toward where it points', () => {
     const c = core();
     run(c, { move: { x: -1, y: 0 } }, 1);
     expect(Math.abs(c.heading)).toBeGreaterThan(1);

@@ -213,8 +213,6 @@
     "move": {
       "walk": 4.2,
       "run": 7.2,
-      "strafe": 0.8,
-      "back": 0.6,
       "jump": 7,
       "gravity": 20,
       "dash": 9,

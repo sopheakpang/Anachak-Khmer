@@ -19,9 +19,9 @@ export interface HeroInput {
   dash: boolean;
   work: boolean;
   /**
-   * Keys drive the move (PK 1.9.0, decision k2): A/D step sideways and S steps back while he
-   * keeps facing ahead, so the camera (which only follows a forward walk) never chases him round.
-   * Off for the touch stick, which still turns him toward where it points.
+   * Keys drive the move: he turns to face A / S / D like the stick, but only W counts as a walk
+   * ahead for the camera (D146), so the camera never chases him round while he walks sideways or
+   * toward it. Off for the touch stick, where every direction is a walk ahead.
    */
   keys?: boolean;
 }
@@ -238,22 +238,19 @@ export class HeroCore {
     if (this.state !== 'attack' && this.state !== 'idle') this.lastWasStrike = false;
     if (this.state === 'idle' && this.stateT > C.window) this.lastWasStrike = false;
 
-    // Moving. The stick turns the hero toward camera-relative directions. Keys (decision k2):
-    // W walks ahead (and turns him on W+A / W+D), A/D step sideways and S steps back while he
-    // keeps facing the camera's forward. A move key or the stick cancels a walk to a point.
+    // Moving (PK 1.9.0, D146): keys and stick both turn him to face where he walks, relative to
+    // the camera — W ahead, S turns round and walks toward the camera, A / D turn left / right.
+    // The camera follows only a walk ahead (or to a point), so turning never makes it chase him
+    // round. A move key or the stick cancels a walk to a point.
     let want = this.wantHeading(input);
     if (want !== null && this.goal) this.goal = null;
     let mode: MoveMode = null;
     let face = want;
-    let share = 1;
     let m = Math.min(1, Math.hypot(input.move.x, input.move.y));
     if (want !== null) {
-      mode = 'forward';
-      if (input.keys && input.move.y <= 0.15) {
-        face = this.camYaw + Math.PI;
-        mode = input.move.y < -0.15 && Math.abs(input.move.x) < 0.15 ? 'back' : 'side';
-        share = mode === 'back' ? M.back : M.strafe;
-      } else if (input.keys && Math.abs(input.move.x) >= 0.15) mode = 'side';
+      const ahead = input.move.y > 0.15 && Math.abs(input.move.x) < 0.15;
+      const back = input.move.y < -0.15 && Math.abs(input.move.x) < 0.15;
+      mode = ahead || !input.keys ? 'forward' : back ? 'back' : 'side';
     } else if (this.goal) {
       const g = this.goal;
       const d = Math.hypot(g.x - this.x, g.z - this.z);
@@ -287,7 +284,7 @@ export class HeroCore {
     if (this.state === 'dash') speed = M.dash;
     else if (want !== null && this.state !== 'skill' && this.state !== 'work') {
       const canRun = input.run && this.stamina > 1;
-      speed = (canRun ? M.run : M.walk) * m * share * (this.state === 'attack' ? 0.25 : 1);
+      speed = (canRun ? M.run : M.walk) * m * (this.state === 'attack' ? 0.25 : 1);
       if (canRun && speed > 0) this.stamina = Math.max(0, this.stamina - M.staminaRun * dt);
       let d = face! - this.heading;
       d = Math.atan2(Math.sin(d), Math.cos(d));
@@ -308,8 +305,7 @@ export class HeroCore {
         this.z = nz;
       } else if (world.open(nx, this.z)) this.x = nx;
       else if (world.open(this.x, nz)) this.z = nz;
-      // Stepping back plays the stride backward.
-      this.stride += speed * dt * 2.1 * (this.moveMode === 'back' ? -1 : 1);
+      this.stride += speed * dt * 2.1;
     }
     // Gravity.
     let impact = 0;
