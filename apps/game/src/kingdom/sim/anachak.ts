@@ -36,12 +36,25 @@ export function recruits(sim: KingdomSim): Unit[] {
     .sort((a, b) => rank(a) - rank(b) || a.id - b.id);
 }
 
+/**
+ * PK 1.9.0 (D148): the king can call villagers to arms only once the kingdom has a finished
+ * building of a type in `levy.needs` (the barracks): soldiers are armed and drilled there.
+ */
+export function hasLevyHall(sim: KingdomSim): boolean {
+  const needs = sim.data.anachak.levy.needs;
+  if (!needs.length) return true;
+  for (const b of sim.buildings.values())
+    if (b.team === PLAYER && b.progress >= 1 && needs.includes(b.type)) return true;
+  return false;
+}
+
 /** Why `n` villagers cannot become `type` now (null = they can). */
 export function canLevy(sim: KingdomSim, type: string, n: number): Fail | null {
   const d = sim.data.units[type];
   if (!d || !sim.data.anachak.levy.roles.includes(d.role)) return 'unknown';
   if (!sim.allows('units', type)) return 'era';
   if (!d.requires.every((t) => sim.techs.has(t))) return 'requires';
+  if (!hasLevyHall(sim)) return 'barracks';
   if (d.max !== undefined && sim.countOf(type) + n > d.max) return 'limit';
   if (recruits(sim).length < n) return 'pop';
   const cost: Cost = {};

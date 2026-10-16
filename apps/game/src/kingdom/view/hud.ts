@@ -7,6 +7,7 @@ import {
   type WorldEvent,
 } from '@temples/shared';
 import { PLAYER, type KingdomSim } from '../sim/sim';
+import type { DangerZone } from '../sim/danger';
 import { TEAM_COLOR } from './scene';
 import { LANDSCAPE_SIZE as KSIZE } from '../../stage';
 import './hud.css';
@@ -568,7 +569,7 @@ export class KingdomHud {
   }
 
   /** Minimap: terrain (drawn once), fog, buildings, units and the camera view. */
-  renderMinimap(sim: KingdomSim, view: Array<[number, number]>): void {
+  renderMinimap(sim: KingdomSim, view: Array<[number, number]>, dangers: DangerZone[] = []): void {
     const g = this.miniG;
     if (!g) return;
     const N = sim.map.size;
@@ -649,8 +650,17 @@ export class KingdomHud {
       g.fillStyle = u.team === PLAYER ? '#9fd0ff' : '#ff6a4a';
       g.fillRect(x - 1.5, y - 1.5, 3, 3);
     }
-    // Watchmen's finds: a pulsing gold circle.
+    // Dangers (PK 1.9.0, D146 ខ៦): red circles at their size, never smaller than a dot.
     const nowMs = performance.now();
+    g.strokeStyle = `rgba(255,42,26,${0.65 + 0.3 * Math.sin(nowMs / 160)})`;
+    g.lineWidth = 2;
+    for (const zn of dangers) {
+      const [x, y] = toMini(zn.x, zn.z);
+      g.beginPath();
+      g.arc(x, y, Math.max(4, (zn.r / (N * sim.map.tile)) * W), 0, Math.PI * 2);
+      g.stroke();
+    }
+    // Watchmen's finds: a pulsing gold circle.
     this.pings = this.pings.filter((p) => p.until > nowMs);
     for (const p of this.pings) {
       const [x, y] = toMini(p.at[0], p.at[1]);
@@ -674,4 +684,22 @@ export class KingdomHud {
       g.stroke();
     }
   }
+}
+
+/**
+ * PK 1.9.0 (Sprint 1): the temple's progress on the objective line — a small picture of the
+ * temple that fills from the foot up as it rises (a pale copy under a coloured one clipped to the
+ * built height), a bar and the percent. `icon` is the 3D button picture (null while it renders).
+ */
+export function monumentProgressHtml(nameKm: string, frac: number | null, icon: string | null): string {
+  const p = frac === null ? 0 : Math.max(0, Math.min(1, frac));
+  const pct = Math.floor(p * 100);
+  const pic = icon
+    ? `<span class="k-mon-pic"><i style="background-image:url(${icon})"></i><i class="k-mon-built" style="background-image:url(${icon});clip-path:inset(${100 - pct}% 0 0 0)"></i></span>`
+    : '';
+  return (
+    `<span class="k-pill k-mon" data-pct="${pct}">${pic}<small>${esc(nameKm)}</small>` +
+    `<span class="k-mon-bar"><b style="width:${pct}%"></b></span>` +
+    `<b>${frac === null ? '—' : `${km(pct)}%`}</b></span>`
+  );
 }

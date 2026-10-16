@@ -23,7 +23,7 @@ import { manuscriptGeometry } from './view/art';
 import { basketReady, collectBasket } from './sim/market';
 import { templeShortfall } from './sim/decree';
 import { currentCeremony } from './sim/ceremony';
-import { KingdomHud, RES_LABEL, km, type Button } from './view/hud';
+import { KingdomHud, RES_LABEL, km, monumentProgressHtml, type Button } from './view/hud';
 import { AncientMap, mapViewOf } from './view/ancientMap';
 import './view/ancientMap.css';
 import { KingdomSound, panFor, sfxForEvent } from './view/sound';
@@ -66,6 +66,7 @@ import { GOODS, exchange, quote, trend } from './sim/exchange';
 import { HeroMode } from './hero/heroMode';
 import { Keymap, keysPanelHtml, type KeyGroup } from './keymap';
 import { edgePan } from './edgeScroll';
+import { dangerZones, dangersNear, type DangerZone } from './sim/danger';
 import { CelPass, RTS_LOOK } from './hero/celPass';
 import { setToonLook } from './hero/toon';
 
@@ -90,6 +91,7 @@ const FAIL_KM: Record<string, string> = {
   limit: 'មានម្នាក់រួចហើយ · Only one at a time',
   fixed: 'ប្រាសាទប្រវត្តិសាស្ត្រមិនអាចផ្លាស់ទីបាន · A historical temple stays on its site',
   shore: 'ត្រូវសាងនៅមាត់ទឹក · Must be built at the water’s edge',
+  barracks: 'ត្រូវសាងបន្ទាយទាហានជាមុនសិន · Build a barracks first',
 };
 
 export class Kingdom {
@@ -166,6 +168,10 @@ export class Kingdom {
   private readonly touch: TouchGestures;
   /** The 3D hero mode (Anachak Khmer, D92); null in the Kingdom tab. */
   readonly hero: HeroMode | null = null;
+  /** Red rings round dangers on the ground and minimap (PK 1.9.0, D146 ខ៦); the dangers key toggles. */
+  dangersOn: boolean;
+  private dangerList: DangerZone[] = [];
+  private dangerScanAt = 0;
   private heroSplit: FrameSplit | null = null;
   /** Anachak Khmer's cel-shaded RTS view (null in the Kingdom tab). */
   private readonly anime: CelPass | null = null;
@@ -195,6 +201,7 @@ export class Kingdom {
   ) {
     this.data = loadKingdom();
     this.keymap = new Keymap(this.data.controls);
+    this.dangersOn = this.data.anachak.dangerZones.on;
     // PK 1.7.0: the phone build houses fewer people (rules.start.mobileMaxPop).
     if (opts.mobile && this.data.rules.start.mobileMaxPop)
       this.data.rules.start.maxPop = this.data.rules.start.mobileMaxPop;
@@ -270,6 +277,7 @@ export class Kingdom {
           this.panTo(at[0], at[1] + 6);
         },
         mobile: !!opts.mobile,
+        toggleDangers: () => this.toggleDangers(),
       });
       try {
         this.dangerAsk = localStorage.getItem('anachak.dangerAsk') !== '0';
@@ -818,6 +826,8 @@ export class Kingdom {
         // Game speed up / down (PK: the timeline speed can be adjusted).
         const n = this.data.rules.speed.options.length;
         this.speedIdx = Math.max(0, Math.min(n - 1, this.speedIdx + (a === 'speedDown' ? -1 : 1)));
+      } else if (a === 'dangers') {
+        this.toggleDangers();
       } else if (a === 'find') {
         this.findScarce();
       } else if (a === 'orders') {
@@ -996,8 +1006,16 @@ export class Kingdom {
       this.keysWait = same ? null : w;
       return;
     }
+    if (kind === 'keys-scheme') {
+      // A ready hero key set (D146 ខ៤): Action (WASD) or MOBA.
+      this.keymap.applyScheme(id ?? 'action');
+      this.keysWait = null;
+      this.hero?.keysChanged();
+      return;
+    }
     if (kind === 'keys-reset') {
       this.keymap.reset();
+      this.hero?.keysChanged();
       this.keysWait = null;
       return;
     }
@@ -2092,7 +2110,7 @@ export class Kingdom {
         km: d.km,
         en: d.en,
         cost,
-        disabled: why === 'era' || why === 'requires' || why === 'limit' || why === 'unknown',
+        disabled: why === 'era' || why === 'requires' || why === 'limit' || why === 'unknown' || why === 'barracks',
         icon: this.icon('unit', c.type),
         tip: this.buttonTip(d, `${L.note.en} Each recruit costs this soldier’s price.`, cost, needs),
       });
@@ -2108,6 +2126,39 @@ export class Kingdom {
   }
 
   /** Anachak Khmer's own actions; true when handled. */
+  /** Show or hide the danger rings (the dangers key, in the kingdom view and the 3D mode). */
+  toggleDangers(): void {
+    this.dangersOn = !this.dangersOn;
+    this.hud.toast(
+      this.dangersOn
+        ? '🔴 បង្ហាញកន្លែងគ្រោះថ្នាក់ · Danger rings shown'
+        : '⭕ លាក់កន្លែងគ្រោះថ្នាក់ · Danger rings hidden',
+      performance.now(),
+      2,
+    );
+  }
+
+  /**
+   * The red rings (D146 ខ៦): the zones are found five times a second; the ones drawn are those
+   * near the 3D hero (`near` m) or the middle of the view (`view` m). The hero's edge arrow
+   * points at the nearest.
+   */
+  private updateDangers(now: number): void {
+    const D = this.data.anachak.dangerZones;
+    if (now >= this.dangerScanAt) {
+      this.dangerScanAt = now + 200;
+      this.dangerList = dangerZones(this.sim);
+    }
+    const core = this.hero?.active ? this.hero.core : null;
+    const near = !this.dangersOn
+      ? []
+      : core
+        ? dangersNear(this.dangerList, core.x, core.z, D.near, D.max)
+        : dangersNear(this.dangerList, this.cam.x, this.cam.z, D.view, D.max);
+    this.view.dangerRings.update(near, (x, z) => this.view.groundY(x, z), now / 1000);
+    this.hero?.setDangers(near);
+  }
+
   /**
    * Danger is coming (PK): the camera flies to the person in most danger and the player
    * chooses — play them in 3D, watch them in 3D while life goes on, or let it be. The choice
@@ -2701,6 +2752,7 @@ export class Kingdom {
     if (heroOn) this.hero!.frame(dt, now);
     else this.view.setCamera(this.cam.x, this.cam.z, this.cam.dist);
     this.view.update(now / 1000, now, heroOn ? new Set() : this.selected);
+    this.updateDangers(now);
     const r = this.renderer;
     r.setScissorTest(false);
     const size = r.getSize(new THREE.Vector2());
@@ -2732,7 +2784,7 @@ export class Kingdom {
       ? `<b>${km(s.completed.length)}/${km(n)}</b> ប្រាសាទ · temples`
       : `<b>ជំពូក ${km(s.chapter + 1)}/${km(n)}: សាង${this.esc(name.km)}</b> · Chapter ${s.chapter + 1}/${n}: build ${this.esc(name.en)} on its site`;
     const extra =
-      `<span class="k-pill k-mon"><small>${this.esc(name.km)}</small><b>${mon ? `${km(Math.floor(mon.progress * 100))}%` : '—'}</b></span>` +
+      monumentProgressHtml(name.km, mon ? mon.progress : null, this.icon('building', 'monument')) +
       (next < 60
         ? `<span class="k-pill k-warn"><b>ចោរប្លន់ ${km(next)}s · Raid in ${next}s</b></span>`
         : '') +
@@ -2783,7 +2835,7 @@ export class Kingdom {
     )
       .map(([x, y]) => this.view.groundAt(x, y))
       .filter((p): p is XZ => !!p);
-    this.hud.renderMinimap(s, view);
+    this.hud.renderMinimap(s, view, this.dangersOn ? this.dangerList : []);
     this.hud.renderMenu({
       idle: s.idleWorkers().length,
       army: this.armyIds().length,

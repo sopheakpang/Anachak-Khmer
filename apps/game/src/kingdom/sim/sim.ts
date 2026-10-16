@@ -214,7 +214,9 @@ export type Fail =
   | 'era'
   | 'limit'
   | 'shore'
-  | 'fixed';
+  | 'fixed'
+  /** A building the action needs is not standing (the levy needs a finished barracks, D148). */
+  | 'barracks';
 export type Result<T = number> = { ok: true; id: T } | { ok: false; reason: Fail };
 
 const RIVAL_CAMP = 'rivalCamp';
@@ -1851,6 +1853,18 @@ export class KingdomSim {
     );
   }
 
+  /** Has the player ever seen this point (explored, maybe under fog now)? */
+  isExplored(x: number, z: number): boolean {
+    const [tx, tz] = worldToTile(this.map, x, z);
+    return (
+      tx >= 0 &&
+      tz >= 0 &&
+      tx < this.fog.size &&
+      tz < this.fog.size &&
+      this.fog.explored[tz * this.fog.size + tx] === 1
+    );
+  }
+
   // ------------------------------------------------------------ the wild: animals, fish
 
   kindOf(a: Animal): AnimalKind {
@@ -2111,7 +2125,7 @@ export class KingdomSim {
   // ------------------------------------------------------------ automation
 
   /** A wild animal that would hurt people now: a predator, or a defensive one that was hit. */
-  private dangerous(a: Animal): boolean {
+  dangerous(a: Animal): boolean {
     const k = this.kindOf(a);
     return k.behaviour === 'predator' || (k.behaviour === 'defensive' && this.time < (a.angryUntil ?? 0));
   }

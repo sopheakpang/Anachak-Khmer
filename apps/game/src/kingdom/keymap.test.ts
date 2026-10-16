@@ -103,3 +103,48 @@ describe('keyboard config (PK 1.8.0)', () => {
     expect(keysPanelHtml(k, 'map', null)).toContain('keys-set:map:panUp:0');
   });
 });
+
+describe('hero key schemes (PK 1.9.0, D146 ខ៤)', () => {
+  it('Action (WASD) is the default; MOBA walks on the arrows, Q skill, Space dodge, F work, C jump', () => {
+    const k = new Keymap(data.controls, null);
+    expect(k.scheme).toBe('action');
+    expect(k.aimAtCursor).toBe(false);
+    expect(k.action('hero', 'KeyW')).toBe('forward');
+    expect(k.applyScheme('moba')).toBe(true);
+    expect(k.aimAtCursor).toBe(true);
+    expect(k.action('hero', 'ArrowUp')).toBe('forward');
+    expect(k.action('hero', 'ArrowLeft')).toBe('left');
+    expect(k.action('hero', 'KeyQ')).toBe('skill');
+    expect(k.action('hero', 'Space')).toBe('dash');
+    expect(k.action('hero', 'KeyF')).toBe('work');
+    expect(k.action('hero', 'KeyC')).toBe('jump');
+    expect(k.action('hero', 'KeyW')).toBeNull();
+    // Keys the scheme does not list keep their defaults; still no key twice.
+    expect(k.keys('hero', 'exit')).toEqual(['Escape']);
+    const all = k.actions('hero').flatMap((a) => [...k.keys('hero', a.id)]);
+    expect(new Set(all).size).toBe(all.length);
+    expect(k.applyScheme('nope')).toBe(false);
+  });
+
+  it('the scheme is kept with the keys and Reset goes back to Action', () => {
+    const s = memStore();
+    const a = new Keymap(data.controls, s);
+    a.applyScheme('moba');
+    expect(JSON.parse(s.m.get(STORE_KEY)!)._scheme).toBe('moba');
+    const b = new Keymap(data.controls, s);
+    expect(b.scheme).toBe('moba');
+    expect(b.keys('hero', 'forward')).toEqual(['ArrowUp']);
+    b.reset();
+    expect(b.scheme).toBe('action');
+    expect(b.keys('hero', 'forward')).toEqual(['KeyW']);
+  });
+
+  it('the hero tab of the panel offers both schemes, the chosen one lit', () => {
+    const k = new Keymap(data.controls, null);
+    k.applyScheme('moba');
+    const html = keysPanelHtml(k, 'hero', null);
+    expect(html).toContain('data-act="keys-scheme:action"');
+    expect(html).toMatch(/k-keys-scheme k-on" data-act="keys-scheme:moba"/);
+    expect(keysPanelHtml(k, 'map', null)).not.toContain('keys-scheme');
+  });
+});

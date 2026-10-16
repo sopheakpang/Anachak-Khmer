@@ -698,10 +698,22 @@ export const AnachakSchema = z.object({
    * facets, soft natural light, warm haze, no ink); 'anime' = the 90s anime cel look (D98).
    */
   look: z.enum(['build', 'anime']).default('build'),
+  /** PK 1.9.0: red rings round dangers (D146 ខ៦). */
+  dangerZones: z.object({
+    on: z.boolean(),
+    near: z.number().positive(),
+    view: z.number().positive(),
+    beastMin: z.number().nonnegative(),
+    raidRadius: z.number().positive(),
+    campRadius: z.number().positive(),
+    max: z.number().int().positive(),
+  }),
   levy: z.object({
     roles: z.array(z.string()).min(1),
     steps: z.array(z.number().int().positive()).min(1),
     keepFarmers: z.boolean(),
+    /** Building types of which one must be finished before the levy (PK 1.9.0: the barracks). */
+    needs: z.array(z.string()).default([]),
     rallyTiles: z.number().nonnegative(),
     rallySpread: z.number().nonnegative(),
     note: z.object(Bi),
@@ -898,6 +910,12 @@ export const AnachakSchema = z.object({
     }),
     attackMul: z.number().positive(),
     armorBonus: z.number().nonnegative(),
+    /** The 🤖 auto mode (PK k6). */
+    auto: z.object({
+      fightRange: z.number().positive(),
+      searchRadius: z.number().positive(),
+      thinkSec: z.number().positive(),
+    }),
     interactRange: z.number().positive(),
     /** How far the played hero sees (m): he explores the land round him. */
     vision: z.number().positive(),
@@ -1327,9 +1345,37 @@ const ControlActionSchema = z.object({
   en: z.string().min(1),
   keys: z.array(z.string().min(1)).min(1).max(2),
 });
+/**
+ * A ready set of hero keys (PK 1.9.0, D146 ខ៤): `keys` replaces those actions' keys, the others
+ * keep the defaults. `aimAtCursor`: skills turn him to the mouse pointer first (MOBA).
+ */
+const HeroSchemeSchema = z.object({
+  id: z.string().min(1),
+  km: z.string().min(1),
+  en: z.string().min(1),
+  aimAtCursor: z.boolean(),
+  keys: z.record(z.string(), z.array(z.string().min(1)).max(2)),
+});
 export const ControlsSchema = z
-  .object({ map: z.array(ControlActionSchema).min(1), hero: z.array(ControlActionSchema).min(1) })
+  .object({
+    map: z.array(ControlActionSchema).min(1),
+    hero: z.array(ControlActionSchema).min(1),
+    heroSchemes: z.array(HeroSchemeSchema).min(1),
+  })
   .superRefine((c, ctx) => {
+    // Every scheme, merged over the hero defaults, gives each key to one action only.
+    for (const sc of c.heroSchemes) {
+      const keys = new Map<string, string>();
+      for (const id of Object.keys(sc.keys))
+        if (!c.hero.some((a) => a.id === id))
+          ctx.addIssue({ code: 'custom', path: ['heroSchemes'], message: `${sc.id}: no action ${id}` });
+      for (const a of c.hero)
+        for (const k of sc.keys[a.id] ?? a.keys) {
+          if (keys.has(k))
+            ctx.addIssue({ code: 'custom', path: ['heroSchemes'], message: `${sc.id}: ${k} on ${keys.get(k)} and ${a.id}` });
+          keys.set(k, a.id);
+        }
+    }
     for (const g of ['map', 'hero'] as const) {
       const ids = new Set<string>();
       const keys = new Map<string, string>();
@@ -1345,6 +1391,7 @@ export const ControlsSchema = z
   });
 export type Controls = z.infer<typeof ControlsSchema>;
 export type ControlAction = z.infer<typeof ControlActionSchema>;
+export type HeroScheme = z.infer<typeof HeroSchemeSchema>;
 
 export interface KingdomData {
   eras: Era[];

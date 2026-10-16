@@ -26,10 +26,16 @@ import { restore, serialize } from './save';
 
 const data = loadKingdom();
 const A = data.anachak;
-const quiet = (variant: 'kingdom' | 'anachak' = 'anachak') => {
+/** A finished barracks by the hall: the levy needs one (D148). */
+const barracks = (s: KingdomSim) => {
+  const h = [...s.buildings.values()].find((b) => b.team === PLAYER && b.type === 'townCentre')!;
+  return s.addBuilding('barracks', PLAYER, h.tx + 9, h.tz, 1);
+};
+const quiet = (variant: 'kingdom' | 'anachak' = 'anachak', withBarracks = true) => {
   const s = new KingdomSim(data, 'easy', true, data.campaign.map.seed, variant);
   s.ai.nextRaid = 1e9;
   s.autoWork = false;
+  if (withBarracks) barracks(s);
   return s;
 };
 const villagers = (s: KingdomSim) =>
@@ -37,6 +43,30 @@ const villagers = (s: KingdomSim) =>
 const hall = (s: KingdomSim) => [...s.buildings.values()].find((b) => b.type === 'townCentre')!;
 const rich = (s: KingdomSim) =>
   Object.assign(s.res[PLAYER], { food: 5000, wood: 5000, stone: 5000, gold: 5000 });
+
+describe('the levy needs a barracks (PK 1.9.0, D148)', () => {
+  it('no one can be called up until a barracks is finished', () => {
+    const s = quiet('anachak', false);
+    rich(s);
+    expect(A.levy.needs).toContain('barracks');
+    expect(canLevy(s, 'spearman', 1)).toBe('barracks');
+    expect(levy(s, 'spearman', 1)).toEqual({ ok: false, reason: 'barracks' });
+    const b = barracks(s);
+    b.progress = 0.5;
+    expect(canLevy(s, 'spearman', 1)).toBe('barracks'); // still being built
+    b.progress = 1;
+    expect(canLevy(s, 'spearman', 1)).toBeNull();
+    expect(levy(s, 'spearman', 1).ok).toBe(true);
+  });
+
+  it('a rival barracks does not count', () => {
+    const s = quiet('anachak', false);
+    rich(s);
+    const b = barracks(s);
+    b.team = RIVAL;
+    expect(canLevy(s, 'spearman', 1)).toBe('barracks');
+  });
+});
 
 describe('the levy: villagers become soldiers at the soldier’s price', () => {
   it('pays exactly the army type’s price for each recruit', () => {

@@ -43,6 +43,7 @@ import { soft, SUN_DIR } from '../../engine/look';
 import { repeated, textures } from '../../engine/textures';
 import { TempleView } from '../../world/temple';
 import { bigsDue, growStep } from '../../world/templeGrow';
+import { DangerRings } from './dangerRings';
 import { tileToWorld, worldToTile, type XZ } from '../sim/map';
 import { PLAYER, RIVAL, type Building, type KingdomSim, type Team, type Unit } from '../sim/sim';
 import {
@@ -372,6 +373,8 @@ export class KingdomScene {
   /** What workers carry home, one model per resource (PK: real things, shown while walking). */
   private readonly loadSets: Record<Resource, THREE.InstancedMesh>;
   private readonly rings: THREE.InstancedMesh;
+  /** Red rings round dangers (D146 ខ៦). */
+  readonly dangerRings: DangerRings;
   private readonly bars: { bg: THREE.InstancedMesh; fg: THREE.InstancedMesh };
   private readonly arrows: THREE.InstancedMesh;
   private readonly rubble: THREE.InstancedMesh;
@@ -778,6 +781,9 @@ export class KingdomScene {
     for (let i = 0; i < 4; i++) this.siteMarker.add(new THREE.Mesh(new THREE.BoxGeometry(1, 0.1, 0.1), cord));
     this.scene.add(this.siteMarker);
 
+    // Red rings round dangers (PK 1.9.0, D146 ខ៦), filled by the Kingdom each frame.
+    this.dangerRings = new DangerRings(sim.data.anachak.dangerZones.max);
+    this.scene.add(this.dangerRings.group);
     // Loads carried over the head, selection rings, health bars, arrows, rubble.
     this.loadSets = Object.fromEntries(
       (['food', 'wood', 'stone', 'gold'] as const).map((r) => {

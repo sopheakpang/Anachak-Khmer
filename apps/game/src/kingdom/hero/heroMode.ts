@@ -29,6 +29,8 @@ import {
   type WorkTarget,
 } from './heroSim';
 import { aimRing, clickFoe, dustGround, foeAt, isClick, landDust, type Foe, type Press } from './heroAim';
+import { edgeArrowAngle, type DangerZone } from '../sim/danger';
+import { autoOrder, type AutoOrder } from './heroAuto';
 import './hero.css';
 import { disposeAndRemove } from '../../engine/dispose';
 
@@ -61,6 +63,8 @@ export interface HeroHost {
   /** Where the king stands before the hall, or null. */
   kingSpot(): XZ | null;
   kingName(): { km: string; en: string };
+  /** Show or hide the danger rings (the dangers key, D146 ខ៦). */
+  toggleDangers?(): void;
   /** The mode ended (Esc, the ✕, or the hero fell): who was played (null = the king), and where. */
   onExit(who: number | null, at: XZ): void;
   readonly mobile: boolean;
@@ -161,6 +165,11 @@ export class HeroMode {
   private prevBg: THREE.Scene['background'] = null;
   private lastUi = 0;
   private autoCamAt = 0;
+  /** 🤖 He plays by himself (PK k6, D148) until a key or a click takes control back. */
+  auto = false;
+  private autoAt = 0;
+  /** His last order in auto mode (shown on the badge). */
+  autoNow: AutoOrder['kind'] = 'idle';
 
   constructor(private readonly host: HeroHost) {
     this.cfg = host.data.anachak.hero;
@@ -281,6 +290,7 @@ export class HeroMode {
     sim.heroEye = [x, z];
     sim.updateFog();
     this.active = true;
+    this.auto = false;
     this.el.hidden = false;
     this.host.hudRoot.classList.add('k-hero-on');
     this.press.clear();
@@ -301,6 +311,35 @@ export class HeroMode {
   }
 
   /** From watching to playing (E, a move key, or the 🎮 button). */
+  /** The keys changed in 🎮 (a scheme, a key, Reset): the buttons' key names are redrawn. */
+  keysChanged(): void {
+    this.parts.clear();
+    this.partHtml.clear();
+    if (this.active) this.buildHud();
+  }
+
+  /** 🤖 on or off (the auto key or button). */
+  toggleAuto(on = !this.auto): void {
+    if (!this.active || this.watching) return;
+    this.auto = on;
+    this.autoAt = 0;
+    if (!on && this.core) this.core.goal = null;
+    this.host.sound.play('click');
+    this.host.toast(
+      on
+        ? '🤖 <b>លេងស្វ័យប្រវត្តិ</b> · Auto: he works and fights by himself — any key takes control back'
+        : '🎮 <b>អ្នកកំពុងលេង</b> · You take control',
+      3,
+    );
+  }
+
+  /** A key or a click of the player's own ends auto mode (no toast, it is plain). */
+  private manual(): void {
+    if (!this.auto) return;
+    this.auto = false;
+    this.host.toast('🎮 <b>អ្នកកំពុងលេង</b> · You take control', 2);
+  }
+
   takeControl(): void {
     if (!this.active || !this.watching || this.unitId === null) return;
     const u = this.host.sim().units.get(this.unitId);
@@ -316,6 +355,7 @@ export class HeroMode {
 
   exit(reason: 'player' | 'fallen' | 'gone' = 'player'): void {
     if (!this.active) return;
+    this.auto = false;
     const sim = this.host.sim();
     const view = this.host.view();
     const at: XZ = this.core ? [this.core.x, this.core.z] : [0, 0];
@@ -399,6 +439,19 @@ export class HeroMode {
           this.exit('player');
           return;
         }
+        if (a === 'dangers') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (!e.repeat) this.host.toggleDangers?.();
+          return;
+        }
+        if (a === 'auto') {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (!e.repeat) this.toggleAuto();
+          return;
+        }
+        if (a && (moves.has(a) || presses.has(a as never))) this.manual();
         if (this.watching && a && moves.has(a)) {
           e.preventDefault();
           e.stopImmediatePropagation();
@@ -437,6 +490,7 @@ export class HeroMode {
           const a = ui.dataset.hero!;
           if (a === 'exit') this.exit('player');
           else if (a === 'take') this.takeControl();
+          else if (a === 'auto') this.toggleAuto();
           else if (a === 'stick') this.stick = { x: 0, y: 0, id: e.pointerId, ox: p.x, oy: p.y };
           else this.press.add(a as 'attack');
           return;
@@ -445,8 +499,10 @@ export class HeroMode {
           this.look = { id: e.pointerId, x: p.x, y: p.y };
           return;
         }
-        if (e.button === 0) this.leftClick(p);
-        else if (e.button === 2) {
+        if (e.button === 0) {
+          this.manual();
+          this.leftClick(p);
+        } else if (e.button === 2) {
           this.look = { id: e.pointerId, x: p.x, y: p.y };
           this.rpress = { x: p.x, y: p.y, t: performance.now(), moved: 0 };
         }
@@ -482,7 +538,10 @@ export class HeroMode {
       if (e.button === 2 && this.rpress) {
         const r = this.rpress;
         this.rpress = null;
-        if (isClick(r, performance.now(), this.cfg)) this.walkTo(this.host.toStage(e));
+        if (isClick(r, performance.now(), this.cfg)) {
+          this.manual();
+          this.walkTo(this.host.toStage(e));
+        }
       }
     };
     window.addEventListener('pointerup', up, { capture: true });
@@ -611,7 +670,15 @@ export class HeroMode {
       // The story goes on: the AI moves the unit, the camera and the pose follow.
       this.input();
       core.follow(u.x, u.z, u.heading, u.anim ?? 'idle', dt);
-    } else acts = core.step(step, this.input(), { open: (x, z) => heroOpen(sim, x, z) });
+    } else {
+      if (this.auto) this.drive(sim, u ?? null, now);
+      // MOBA keys (D146 ខ៤): a skill or a strike turns him to the mouse pointer first.
+      if (this.keymap.aimAtCursor && this.cursor && (this.press.has('skill') || this.press.has('attack'))) {
+        const g = view.groundAt(this.cursor.x, this.cursor.y);
+        if (g) core.faceTo(g[0], g[1]);
+      }
+      acts = core.step(step, this.input(), { open: (x, z) => heroOpen(sim, x, z) });
+    }
     // The camera drifts behind the hero while he walks ahead (or to a clicked point) and nobody
     // turns it. Never while he walks sideways or toward it: that chased him round in circles (PK).
     const ahead = core.speed > 0.5 && (core.moveMode === 'forward' || core.moveMode === 'goal');
@@ -1223,6 +1290,7 @@ export class HeroMode {
       // Watching: the story goes on by itself; one button (or E / a move key) takes control.
       this.el.innerHTML =
         `<div class="k-hero-vig" data-part="vig"></div>` +
+        `<div class="k-hero-danger" data-part="danger"></div>` +
         `<div class="k-hero-card" data-part="card"></div>` +
         `<div class="k-hero-watch">🎥 <b>កំពុងមើល</b> · Watching — life goes on by itself</div>` +
         `<button class="k-hero-exit" data-hero="exit" data-ui>✕ ត្រឡប់ · Back <small>${esc(key('exit'))}</small></button>` +
@@ -1235,11 +1303,13 @@ export class HeroMode {
     }
     this.el.innerHTML =
       `<div class="k-hero-vig" data-part="vig"></div>` +
+      `<div class="k-hero-danger" data-part="danger"></div>` +
       `<div class="k-hero-card" data-part="card"></div>` +
       `<div data-part="quest"></div>` +
       `<button class="k-hero-exit" data-hero="exit" data-ui>✕ ត្រឡប់ · Back <small>Esc</small></button>` +
       `<div data-part="prompt"></div>` +
       `<div class="k-hero-acts">` +
+      btn('auto', '🤖', 'ស្វ័យប្រវត្តិ', `Auto · ${esc(key('auto'))}`) +
       btn('work', '🛠️', 'ធ្វើការ', `Work · ${esc(key('work'))}`) +
       btn('skill', skillIcon[kit.skill.kind] ?? '⭐', esc(kit.skill.km), `${esc(kit.skill.en)} · ${esc(key('skill'))}`) +
       btn('dash', '💨', 'គេច', `Dash · ${esc(key('dash'))}`) +
@@ -1255,6 +1325,40 @@ export class HeroMode {
     this.partHtml.clear();
   }
 
+  /** The dangers near the hero this frame, nearest first (the Kingdom finds them, D146 ខ៦). */
+  private dangers: DangerZone[] = [];
+  setDangers(near: DangerZone[]): void {
+    this.dangers = near;
+  }
+
+  /** An arrow at the screen's edge toward the nearest danger and how far it is (D146 ខ៦). */
+  private dangerHtml(sim: KingdomSim): string {
+    const core = this.core;
+    const zn = this.dangers[0];
+    if (!core || !zn) return '';
+    const d = Math.max(0, Math.hypot(zn.x - core.x, zn.z - core.z) - zn.r);
+    const a = edgeArrowAngle(core.camYaw, core.x, core.z, zn.x, zn.z);
+    // On an ellipse inside the 1920 × 1080 stage, below the top bars and clear of the panels.
+    const left = 960 + Math.sin(a) * 780;
+    const top = 560 - Math.cos(a) * 340;
+    const what =
+      zn.kind === 'raid'
+        ? { km: 'ចោរ', en: 'Raiders' }
+        : zn.kind === 'camp'
+          ? { km: 'ជំរំសត្រូវ', en: 'Rival camp' }
+          : (() => {
+              const an = sim.animals.get(zn.id);
+              const k = an ? sim.kindOf(an) : null;
+              return k ? { km: k.km, en: k.en } : { km: 'សត្វសាហាវ', en: 'Wild beast' };
+            })();
+    const inside = d <= 0;
+    return (
+      `<div class="k-danger-arrow${inside ? ' in' : ''}" style="left:${left.toFixed(0)}px;top:${top.toFixed(0)}px">` +
+      `<i style="transform:rotate(${a.toFixed(3)}rad)">▲</i>` +
+      `<span><b>${esc(what.km)}</b> ${inside ? 'នៅទីនេះ · here' : `${km(d)} ម · ${Math.round(d)} m`}</span></div>`
+    );
+  }
+
   private readonly parts = new Map<string, HTMLElement>();
   private readonly partHtml = new Map<string, string>();
   private setPart(name: string, html: string): void {
@@ -1262,6 +1366,36 @@ export class HeroMode {
     if (!e || this.partHtml.get(name) === html) return;
     this.partHtml.set(name, html);
     e.innerHTML = html;
+  }
+
+  /**
+   * 🤖 Auto mode (PK k6, D148): every `auto.thinkSec` he picks what to do (heroAuto.ts) and the
+   * order becomes a walk to a point, a strike or a work swing, as if the player had done it.
+   */
+  private drive(sim: KingdomSim, u: Unit | null, now: number): void {
+    const core = this.core!;
+    const kit = this.kit!;
+    if (now < this.autoAt || core.busy || core.airborne) return;
+    this.autoAt = now + this.cfg.auto.thinkSec * 1000;
+    const body: HeroBody = { x: core.x, z: core.z, heading: core.heading, unit: u };
+    const o = autoOrder(sim, this.cfg, body);
+    this.autoNow = o.kind;
+    if (o.kind === 'fight') {
+      const d = Math.hypot(o.x - core.x, o.z - core.z);
+      if (d <= kit.reach) {
+        core.goal = null;
+        core.faceTo(o.x, o.z);
+        this.press.add('attack');
+      } else core.setGoal(o.x, o.z, kit.reach * 0.8, true);
+    } else if (o.kind === 'work') {
+      core.goal = null;
+      core.faceTo(o.target.at[0], o.target.at[1]);
+      this.target = o.target;
+      this.press.add('work');
+    } else if (o.kind === 'goto') {
+      const g = core.goal;
+      if (!g || Math.hypot(g.x - o.x, g.z - o.z) > 1) core.setGoal(o.x, o.z, this.cfg.interactRange * 0.7);
+    } else core.goal = null;
   }
 
   private renderHud(sim: KingdomSim, u: Unit | null, now: number): void {
@@ -1282,6 +1416,7 @@ export class HeroMode {
     const qGot = q ? Math.min(q.need, this.stats[q.kind] - q.have) : 0;
     this.flashHurt = Math.max(0, this.flashHurt - 0.12);
     this.parts.get('vig')!.style.opacity = this.flashHurt.toFixed(2);
+    this.setPart('danger', this.dangerHtml(sim));
     this.setPart(
       'card',
       `<div class="k-hero-name"><b>${esc(name.km)}</b> · ${esc(name.en)}</div>` +
@@ -1310,6 +1445,7 @@ export class HeroMode {
         if (e.textContent !== t) e.textContent = t;
       }
     };
+    this.el.querySelector('.k-hb-auto')?.classList.toggle('on', this.auto);
     cd('skill', core.skillLeft(), kit.skill.cd);
     cd('dash', Math.max(0, core.dashReady - core.t), this.cfg.move.dashCd);
     const knob = this.parts.get('knob');

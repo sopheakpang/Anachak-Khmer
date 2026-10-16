@@ -1,5 +1,5 @@
 {
-  "$comment": "PK 1.8.0: the keyboard, as each player likes it. Every action has up to two keys, named by their place on the keyboard (KeyboardEvent.code: KeyW is the W key whatever the layout, so a Khmer keyboard plays the same). The player changes them in the game (year bar 🎮); their choice is kept in the browser; these are the defaults and Reset brings them back. map = the kingdom view; hero = the 3D hero mode.",
+  "$comment": "PK 1.8.0: the keyboard, as each player likes it. PK 1.9.0 (D146 ខ៤): heroSchemes are ready sets of hero keys picked in 🎮 — Action (WASD, the default) or MOBA (arrows walk, skills on Q W E R at the mouse pointer, Space dodge, F work, C jump); a scheme replaces only the keys it lists. Every action has up to two keys, named by their place on the keyboard (KeyboardEvent.code: KeyW is the W key whatever the layout, so a Khmer keyboard plays the same). The player changes them in the game (year bar 🎮); their choice is kept in the browser; these are the defaults and Reset brings them back. map = the kingdom view; hero = the 3D hero mode.",
   "map": [
     { "id": "panUp", "km": "រំកិលឡើង", "en": "Move the view up", "keys": ["KeyW", "ArrowUp"] },
     { "id": "panDown", "km": "រំកិលចុះ", "en": "Move the view down", "keys": ["KeyS", "ArrowDown"] },
@@ -17,7 +17,8 @@
     { "id": "deselect", "km": "លែងជ្រើស", "en": "Deselect", "keys": ["Escape"] },
     { "id": "quickSave", "km": "រក្សាទុករហ័ស", "en": "Quick save", "keys": ["F5"] },
     { "id": "quickLoad", "km": "បើករហ័ស", "en": "Quick load", "keys": ["F9"] },
-    { "id": "fullscreen", "km": "ពេញអេក្រង់", "en": "Full screen", "keys": ["F11"] }
+    { "id": "fullscreen", "km": "ពេញអេក្រង់", "en": "Full screen", "keys": ["F11"] },
+    { "id": "dangers", "km": "បង្ហាញ/លាក់កន្លែងគ្រោះថ្នាក់", "en": "Show / hide the danger rings", "keys": ["KeyX"] }
   ],
   "hero": [
     { "id": "forward", "km": "ទៅមុខ", "en": "Forward", "keys": ["KeyW"] },
@@ -34,6 +35,38 @@
     { "id": "camRight", "km": "បង្វិលកាមេរ៉ាស្តាំ", "en": "Turn the camera right", "keys": ["ArrowRight"] },
     { "id": "camUp", "km": "កាមេរ៉ាឡើង", "en": "Camera up", "keys": ["ArrowUp"] },
     { "id": "camDown", "km": "កាមេរ៉ាចុះ", "en": "Camera down", "keys": ["ArrowDown"] },
+    { "id": "dangers", "km": "បង្ហាញ/លាក់កន្លែងគ្រោះថ្នាក់", "en": "Show / hide the danger rings", "keys": ["KeyX"] },
+    { "id": "auto", "km": "លេងស្វ័យប្រវត្តិ", "en": "Auto: plays by himself", "keys": ["KeyT"] },
     { "id": "exit", "km": "ត្រឡប់", "en": "Back to the kingdom", "keys": ["Escape"] }
+  ],
+  "heroSchemes": [
+    {
+      "id": "action",
+      "km": "សកម្មភាព · WASD",
+      "en": "Action (WASD)",
+      "aimAtCursor": false,
+      "keys": {}
+    },
+    {
+      "id": "moba",
+      "km": "MOBA · ព្រួញ និង Q W E R",
+      "en": "MOBA (arrows walk, Q W E R skills at the pointer)",
+      "aimAtCursor": true,
+      "keys": {
+        "forward": ["ArrowUp"],
+        "back": ["ArrowDown"],
+        "left": ["ArrowLeft"],
+        "right": ["ArrowRight"],
+        "skill": ["KeyQ"],
+        "dash": ["Space"],
+        "work": ["KeyF"],
+        "jump": ["KeyC"],
+        "attack": ["KeyA", "KeyJ"],
+        "camLeft": ["KeyZ"],
+        "camRight": ["KeyV"],
+        "camUp": ["PageUp"],
+        "camDown": ["PageDown"]
+      }
+    }
   ]
 }

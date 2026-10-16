@@ -81,6 +81,8 @@ export class Keymap {
   private binds: Binds;
   /** Bumped on every change (the panel redraws when it moves). */
   version = 0;
+  /** The hero key scheme picked in 🎮 (D146 ខ៤): 'action' (WASD) or 'moba'. */
+  scheme = 'action';
 
   constructor(
     readonly defaults: Controls,
@@ -94,6 +96,26 @@ export class Keymap {
     const b = { map: {}, hero: {} } as Binds;
     for (const g of KEY_GROUPS) for (const a of this.defaults[g]) b[g][a.id] = [...a.keys];
     return b;
+  }
+
+  /** The ready hero key sets (config heroSchemes). */
+  schemes(): Controls['heroSchemes'] {
+    return this.defaults.heroSchemes;
+  }
+
+  /** Skills turn the hero to the mouse pointer first (the MOBA scheme). */
+  get aimAtCursor(): boolean {
+    return this.defaults.heroSchemes.find((s) => s.id === this.scheme)?.aimAtCursor ?? false;
+  }
+
+  /** Take a ready hero key set: its keys replace those actions' keys, the rest go back to the defaults. */
+  applyScheme(id: string): boolean {
+    const sc = this.defaults.heroSchemes.find((s) => s.id === id);
+    if (!sc) return false;
+    this.scheme = id;
+    for (const a of this.defaults.hero) this.binds.hero[a.id] = [...(sc.keys[a.id] ?? a.keys)];
+    this.changed();
+    return true;
   }
 
   /** The actions of a group, in the order of the config. */
@@ -154,6 +176,7 @@ export class Keymap {
   /** Back to config/kingdom/controls.json. */
   reset(): void {
     this.binds = this.fresh();
+    this.scheme = 'action';
     this.changed();
     try {
       this.store?.removeItem(STORE_KEY);
@@ -165,7 +188,8 @@ export class Keymap {
   /** Only what differs from the defaults is kept (a new action in the config gets its keys). */
   private changed(): void {
     this.version++;
-    const out: Partial<Binds> = {};
+    const out: Partial<Binds> & { _scheme?: string } = {};
+    if (this.scheme !== 'action') out._scheme = this.scheme;
     for (const g of KEY_GROUPS)
       for (const a of this.defaults[g]) {
         const ks = this.binds[g][a.id]!;
@@ -193,6 +217,8 @@ export class Keymap {
       return;
     }
     if (!saved || typeof saved !== 'object') return;
+    const sc = (saved as { _scheme?: unknown })._scheme;
+    if (typeof sc === 'string' && this.defaults.heroSchemes.some((s) => s.id === sc)) this.scheme = sc;
     for (const g of KEY_GROUPS) {
       const sg = (saved as Record<string, unknown>)[g];
       if (!sg || typeof sg !== 'object') continue;
@@ -243,9 +269,21 @@ export function keysPanelHtml(
   const hint = waiting
     ? 'ចុចគ្រាប់ចុចថ្មី · Press the new key (Esc: stop, Backspace: empty)'
     : 'ចុចលើគ្រាប់ចុច ដើម្បីប្តូរ · Click a key to change it';
+  // The hero tab offers the ready key sets first (D146 ខ៤).
+  const schemes =
+    tab === 'hero'
+      ? `<div class="k-keys-schemes">${km
+          .schemes()
+          .map(
+            (sc) =>
+              `<button class="k-keys-scheme${sc.id === km.scheme ? ' k-on' : ''}" data-act="keys-scheme:${esc(sc.id)}" data-ui>${esc(sc.km)}<small>${esc(sc.en)}</small></button>`,
+          )
+          .join('')}</div>`
+      : '';
   return (
     `<h3><span>🎮 ក្តារចុច · Keyboard</span><button data-act="keys-close" data-ui>✕</button></h3>` +
     `<div class="k-keys-tabs">${tabs}</div>` +
+    schemes +
     `<div class="k-keys-list">${rows}</div>` +
     `<div class="k-keys-foot"><span class="k-keys-hint">${hint}</span><button class="k-keys-reset" data-act="keys-reset" data-ui>🔄 ដើម · Reset</button></div>`
   );

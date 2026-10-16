@@ -176,7 +176,7 @@ export function workTarget(sim: KingdomSim, cfg: Cfg, body: HeroBody): WorkTarge
   return best;
 }
 
-function nearestBuilding(
+export function nearestBuilding(
   sim: KingdomSim,
   body: HeroBody,
   reach: number,

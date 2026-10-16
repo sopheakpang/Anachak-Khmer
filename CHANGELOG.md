@@ -11,6 +11,11 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.9.0-03 | **Dust when the hero lands**: a ring of dust you can see above the grass, red earth on roads and bare ground, pale green on grass, bigger after a high fall, and a splash in shallow water (D145). |
 | 1.9.0-04 | **3D hero: A / S / D turn him round** (PK): A turns him to the left, D to the right and S round toward the camera, and he walks that way showing his side or his face — no more walking with his back to you. The camera stays put (only W and a walk to a clicked point move it), so it still never spins (D146). |
 | 1.9.0-05 | **Preah Ko appears the moment it is finished** (PK's bug): the stones now rise one by one while the temple is built, and the whole temple with its crowns, lintels and Nandi shows at once when the work ends; before, it only showed after loading a save (D147). |
+| 1.9.0-06 | **Call to arms needs a barracks** (PK): the king can call villagers up as soldiers only once a barracks is finished; until then the buttons say "Build a barracks first" (D148). |
+| 1.9.0-07 | **🤖 Auto for the 3D hero** (button or T): he plays by himself — fights a raider or a dangerous animal that comes near, otherwise works what is at hand or walks to the nearest work (takes a load to the store, helps build, gathers). Any key or click gives control back (D148). |
+| 1.9.0-08 | **Red danger rings** (PK): red rings on the ground round tigers and other dangerous animals, raiders and rival camps, also on the minimap; in the 3D mode a red arrow at the edge of the screen points to the nearest danger with its name and how far it is. X hides or shows them (D148). |
+| 1.9.0-09 | **Temple progress with its picture**: the objective line shows a small picture of the temple that fills from the foot up as it rises, with a gold bar and the percent (D148). |
+| 1.9.0-10 | **MOBA keys for the 3D hero** (🎮 → Hero): pick "Action (WASD)" as now, or "MOBA": arrows walk, Q skill, A strike, Space dodge, F work, C jump; skills and strikes turn the hero toward the mouse pointer. Right-click to walk works in both (D148). |
 
 ## 1.8.0 — 2026-10-09
 

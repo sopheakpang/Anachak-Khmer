@@ -7,10 +7,11 @@
     "savePrefix": "anachak."
   },
   "levy": {
-    "$comment": "The king calls villagers to arms where they stand. Each recruit costs the army type's full price (units.json cost), the same as training one; population is the type's pop. Idle villagers go first, then gatherers, then builders, farmers last (keepFarmers keeps them in the fields). Recruits gather rallyTiles south of the royal hall.",
+    "$comment": "The king calls villagers to arms where they stand. Each recruit costs the army type's full price (units.json cost), the same as training one; population is the type's pop. Idle villagers go first, then gatherers, then builders, farmers last (keepFarmers keeps them in the fields). Recruits gather rallyTiles south of the royal hall. needs = building types of which one must be finished before anyone can be called up (PK 1.9.0: soldiers are armed and drilled at the barracks); [] = no such rule.",
     "roles": ["infantry", "ranged", "cavalry", "elephant", "commander"],
     "steps": [1, 5, 10],
     "keepFarmers": true,
+    "needs": ["barracks"],
     "rallyTiles": 7,
     "note": {
       "km": "កងទ័ពខ្មែរ​ត្រូវបាន​កេណ្ឌ​ពី​ប្រជាជន​ក្នុង​ពេល​សង្គ្រាម ដូច​ដែល​ឆ្លាក់​នៅ​ប្រាសាទ​បាយ័ន ដែល​ពល​ទាហាន​ដើរ​ជាមួយ​អ្នក​ស្រុក។",
@@ -234,6 +235,12 @@
     "attackMul": 2.2,
     "armorBonus": 2,
     "interactRange": 2.8,
+    "auto": {
+      "$comment": "PK decision k6 (D148): the 🤖 button lets the hero play by himself — fight a raider or a dangerous beast within fightRange m, else work what is at hand, else walk to the nearest work within searchRadius m; he rethinks every thinkSec s. Any move key, action key or click takes control back.",
+      "fightRange": 14,
+      "searchRadius": 45,
+      "thinkSec": 0.5
+    },
     "vision": 70,
     "chopPerSwing": 4,
     "buildPerSwing": 0.02,
@@ -570,6 +577,16 @@
     "askSec": 14,
     "everySec": 40,
     "watchDist": 6.5
+  },
+  "dangerZones": {
+    "$comment": "PK 1.9.0 (D146 ខ៦ A + C): red rings on the ground and the minimap round what can hurt people — a predator (or a defensive animal that was hit: its sense range, at least beastMin m), a raider (raidRadius m), a rival camp (campRadius m) — and in the 3D hero mode an arrow at the edge of the screen toward the nearest one within near m. The RTS view shows those within view m of the camera's centre. The dangers key (🎮) hides or shows them; on = shown at the start. max = most rings drawn.",
+    "on": true,
+    "near": 60,
+    "view": 180,
+    "beastMin": 8,
+    "raidRadius": 10,
+    "campRadius": 24,
+    "max": 48
   },
   "tiger": {
     "$comment": "A tiger encounter in the 3D hero mode (PK). In or near the forest, now and then a tiger comes out of the trees 16-26 m away and stalks the hero (the sim's own predator rules); everySec = how often one may come, chance = the odds each time; kingBite = seconds between the tiger's bites on the king (who is not a sim unit). Tigers lived in Angkor's forests (hunting scenes on the reliefs).",

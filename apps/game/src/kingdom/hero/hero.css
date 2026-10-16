@@ -460,3 +460,61 @@
     transform: scaleX(0);
   }
 }
+
+/* PK 1.9.0 (D146 ខ៦): the arrow toward the nearest danger at the edge of the screen. */
+.k-hero-danger {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.k-danger-arrow {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: #ff3b2a;
+  text-shadow: 0 0 6px rgb(0 0 0 / 0.8);
+  animation: k-danger-beat 0.8s ease-in-out infinite alternate;
+}
+.k-danger-arrow i {
+  font-style: normal;
+  font-size: 54px;
+  line-height: 1;
+}
+.k-danger-arrow span {
+  font-size: 26px;
+  color: #fff;
+  background: rgb(150 20 10 / 0.8);
+  border: 2px solid #ff6a4a;
+  border-radius: 14px;
+  padding: 2px 12px;
+  white-space: nowrap;
+}
+.k-danger-arrow.in span {
+  background: rgb(200 20 10 / 0.95);
+}
+@keyframes k-danger-beat {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* PK k6 (D148): the 🤖 auto button, glowing gold while he plays by himself. */
+.k-hb-auto {
+  right: 330px;
+  bottom: 210px;
+}
+.k-hb-auto .k-hb-i {
+  font-size: 40px;
+  margin-top: 8px;
+}
+.k-hb-auto.on {
+  border-color: #ffd54a;
+  box-shadow: 0 0 22px 6px rgb(255 213 74 / 0.75);
+  background: radial-gradient(circle at 35% 30%, rgb(255 250 210 / 0.7), rgb(200 150 30 / 0.75));
+}

@@ -580,9 +580,19 @@ test('KG-05: Anachak Khmer: the king calls villagers to arms, his overview, the 
   await page.waitForTimeout(1500);
   await page.screenshot({ path: 'docs/screens/k-anachak-overview.png' });
   await ui.locator('#k-card .k-card-x').dispatchEvent('pointerdown');
-  // The levy: five spearmen at their price.
+  // The levy: no one can be called up before the kingdom has a barracks (PK 1.9.0, D148).
   await ui.locator('#k-panel [data-act="king:levy"]').dispatchEvent('pointerdown');
   await expect(ui.locator('#k-panel [data-act="levy:spearman"]')).toBeVisible({ timeout: 30_000 });
+  await expect(ui.locator('#k-panel [data-act="levy:spearman"]')).toBeDisabled();
+  await page.evaluate(() => {
+    const s = window.__temples.anachak!.sim;
+    const h = [...s.buildings.values()].find((b) => b.team === 0 && b.type === 'townCentre')!;
+    s.addBuilding('barracks', 0, h.tx + 9, h.tz, 1);
+  });
+  // Five spearmen at their price.
+  await ui.locator('#k-panel [data-act="king:main"]').dispatchEvent('pointerdown');
+  await ui.locator('#k-panel [data-act="king:levy"]').dispatchEvent('pointerdown');
+  await expect(ui.locator('#k-panel [data-act="levy:spearman"]')).toBeEnabled({ timeout: 30_000 });
   const before = await page.evaluate(() => {
     const k = window.__temples.anachak!;
     return {
@@ -998,4 +1008,92 @@ test('KG-11: PK 1.9.0 (D147): Preah Ko built in play shows whole the moment it i
     null,
     { timeout: 5_000, polling: 100 },
   );
+});
+
+test('KG-12: PK 1.9.0 Sprint 1: danger rings and the edge arrow, the 🤖 auto hero, the MOBA keys', async ({
+  page,
+}) => {
+  await page.goto('/?mode=anachak&offline=1&preset=lite');
+  await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.anachak, null, {
+    timeout: 180_000,
+    polling: 500,
+  });
+  if (await page.locator('.k-anachak #k-card').isVisible())
+    await page.locator('.k-anachak #k-card .k-card-x').dispatchEvent('pointerdown');
+  const ui = page.locator('.k-anachak');
+  // Play a villager; a tiger waits 30 m ahead of him.
+  await page.evaluate(() => {
+    const k = window.__temples.anachak!;
+    k.sim.autoWork = false;
+    k.sim.ai.nextRaid = 1e9;
+    k.selected.clear();
+    const v = [...k.sim.units.values()].find((u) => u.team === 0 && u.type === 'villager')!;
+    k.selected.add(v.id);
+  });
+  await ui.locator('#k-panel [data-act^="hero:"]').first().dispatchEvent('pointerdown');
+  await expect(ui.locator('.k-hero-exit')).toBeVisible({ timeout: 60_000 });
+  await page.evaluate(() => {
+    const k = window.__temples.anachak!;
+    const c = k.hero!.core!;
+    c.camYaw = c.heading + Math.PI;
+    const tiger = [...k.sim.animals.values()].find((a) => k.sim.kindOf(a).behaviour === 'predator')!;
+    tiger.x = c.x + Math.sin(c.heading) * 30;
+    tiger.z = c.z + Math.cos(c.heading) * 30;
+    tiger.home = [tiger.x, tiger.z];
+    k.sim.fog.explored.fill(1);
+  });
+  // The ring on the ground and the arrow at the top of the screen (he faces it).
+  await expect(ui.locator('.k-danger-arrow')).toBeVisible({ timeout: 30_000 });
+  const ring = await page.evaluate(() => {
+    const g = window.__temples.anachak!.view.dangerRings.group;
+    return { visible: g.visible, n: (g.children[0] as unknown as { count: number }).count };
+  });
+  expect(ring.visible).toBe(true);
+  expect(ring.n).toBeGreaterThan(0);
+  const top = await ui.locator('.k-danger-arrow').evaluate((e) => parseFloat((e as HTMLElement).style.top));
+  expect(top).toBeLessThan(330);
+  expect(top).toBeGreaterThan(160);
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: 'docs/screens/k-hero-danger.png' });
+  // X hides them, X again shows them.
+  await page.keyboard.press('x');
+  await expect(ui.locator('.k-danger-arrow')).toBeHidden({ timeout: 10_000 });
+  expect(await page.evaluate(() => window.__temples.anachak!.view.dangerRings.group.visible)).toBe(false);
+  await page.keyboard.press('x');
+  await expect(ui.locator('.k-danger-arrow')).toBeVisible({ timeout: 10_000 });
+  // 🤖: the tiger out of the way, he goes to work by himself; a move key takes control back.
+  await page.evaluate(() => {
+    const k = window.__temples.anachak!;
+    for (const a of [...k.sim.animals.values()]) if (k.sim.dangerous(a)) k.sim.animals.delete(a.id);
+  });
+  const at = await page.evaluate(() => [window.__temples.anachak!.hero!.core!.x, window.__temples.anachak!.hero!.core!.z]);
+  await page.keyboard.press('t');
+  await expect(ui.locator('.k-hb-auto.on')).toBeVisible({ timeout: 10_000 });
+  await page.waitForFunction(
+    ([x, z]) => {
+      const h = window.__temples.anachak!.hero!;
+      const c = h.core!;
+      return h.autoNow === 'work' || c.state === 'work' || Math.hypot(c.x - x!, c.z - z!) > 2;
+    },
+    at,
+    { timeout: 60_000, polling: 250 },
+  );
+  await page.keyboard.down('w');
+  await page.waitForTimeout(300);
+  await page.keyboard.up('w');
+  expect(await page.evaluate(() => window.__temples.anachak!.hero!.auto)).toBe(false);
+  await page.keyboard.press('Escape');
+  await expect(ui.locator('.k-hero')).toBeHidden({ timeout: 60_000 });
+  // 🎮 → Hero → MOBA: arrows walk, Q is the skill.
+  await page.evaluate(() => {
+    const k = window.__temples.anachak! as unknown as { keymap: { applyScheme(id: string): boolean; scheme: string } };
+    k.keymap.applyScheme('moba');
+  });
+  expect(
+    await page.evaluate(() => (window.__temples.anachak! as unknown as { keymap: { scheme: string } }).keymap.scheme),
+  ).toBe('moba');
+  await page.evaluate(() => {
+    const k = window.__temples.anachak! as unknown as { keymap: { reset(): void } };
+    k.keymap.reset();
+  });
 });

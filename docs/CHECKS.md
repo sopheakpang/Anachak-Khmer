@@ -609,3 +609,22 @@ PK said "Let start" on the upgrade plan; the six decisions follow the proposals 
 | e2e KG-05 (levy, overview, 3D hero: W, A, strike, Esc, the king) | ✅ 1 passed (3.5 min) | `docs/screens/k-hero.png` |
 
 **Not done (D145):** "Q W E R skills at the cursor" and "arrow keys walk" (those keys are already Dodge, Forward, Work, Skill and the camera). The walk to a clicked point goes straight with wall sliding, not along a path round obstacles. **Not seen here:** the rings and dust at full speed on PK's PC (software GL in the test).
+
+### 1.9.0, Sprint 1, second part: PK's bugs, ខ១–ខ៨, levy, auto hero, danger rings, progress, MOBA keys (2026-10-16)
+
+PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); his bugs: A/S/D showed only the hero's back (D146), Preah Ko did not show when finished (D147); Sprint 1 items: D148.
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| A turns him left, D right, S round toward the camera at full speed with legs forward; W after S turns him back; the camera never spins | ✅ | `hero/heroControls.test.ts`; e2e KG-05 (A: mode `side`, camera yaw unchanged, heading to the camera's left) |
+| Preah Ko built in play: new stones fly in, more than 90 % shown at 0.99, all shown within 5 s of finishing; big pieces wait for their course | ✅ | `world/templeGrow.test.ts`; e2e KG-11 |
+| No levy without a finished barracks of the player's; a rival one does not count; the button greyed in the panel, enabled once built | ✅ | `sim/anachak.test.ts`; e2e KG-05 |
+| Danger zones: predators on explored land at their sense range, none on unseen land, seen raiders, known camps; nearest-edge order; the edge arrow's angle | ✅ | `sim/danger.test.ts` |
+| In 3D a tiger 30 m ahead: ring on the ground, arrow at the top of the screen with its name and distance; X hides and shows | ✅ | e2e KG-12, `docs/screens/k-hero-danger.png` |
+| 🤖 auto: a raider in range first, shy deer never a foe, walks to the nearest work then swings, a load goes to a store; T starts it, W takes control back | ✅ | `hero/heroAuto.test.ts`; e2e KG-12 |
+| Temple progress picture clipped to the built height, bar, Khmer percent | ✅ | `view/monumentProgress.test.ts` |
+| Hero schemes: Action default, MOBA keys, no key twice in any merged scheme (schema), kept with `_scheme`, Reset back to Action, panel shows both | ✅ | `keymap.test.ts`; schema in `packages/shared/src/kingdom.ts` |
+| `npm run verify` (lint, typecheck, 83 test files / 718 tests, build) | ✅ | |
+| e2e KG-05, KG-09, KG-11, KG-12 | ✅ | |
+
+**Not done yet:** ខ៥ (extra skills on W E R), Sprint G, Sprint M, Sprints 2–3. **Not seen here:** frame cost of the rings on PK's PC (two instanced draws, at most 48 rings).
