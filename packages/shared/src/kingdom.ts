@@ -853,6 +853,9 @@ export const AnachakSchema = z.object({
     move: z.object({
       walk: z.number().positive(),
       run: z.number().positive(),
+      /** Speed share when stepping sideways (A/D) or backward (S): he keeps facing ahead. */
+      strafe: z.number().positive().max(1),
+      back: z.number().positive().max(1),
       jump: z.number().positive(),
       gravity: z.number().positive(),
       dash: z.number().positive(),
@@ -880,6 +883,21 @@ export const AnachakSchema = z.object({
       volleyMax: z.number().int().positive(),
       chopTimes: z.number().int().positive(),
       chopKnock: z.number().positive(),
+    }),
+    /** The mouse in the hero mode (PK 1.9.0): right click walks there, left click strikes a foe. */
+    mouse: z.object({
+      clickPx: z.number().positive(),
+      clickMs: z.number().positive(),
+      arrive: z.number().positive(),
+      stuckSec: z.number().positive(),
+      pick: z.number().positive(),
+    }),
+    /** Landing dust (PK 1.9.0): puffs, more after a hard fall, lifted clear of the lawn. */
+    fx: z.object({
+      landDust: z.number().int().positive(),
+      landDustHeavy: z.number().int().positive(),
+      heavyFall: z.number().positive(),
+      lift: z.number().nonnegative(),
     }),
     attackMul: z.number().positive(),
     armorBonus: z.number().nonnegative(),

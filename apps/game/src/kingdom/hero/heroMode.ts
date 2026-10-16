@@ -28,6 +28,7 @@ import {
   type HeroBody,
   type WorkTarget,
 } from './heroSim';
+import { aimRing, clickFoe, dustGround, foeAt, isClick, landDust, type Foe, type Press } from './heroAim';
 import './hero.css';
 import { disposeAndRemove } from '../../engine/dispose';
 
@@ -127,6 +128,17 @@ export class HeroMode {
   private readonly press = new Set<'attack' | 'skill' | 'jump' | 'dash' | 'work'>();
   private stick = { x: 0, y: 0, id: -1, ox: 0, oy: 0 };
   private look: { id: number; x: number; y: number } | null = null;
+  /** A right press that may be a click (walk there) rather than a camera drag. */
+  private rpress: Press | null = null;
+  /** The mouse over the stage (stage px), for the ring under a foe. */
+  private cursor: { x: number; y: number } | null = null;
+  private cursorAt = 0;
+  private hoverFoe: Foe | null = null;
+  /** Gold/red ring under the foe the mouse points at; a small gold ring where he walks to. */
+  private readonly aimMat = new THREE.MeshBasicMaterial({ color: 0xffc83d, transparent: true, opacity: 0.85, depthWrite: false });
+  private readonly goalMat = new THREE.MeshBasicMaterial({ color: 0xffd54a, transparent: true, opacity: 0.7, depthWrite: false });
+  private readonly aimRingMesh = new THREE.Mesh(new THREE.RingGeometry(0.75, 0.95, 40).rotateX(-Math.PI / 2), this.aimMat);
+  private readonly goalRingMesh = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.42, 32).rotateX(-Math.PI / 2), this.goalMat);
   private kingHp = 0;
   private lastHp = 0;
   private shots: Shot[] = [];
@@ -211,6 +223,13 @@ export class HeroMode {
     if (this.watching) this.core.camDist = this.host.data.anachak.danger.watchDist;
     view.scene.add(this.slashes.group);
     view.scene.add(this.yantra.group);
+    for (const r of [this.aimRingMesh, this.goalRingMesh]) {
+      r.visible = false;
+      r.renderOrder = 5;
+      view.scene.add(r);
+    }
+    this.hoverFoe = null;
+    this.rpress = null;
     this.tigerId = null;
     // The first tiger may come soon after the hero walks into the forest.
     this.tigerAt = sim.time + Math.min(20, this.host.data.anachak.tiger.everySec);
@@ -324,6 +343,9 @@ export class HeroMode {
     view.scene.remove(this.slashes.group);
     this.yantra.clear();
     view.scene.remove(this.yantra.group);
+    view.scene.remove(this.aimRingMesh, this.goalRingMesh);
+    this.hoverFoe = null;
+    this.rpress = null;
     if (this.tigerModel) view.scene.remove(this.tigerModel.group);
     this.tigerShown = null;
     view.hiddenAnimal = null;
@@ -423,8 +445,11 @@ export class HeroMode {
           this.look = { id: e.pointerId, x: p.x, y: p.y };
           return;
         }
-        if (e.button === 0) this.press.add('attack');
-        else if (e.button === 2) this.look = { id: e.pointerId, x: p.x, y: p.y };
+        if (e.button === 0) this.leftClick(p);
+        else if (e.button === 2) {
+          this.look = { id: e.pointerId, x: p.x, y: p.y };
+          this.rpress = { x: p.x, y: p.y, t: performance.now(), moved: 0 };
+        }
       },
       { capture: true },
     );
@@ -433,13 +458,15 @@ export class HeroMode {
       (e) => {
         if (!this.active) return;
         const p = this.host.toStage(e);
+        if (e.pointerType === 'mouse') this.cursor = p;
+        if (this.rpress) this.rpress.moved = Math.max(this.rpress.moved, Math.hypot(p.x - this.rpress.x, p.y - this.rpress.y));
         if (e.pointerId === this.stick.id) {
           const r = 90;
           this.stick.x = Math.max(-1, Math.min(1, (p.x - this.stick.ox) / r));
           this.stick.y = Math.max(-1, Math.min(1, -(p.y - this.stick.oy) / r));
           return;
         }
-        if (this.look && e.pointerId === this.look.id && this.core) {
+        if (this.look && e.pointerId === this.look.id && this.core && (!this.rpress || this.rpress.moved >= this.cfg.mouse.clickPx)) {
           this.core.orbit(-(p.x - this.look.x) * 0.006, (p.y - this.look.y) * 0.004);
           this.look.x = p.x;
           this.look.y = p.y;
@@ -452,6 +479,11 @@ export class HeroMode {
       if (!this.active) return;
       if (e.pointerId === this.stick.id) this.stick = { x: 0, y: 0, id: -1, ox: 0, oy: 0 };
       if (this.look && e.pointerId === this.look.id) this.look = null;
+      if (e.button === 2 && this.rpress) {
+        const r = this.rpress;
+        this.rpress = null;
+        if (isClick(r, performance.now(), this.cfg)) this.walkTo(this.host.toStage(e));
+      }
     };
     window.addEventListener('pointerup', up, { capture: true });
     window.addEventListener('pointercancel', up, { capture: true });
@@ -467,11 +499,69 @@ export class HeroMode {
     );
   }
 
+  /** Right click on the ground: he walks there by himself (a move key or the stick stops him). */
+  private walkTo(p: { x: number; y: number }): void {
+    const core = this.core;
+    if (!core || this.watching) return;
+    const g = this.host.view().groundAt(p.x, p.y);
+    if (!g) return;
+    const foe = foeAt(this.host.sim(), g[0], g[1], this.cfg.mouse.pick);
+    if (foe) {
+      core.setGoal(foe.x, foe.z, this.kit!.reach * 0.8, true);
+      return;
+    }
+    core.setGoal(g[0], g[1], this.cfg.mouse.arrive);
+  }
+
+  /** Left click: strike the foe under the cursor (walking up to it first), else strike ahead. */
+  private leftClick(p: { x: number; y: number }): void {
+    const core = this.core;
+    if (!core || this.watching || !this.kit) {
+      this.press.add('attack');
+      return;
+    }
+    const g = this.host.view().groundAt(p.x, p.y);
+    const foe = g ? foeAt(this.host.sim(), g[0], g[1], this.cfg.mouse.pick) : null;
+    if (!foe) {
+      this.press.add('attack');
+      return;
+    }
+    const c = clickFoe(core, foe, this.kit.reach);
+    if (c.kind === 'strike') {
+      core.faceTo(foe.x, foe.z);
+      this.press.add('attack');
+    } else core.setGoal(foe.x, foe.z, c.stop, true);
+  }
+
+  /** The rings: under the foe the mouse points at (gold in reach, red too far), and the goal. */
+  private updateRings(now: number): void {
+    const core = this.core!;
+    if (this.cursor && now - this.cursorAt > 100) {
+      this.cursorAt = now;
+      const g = this.host.view().groundAt(this.cursor.x, this.cursor.y);
+      this.hoverFoe = g ? foeAt(this.host.sim(), g[0], g[1], this.cfg.mouse.pick) : null;
+    }
+    const f = this.hoverFoe;
+    this.aimRingMesh.visible = !!f && !this.watching;
+    if (f) {
+      this.aimRingMesh.position.set(f.x, 0.08, f.z);
+      this.aimMat.color.setHex(aimRing(core, f, this.kit!.reach) === 'gold' ? 0xffc83d : 0xe0402a);
+    }
+    const goal = core.goal;
+    this.goalRingMesh.visible = !!goal && !goal.attack;
+    if (goal) {
+      this.goalRingMesh.position.set(goal.x, 0.08, goal.z);
+      this.goalRingMesh.scale.setScalar(1 + 0.15 * Math.sin(now / 160));
+    }
+  }
+
   private input(): HeroInput {
     const k = this.keys;
     const km = this.keymap;
-    let x = (km.held('hero', 'right', k) ? 1 : 0) - (km.held('hero', 'left', k) ? 1 : 0) + this.stick.x;
-    let y = (km.held('hero', 'forward', k) ? 1 : 0) - (km.held('hero', 'back', k) ? 1 : 0) + this.stick.y;
+    const kx = (km.held('hero', 'right', k) ? 1 : 0) - (km.held('hero', 'left', k) ? 1 : 0);
+    const ky = (km.held('hero', 'forward', k) ? 1 : 0) - (km.held('hero', 'back', k) ? 1 : 0);
+    let x = kx + this.stick.x;
+    let y = ky + this.stick.y;
     const m = Math.hypot(x, y);
     if (m > 1) {
       x /= m;
@@ -480,6 +570,8 @@ export class HeroMode {
     const inp: HeroInput = {
       ...NO_INPUT,
       move: { x, y },
+      // Keys strafe and step back (decision k2); the touch stick turns him as before.
+      keys: (kx !== 0 || ky !== 0) && Math.hypot(this.stick.x, this.stick.y) < 0.15,
       run: km.held('hero', 'run', k) || Math.hypot(this.stick.x, this.stick.y) > 0.92,
     };
     for (const p of this.press) inp[p] = true;
@@ -520,8 +612,10 @@ export class HeroMode {
       this.input();
       core.follow(u.x, u.z, u.heading, u.anim ?? 'idle', dt);
     } else acts = core.step(step, this.input(), { open: (x, z) => heroOpen(sim, x, z) });
-    // The camera drifts behind the hero while he runs and nobody turns it.
-    if ((core.speed > 0.5 || this.watching) && now > this.autoCamAt) {
+    // The camera drifts behind the hero while he walks ahead (or to a clicked point) and nobody
+    // turns it. Never while he steps sideways or back: that chased him round in circles (PK).
+    const ahead = core.speed > 0.5 && (core.moveMode === 'forward' || core.moveMode === 'goal');
+    if ((ahead || this.watching) && now > this.autoCamAt) {
       let d = core.heading + Math.PI - core.camYaw;
       d = Math.atan2(Math.sin(d), Math.cos(d));
       core.camYaw += d * Math.min(1, dt * (this.watching ? 0.6 : 1.2));
@@ -551,6 +645,7 @@ export class HeroMode {
     this.updateDog(dt, body, sim, now);
     this.slashes.update(dt);
     this.yantra.update(dt, view.camera);
+    this.updateRings(now);
     if (!this.watching) this.updateTiger(dt, body, sim);
     this.showTiger(dt, body, sim, now);
     // Pose and place the model.
@@ -638,7 +733,11 @@ export class HeroMode {
       body.z + Math.cos(body.heading) * d,
     ];
     if (a.kind === 'jump') this.host.sound.play('click', { gain: 0.4 });
-    if (a.kind === 'land') fx.burst('dust', body.x, 0.1, body.z, 6);
+    if (a.kind === 'land') {
+      // A ring of dust clear of the lawn, the colour of the ground; a splash in shallow water.
+      const d = landDust(dustGround(sim, body.x, body.z), a.impact, this.cfg);
+      fx.burst(d.kind, body.x, d.lift, body.z, d.n, { colors: d.colors, ring: d.ring });
+    }
     if (a.kind === 'dash') fx.burst('dust', body.x, 0.2, body.z, 8);
     if (a.kind === 'strike') {
       if (kit.weapon === 'bow') {
@@ -1149,7 +1248,7 @@ export class HeroMode {
       `</div>` +
       (this.host.mobile
         ? `<div class="k-hero-stick" data-hero="stick" data-ui><i data-part="knob"></i></div>`
-        : `<div class="k-hero-help">${esc(move.length === 4 ? move : ['forward', 'left', 'back', 'right'].map(first).join(' '))} ដើរ · move · ${esc(first('run'))} រត់ · run · ចុចស្ដាំ+អូស = មើលជុំវិញ · right-drag: turn the camera · Wheel: zoom</div>`) +
+        : `<div class="k-hero-help">${esc(move.length === 4 ? move : ['forward', 'left', 'back', 'right'].map(first).join(' '))} ដើរ · move · ${esc(first('run'))} រត់ · run · ចុចស្ដាំលើដី = ដើរទៅ · right-click: walk there · ចុចលើសត្រូវ = វាយ · click a foe: strike · ចុចស្ដាំ+អូស = មើលជុំវិញ · right-drag: turn the camera · Wheel: zoom</div>`) +
       `<div class="k-hero-floats" data-part="floats"></div>`;
     this.parts.clear();
     this.el.querySelectorAll<HTMLElement>('[data-part]').forEach((e) => this.parts.set(e.dataset.part!, e));

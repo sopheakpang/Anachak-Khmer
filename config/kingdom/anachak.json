@@ -213,6 +213,8 @@
     "move": {
       "walk": 4.2,
       "run": 7.2,
+      "strafe": 0.8,
+      "back": 0.6,
       "jump": 7,
       "gravity": 20,
       "dash": 9,
@@ -484,6 +486,21 @@
       "volleyMax": 10,
       "chopTimes": 3,
       "chopKnock": 1.2
+    },
+    "mouse": {
+      "$comment": "PK 1.9.0 (Sprint 1): the mouse in the 3D hero mode. A right click that moves less than clickPx and is let go within clickMs walks the hero there (a longer right drag still turns the camera). He stops within arrive (m) of the point, or when he has gained nothing for stuckSec. A foe within pick (m) of the cursor is the one a left click strikes; the ring under it is gold when he can reach it from where he stands, red when he must walk first.",
+      "clickPx": 8,
+      "clickMs": 350,
+      "arrive": 0.6,
+      "stuckSec": 0.8,
+      "pick": 1.6
+    },
+    "fx": {
+      "$comment": "PK 1.9.0 (Sprint 1): the dust when the hero lands from a jump: a ring of puffs lifted clear of the 10 cm lawn (lift, m), more of them after a hard fall (fall speed m/s at or above heavyFall). Its colour follows the ground; shallow water throws a splash instead.",
+      "landDust": 20,
+      "landDustHeavy": 30,
+      "heavyFall": 8,
+      "lift": 0.35
     },
     "models": {
       "$comment": "PK: real 3D model files (rigged .glb) made from the concept sheets replace the built-in figure in the 3D mode and on the sheet; put them in apps/game/public-mobile/models/. hips = the hip height (m) the model is scaled to. A kit with no file keeps the built-in figure.",

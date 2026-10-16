@@ -625,6 +625,29 @@ test('KG-05: Anachak Khmer: the king calls villagers to arms, his overview, the 
     { timeout: 120_000, polling: 500 },
   );
   await page.keyboard.up('w');
+  // PK 1.9.0 (decision k2): A steps sideways, he keeps facing ahead and the camera stays put.
+  const side = await page.evaluate(() => {
+    const c = window.__temples.anachak!.hero!.core!;
+    return { x: c.x, z: c.z, yaw: c.camYaw, heading: c.heading };
+  });
+  await page.keyboard.down('a');
+  await page.waitForFunction(
+    (s) => {
+      const c = window.__temples.anachak!.hero!.core!;
+      return Math.hypot(c.x - s.x, c.z - s.z) > 1;
+    },
+    side,
+    { timeout: 120_000, polling: 500 },
+  );
+  const strafe = await page.evaluate(() => {
+    const c = window.__temples.anachak!.hero!.core!;
+    return { yaw: c.camYaw, heading: c.heading, mode: c.moveMode };
+  });
+  await page.keyboard.up('a');
+  const turn = (a: number, b: number) => Math.abs(Math.atan2(Math.sin(a - b), Math.cos(a - b)));
+  expect(strafe.mode).toBe('side');
+  expect(turn(strafe.yaw, side.yaw)).toBeLessThan(0.05);
+  expect(turn(strafe.heading, side.yaw + Math.PI)).toBeLessThan(0.3);
   await page.keyboard.press('j');
   // A three-quarter view from the front for the screenshot.
   await page.evaluate(() => {

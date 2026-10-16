@@ -2,6 +2,14 @@
 
 Every update, newest first. Each change has a code (`<version>-<number>`) so it can be named in a message or a bug report. Decision numbers (D…) point to `docs/DECISIONS.md`; the Android APK of each version is `apk/KhmerKingdoms-<version>-debug.apk`.
 
+## 1.9.0 — Sprint 1 (in progress, 2026-10-16)
+
+| Code | Change |
+| --- | --- |
+| 1.9.0-01 | **3D hero: A / D / S fixed** (PK's bug): A and D now step sideways and S steps back while the hero keeps facing ahead; the camera stays where it is. Before, the camera swung round behind him at every step, so "left" kept changing and he and the camera spun in circles. W still walks ahead and the camera follows (D145). |
+| 1.9.0-02 | **3D hero with the mouse**: right-click the ground and he walks there by himself (a gold ring marks the spot; any move key stops him); hold the right button and drag to turn the camera as before; left-click a raider or a wild animal to strike it (he walks up first if it is too far); the ring under the animal or raider at the cursor is gold when he can reach it, red when not; the wheel zooms (D145). |
+| 1.9.0-03 | **Dust when the hero lands**: a ring of dust you can see above the grass, red earth on roads and bare ground, pale green on grass, bigger after a high fall, and a splash in shallow water (D145). |
+
 ## 1.8.0 — 2026-10-09
 
 | Code | Change |

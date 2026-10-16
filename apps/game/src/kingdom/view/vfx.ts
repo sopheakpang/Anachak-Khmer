@@ -261,9 +261,20 @@ export class Particles {
     this.uniforms.uScale.value = heightPx / 2 / Math.tan(THREE.MathUtils.degToRad(fovDeg) / 2);
   }
 
-  /** Throw a burst of `kind` at (x, y, z); n overrides the recipe's count. */
-  burst(kind: BurstKind, x: number, y: number, z: number, n?: number): void {
-    const r = RECIPES[kind];
+  /**
+   * Throw a burst of `kind` at (x, y, z); n overrides the recipe's count. `opts.colors` tints it
+   * (the hero's landing dust takes the ground's colour) and `opts.ring` spreads it in a ring.
+   */
+  burst(
+    kind: BurstKind,
+    x: number,
+    y: number,
+    z: number,
+    n?: number,
+    opts: { colors?: readonly number[]; ring?: boolean } = {},
+  ): void {
+    const base = RECIPES[kind];
+    const r = { ...base, colors: opts.colors?.length ? [...opts.colors] : base.colors, ring: opts.ring ?? base.ring };
     const count = Math.min(this.capacity, Math.max(0, Math.floor(n ?? r.n)));
     const P = Particles.P;
     for (let k = 0; k < count; k++) {

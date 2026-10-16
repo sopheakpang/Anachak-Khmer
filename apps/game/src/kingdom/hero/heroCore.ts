@@ -18,6 +18,12 @@ export interface HeroInput {
   skill: boolean;
   dash: boolean;
   work: boolean;
+  /**
+   * Keys drive the move (PK 1.9.0, decision k2): A/D step sideways and S steps back while he
+   * keeps facing ahead, so the camera (which only follows a forward walk) never chases him round.
+   * Off for the touch stick, which still turns him toward where it points.
+   */
+  keys?: boolean;
 }
 
 export const NO_INPUT: HeroInput = {
@@ -37,7 +43,23 @@ export type HeroAct =
   | { kind: 'work' }
   | { kind: 'jump' }
   | { kind: 'dash' }
-  | { kind: 'land' };
+  /** Back on the ground; impact = the fall speed (m/s) for the size of the dust. */
+  | { kind: 'land'; impact: number }
+  /** A walk to a clicked point ended: arrived there, or blocked on the way. */
+  | { kind: 'arrive'; blocked: boolean };
+
+/** How he moves this step: ahead, sideways, backward, to a clicked point, or not at all. */
+export type MoveMode = 'forward' | 'side' | 'back' | 'goal' | null;
+
+/** A point he walks to by himself (right click), maybe to strike a foe standing there. */
+export interface HeroGoal {
+  x: number;
+  z: number;
+  /** Stop this close (m). */
+  stop: number;
+  /** Strike when there. */
+  attack: boolean;
+}
 
 export interface HeroWorld {
   /** Can the hero stand at this world point (ground he may walk on)? */
@@ -75,6 +97,12 @@ export class HeroCore {
   speed = 0;
   /** Grounded last step (to report landings). */
   private grounded = true;
+  /** How he moved in the last step (the camera follows only a walk ahead or to a point). */
+  moveMode: MoveMode = null;
+  /** Where a right click sent him, if he is still on the way. */
+  goal: HeroGoal | null = null;
+  private goalBest = Infinity;
+  private goalStuck = 0;
 
   constructor(
     private readonly cfg: Cfg,
@@ -116,6 +144,18 @@ export class HeroCore {
   private enter(s: HeroState): void {
     this.state = s;
     this.stateT = 0;
+  }
+
+  /** Walk to a point by himself (stops `stop` m short; strikes there when `attack`). */
+  setGoal(x: number, z: number, stop: number, attack = false): void {
+    this.goal = { x, z, stop, attack };
+    this.goalBest = Infinity;
+    this.goalStuck = 0;
+  }
+
+  /** Turn at once toward a point (a clicked foe). */
+  faceTo(x: number, z: number): void {
+    if (Math.hypot(x - this.x, z - this.z) > 0.01) this.heading = Math.atan2(x - this.x, z - this.z);
   }
 
   /** The direction the stick asks for, on the ground (radians), or null. */
@@ -198,44 +238,92 @@ export class HeroCore {
     if (this.state !== 'attack' && this.state !== 'idle') this.lastWasStrike = false;
     if (this.state === 'idle' && this.stateT > C.window) this.lastWasStrike = false;
 
-    // Moving: the stick turns the hero toward camera-relative directions.
-    const want = this.wantHeading(input);
+    // Moving. The stick turns the hero toward camera-relative directions. Keys (decision k2):
+    // W walks ahead (and turns him on W+A / W+D), A/D step sideways and S steps back while he
+    // keeps facing the camera's forward. A move key or the stick cancels a walk to a point.
+    let want = this.wantHeading(input);
+    if (want !== null && this.goal) this.goal = null;
+    let mode: MoveMode = null;
+    let face = want;
+    let share = 1;
+    let m = Math.min(1, Math.hypot(input.move.x, input.move.y));
+    if (want !== null) {
+      mode = 'forward';
+      if (input.keys && input.move.y <= 0.15) {
+        face = this.camYaw + Math.PI;
+        mode = input.move.y < -0.15 && Math.abs(input.move.x) < 0.15 ? 'back' : 'side';
+        share = mode === 'back' ? M.back : M.strafe;
+      } else if (input.keys && Math.abs(input.move.x) >= 0.15) mode = 'side';
+    } else if (this.goal) {
+      const g = this.goal;
+      const d = Math.hypot(g.x - this.x, g.z - this.z);
+      if (d <= g.stop) {
+        this.goal = null;
+        this.faceTo(g.x, g.z);
+        out.push({ kind: 'arrive', blocked: false });
+        if (g.attack && !this.busy && !this.airborne) {
+          this.combo = 0;
+          this.enter('attack');
+          this.struck = false;
+        }
+      } else {
+        // Blocked (a wall, water): he gives up when he has gained nothing for a while.
+        if (d < this.goalBest - 0.05) {
+          this.goalBest = d;
+          this.goalStuck = 0;
+        } else this.goalStuck += dt;
+        if (this.goalStuck >= this.cfg.mouse.stuckSec) {
+          this.goal = null;
+          out.push({ kind: 'arrive', blocked: true });
+        } else {
+          want = Math.atan2(g.x - this.x, g.z - this.z);
+          face = want;
+          mode = 'goal';
+          m = 1;
+        }
+      }
+    }
     let speed = 0;
     if (this.state === 'dash') speed = M.dash;
     else if (want !== null && this.state !== 'skill' && this.state !== 'work') {
-      const m = Math.min(1, Math.hypot(input.move.x, input.move.y));
       const canRun = input.run && this.stamina > 1;
-      speed = (canRun ? M.run : M.walk) * m * (this.state === 'attack' ? 0.25 : 1);
+      speed = (canRun ? M.run : M.walk) * m * share * (this.state === 'attack' ? 0.25 : 1);
       if (canRun && speed > 0) this.stamina = Math.max(0, this.stamina - M.staminaRun * dt);
-      let d = want - this.heading;
+      let d = face! - this.heading;
       d = Math.atan2(Math.sin(d), Math.cos(d));
       this.heading += d * Math.min(1, M.turn * dt);
-    }
+    } else mode = null;
     if (!(input.run && speed > 0) && this.state !== 'dash')
       this.stamina = Math.min(M.staminaMax, this.stamina + M.staminaRegen * dt);
     this.speed = speed;
+    this.moveMode = speed > 0 && this.state !== 'dash' ? mode : null;
     if (speed > 0) {
-      const nx = this.x + Math.sin(this.heading) * speed * dt;
-      const nz = this.z + Math.cos(this.heading) * speed * dt;
+      // A dash goes where he faces; a walk goes where the keys or the goal ask.
+      const dir = this.state === 'dash' || want === null ? this.heading : want;
+      const nx = this.x + Math.sin(dir) * speed * dt;
+      const nz = this.z + Math.cos(dir) * speed * dt;
       // Slide along walls: try both axes, then each alone.
       if (world.open(nx, nz)) {
         this.x = nx;
         this.z = nz;
       } else if (world.open(nx, this.z)) this.x = nx;
       else if (world.open(this.x, nz)) this.z = nz;
-      this.stride += speed * dt * 2.1;
+      // Stepping back plays the stride backward.
+      this.stride += speed * dt * 2.1 * (this.moveMode === 'back' ? -1 : 1);
     }
     // Gravity.
+    let impact = 0;
     if (this.airborne) {
       this.vy -= M.gravity * dt;
       this.y += this.vy * dt;
       if (this.y <= 0) {
+        impact = -this.vy;
         this.y = 0;
         this.vy = 0;
       }
     }
     const grounded = !this.airborne;
-    if (grounded && !this.grounded) out.push({ kind: 'land' });
+    if (grounded && !this.grounded) out.push({ kind: 'land', impact });
     this.grounded = grounded;
     if (!this.busy && this.state !== 'hurt') {
       const s: HeroState = this.airborne ? 'jump' : speed > 0.1 ? 'run' : 'idle';
