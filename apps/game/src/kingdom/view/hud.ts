@@ -241,6 +241,8 @@ export class KingdomHud {
     orders?: { ready: number; canFill: number; boat: boolean };
     /** The keyboard panel (PK 1.8.0): open, closed, or undefined on phones (no button). */
     keys?: boolean;
+    /** The 🖥 graphics panel is open (undefined: no button, the phone). */
+    gfx?: boolean;
   }): void {
     const [y0, y1] = YEARBAR_RANGE;
     const x = (y: number) => `${(((Math.max(y0, Math.min(y1, y)) - y0) / (y1 - y0)) * 100).toFixed(2)}%`;
@@ -269,7 +271,10 @@ export class KingdomHud {
           : '') +
         (b.keys === undefined
           ? ''
-          : `<button class="k-yb-speed${b.keys ? ' k-yb-hot' : ''}" data-act="keys" data-tip="${esc('<b>ក្តារចុច</b> · Keyboard: choose your own keys to play, for the kingdom and the hero')}" data-ui>🎮</button>`),
+          : `<button class="k-yb-speed${b.keys ? ' k-yb-hot' : ''}" data-act="keys" data-tip="${esc('<b>ក្តារចុច</b> · Keyboard: choose your own keys to play, for the kingdom and the hero')}" data-ui>🎮</button>`) +
+        (b.gfx === undefined
+          ? ''
+          : `<button class="k-yb-speed${b.gfx ? ' k-yb-hot' : ''}" data-act="gfx" data-tip="${esc('<b>ក្រាហ្វិក</b> · Graphics: the frame rate now, and the preset (Low, PC 1660, High…)')}" data-ui>🖥</button>`),
     );
   }
 
@@ -701,5 +706,36 @@ export function monumentProgressHtml(nameKm: string, frac: number | null, icon: 
     `<span class="k-pill k-mon" data-pct="${pct}">${pic}<small>${esc(nameKm)}</small>` +
     `<span class="k-mon-bar"><b style="width:${pct}%"></b></span>` +
     `<b>${frac === null ? '—' : `${km(pct)}%`}</b></span>`
+  );
+}
+
+/** The graphics presets in the 🖥 panel (D149), with what each is for. */
+export const GFX_PRESETS: ReadonlyArray<{ id: string; km: string; en: string }> = [
+  { id: 'low', km: 'ស្រាល', en: 'Low — the stream budget, built-in buildings' },
+  { id: 'pc1660', km: 'PC 1660', en: 'GTX 1660 Super — PK’s Meshy buildings, sharp shadows' },
+  { id: 'high', km: 'ខ្ពស់', en: 'High — more people, grass shadows, Meshy buildings' },
+  { id: 'ultra', km: 'ខ្ពស់បំផុត', en: 'Ultra — the most of everything' },
+  { id: 'lite', km: 'ស្រាលបំផុត', en: 'Lite — no shadows (if Low runs under 30 FPS)' },
+];
+
+/**
+ * The 🖥 graphics panel (PK's plan, Sprint G, D149): the frame rate now and a preset switch.
+ * Picking a preset saves the game and reloads with it (the renderer is built for one preset).
+ */
+export function gfxPanelHtml(
+  current: string,
+  s: { fps: number; frameMs: number; triangles: number; drawCalls: number },
+  target: number,
+): string {
+  const ok = s.fps >= target;
+  const rows = GFX_PRESETS.map(
+    (p) =>
+      `<button class="k-gfx-p${p.id === current ? ' k-on' : ''}" data-act="gfx-set:${p.id}" data-ui><b>${esc(p.km)}</b><small>${esc(p.en)}</small></button>`,
+  ).join('');
+  return (
+    `<h3><span>🖥 ក្រាហ្វិក · Graphics</span><button data-act="gfx-close" data-ui>✕</button></h3>` +
+    `<div class="k-gfx-fps${ok ? ' k-ok' : ' k-slow'}"><b>${s.fps.toFixed(0)} FPS</b> · ${s.frameMs.toFixed(1)} ms · ${km(Math.round(s.triangles / 1000))}k triangles · ${s.drawCalls} draws</div>` +
+    `<div class="k-gfx-list">${rows}</div>` +
+    `<div class="k-gfx-hint">ពេលផ្សាយ LIVE បើ FPS ≥ ${target} នៅ PC 1660 សូមប្រើវា · While LIVE: if PC 1660 holds ${target} FPS or more, keep it. The game is saved before it reloads.</div>`
   );
 }

@@ -1,5 +1,5 @@
 {
-  "$comment": "Electron game window (apps/desktop). contentHeight 'auto' = as tall as the monitor's work area allows; width follows 9:16. preset: low (default), high (strong PC) or lite (no shadows, if low drops below 30 FPS).",
+  "$comment": "Electron game window (apps/desktop). contentHeight 'auto' = as tall as the monitor's work area allows; width follows 9:16. preset: low (default), pc1660 (the GTX 1660 Super: PK's Meshy buildings, 4096 shadows), high, ultra or lite (no shadows, if low drops below 30 FPS). A preset picked in the game (🖥 on the year bar) wins over this one.",
   "title": "The Temples",
   "contentHeight": "auto",
   "alwaysOnTop": false,

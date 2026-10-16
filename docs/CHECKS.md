@@ -628,3 +628,19 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | e2e KG-05, KG-09, KG-11, KG-12 | ✅ | |
 
 **Not done yet:** ខ៥ (extra skills on W E R), Sprint G, Sprint M, Sprints 2–3. **Not seen here:** frame cost of the rings on PK's PC (two instanced draws, at most 48 rings).
+
+### 1.9.0, Sprint M step 1 and Sprint G start: Meshy buildings and heroes, PC 1660, 🖥 (2026-10-16)
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Six Meshy buildings and the royal hall: a model in the game, one mesh, colour map only, ≤ 15 000 triangles, `pc` on all but the hall | ✅ | `view/props.test.ts` |
+| Meshy buildings face +z like the game's (door, stair, jetty on the water side) | ✅ four views each (scratchpad render) | `docs/screens/k-pc1660.png` (granary, noble house in the game) |
+| Low frame budget with them on Low | ❌ 618 350 triangles → kept off Low | e2e KG-02 |
+| Low frame budget (built-in buildings) | ✅ 586 662 triangles, 105 draws | e2e KG-02 |
+| PC 1660 loads the Meshy buildings; the 🖥 panel shows FPS and the lit preset | ✅ | e2e KG-13, `docs/screens/k-pc1660.png`, `docs/screens/k-gfx-panel.png` |
+| Meshy heroes: every hero on foot has one, rig and one map, no clips; the phone table keeps only the king's own file | ✅ | `hero/glbModel.test.ts` |
+| Presets: pc1660 = 4096 shadows + Meshy buildings, Low/Lite/phone without; stored choice wins, `presetLock` and bad values handled; panel colours | ✅ | `view/gfxPanel.test.ts` |
+| `npm run verify` (lint, typecheck, 84 test files / 724 tests, build) | ✅ | |
+| e2e KG-02, KG-13 | ✅ | |
+
+**Not verified here:** frame rate of PC 1660 on PK's GTX 1660 Super with LIVE Studio running (PK: 🖥 on the year bar). **Not done yet:** the five new buildings (forge, healer's hut, arogyasala, quarry, training ground) and their rules; Meshy people in the crowds (ខ១ A: near the camera); animals in the game.

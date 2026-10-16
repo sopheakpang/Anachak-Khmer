@@ -13,7 +13,7 @@ import { PALETTE } from '../../engine/look';
 import { GroundDetail, type GroundKind } from './ground';
 import { Slashes } from './slash';
 import { TigerModel } from './tiger';
-import { heroModelFor, preloadModels } from './glbModel';
+import { heroModelFor, phoneModels, preloadModels } from './glbModel';
 import { YantraFx, yantraFor } from './yantra';
 import { tigerEncounter } from '../sim/anachak';
 import {
@@ -118,6 +118,8 @@ export class HeroMode {
   } | null = null;
   private kit: HeroKit | null = null;
   private readonly cfg: Cfg;
+  /** The model table this build uses (the phone's leaves the PC-only heroes out). */
+  private readonly models: Cfg['models'];
   private readonly cel = new CelPass();
   private sky: THREE.Mesh | null = null;
   private hiddenSky: THREE.Object3D[] = [];
@@ -174,7 +176,10 @@ export class HeroMode {
   constructor(private readonly host: HeroHost) {
     this.cfg = host.data.anachak.hero;
     this.keymap = host.keymap ?? new Keymap(host.data.controls, null);
-    void preloadModels(this.cfg.models); // PK's model files, if any (in the background)
+    // PK's model files, if any (in the background). The phone build leaves the PC's Meshy heroes
+    // out (D146 ខ១): it keeps the ones outside models/heroes/ (the king).
+    this.models = host.mobile ? phoneModels(this.cfg.models) : this.cfg.models;
+    void preloadModels(this.models);
     this.el = document.createElement('div');
     this.el.className = 'k-hero';
     this.el.hidden = true;
@@ -248,7 +253,7 @@ export class HeroMode {
     this.model = new HeroModel(
       this.kit,
       lookFor(this.kit, type, tall),
-      heroModelFor(this.cfg.models, this.kit.id),
+      heroModelFor(this.models, this.kit.id),
     );
     view.scene.add(this.model.group);
     if (this.model.dog) {

@@ -74,3 +74,37 @@ describe('prop colour grade', () => {
     expect(c.getX(1)).toBe(1);
   });
 });
+
+describe('PK 1.9.0 (D146 ខ៣): six buildings drawn from PK’s Meshy models', () => {
+  it('barracks, lumber camp, market, noble house, landing and storehouse have a model in the game', async () => {
+    const { loadKingdom } = await import('@temples/shared');
+    const k = loadKingdom();
+    const b = k.props.buildings ?? {};
+    for (const id of ['townCentre', 'barracks', 'lumberCamp', 'market', 'nobleHouse', 'port', 'storehouse']) {
+      const slot = b[id]!;
+      expect(slot, id).toBeTruthy();
+      expect(k.buildings[id], id).toBeTruthy();
+      const json = await glbJson(slot.file);
+      expect(json, slot.file).not.toBeNull();
+      // One mesh and the colour map only (the game lights it itself).
+      expect(json!.meshes).toHaveLength(1);
+      expect(json!.textures?.length ?? 0).toBeLessThanOrEqual(1);
+      expect(slot.tris).toBeLessThanOrEqual(15000);
+      // PK's Meshy buildings are for the PC presets (D149); the royal hall shows on Low too.
+      expect(!!slot.pc).toBe(id !== 'townCentre');
+    }
+  });
+});
+
+/** The JSON chunk of a .glb under public-mobile/ (null when the file is not there). */
+async function glbJson(file: string): Promise<{ meshes?: unknown[]; textures?: unknown[]; skins?: unknown[]; animations?: unknown[] } | null> {
+  const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
+    existsSync(p: URL): boolean;
+    readFileSync(p: URL): Uint8Array;
+  };
+  const url = new URL(`../../../public-mobile/${file}`, import.meta.url);
+  if (!fs.existsSync(url)) return null;
+  const b = fs.readFileSync(url);
+  const len = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(12, true);
+  return JSON.parse(new TextDecoder().decode(b.subarray(20, 20 + len)));
+}

@@ -67,6 +67,66 @@
       "tex": 1024,
       "fit": "width",
       "sink": 0
+    },
+    "barracks": {
+      "en": "Barracks (PK's Meshy model)",
+      "file": "models/buildings/barracks.glb",
+      "source": "Meshy \"Fortified Longhouse\" (PK 1.9.0, 06-buildings\\barracks: a thatched longhouse in a palisade with a drum and a practice yard)",
+      "tris": 14522,
+      "tex": 1024,
+      "fit": "width",
+      "sink": 0,
+      "pc": true
+    },
+    "lumberCamp": {
+      "en": "Lumber camp (PK's Meshy model)",
+      "file": "models/buildings/lumber-camp.glb",
+      "source": "Meshy \"Thatchwood Workshop\" (PK 1.9.0, 06-buildings\\lumber-camp: an open thatched shed, logs and stumps)",
+      "tris": 7491,
+      "tex": 1024,
+      "fit": "width",
+      "sink": 0,
+      "pc": true
+    },
+    "market": {
+      "en": "Market (PK's Meshy model)",
+      "file": "models/buildings/market.glb",
+      "source": "Meshy \"Thatchroof Marketplace\" (PK 1.9.0, 06-buildings\\market: thatched stalls with jars and baskets)",
+      "tris": 9446,
+      "tex": 1024,
+      "fit": "width",
+      "sink": 0,
+      "pc": true
+    },
+    "nobleHouse": {
+      "en": "Noble house (PK's Meshy model)",
+      "file": "models/buildings/noble-house.glb",
+      "source": "Meshy \"Golden Stilt House\" (PK 1.9.0, 06-buildings\\noble-house: a tiered wooden house on stilts with a front stair)",
+      "tris": 13538,
+      "tex": 1024,
+      "fit": "width",
+      "sink": 0,
+      "pc": true
+    },
+    "port": {
+      "en": "River landing (PK's Meshy model)",
+      "file": "models/buildings/port.glb",
+      "source": "Meshy \"Thatched River Dock\" (PK 1.9.0, 06-buildings\\port: a jetty over the water at the front, a thatched hut behind)",
+      "tris": 9569,
+      "tex": 1024,
+      "fit": "width",
+      "sink": 0,
+      "pc": true
+    },
+    "storehouse": {
+      "en": "Storehouse (PK's Meshy model)",
+      "file": "models/buildings/storehouse.glb",
+      "source": "Meshy \"Stilted Thatch Granary\" (PK 1.9.0, 06-buildings\\storehouse: a granary on stilts with sacks and jars below)",
+      "tris": 9283,
+      "tex": 1024,
+      "fit": "width",
+      "sink": 0,
+      "pc": true
     }
   },
   "trees": [
@@ -80,7 +140,9 @@
       "card": 1.02,
       "height": 6.0,
       "width": 4.0,
-      "hi": 4500, "mid": 1100, "midFile": "models/trees/a-mid.glb",
+      "hi": 4500,
+      "mid": 1100,
+      "midFile": "models/trees/a-mid.glb",
       "tex": 1024
     },
     {
@@ -93,7 +155,9 @@
       "card": 1.02,
       "height": 6.5,
       "width": 4.6,
-      "hi": 6000, "mid": 1500, "midFile": "models/trees/b-mid.glb",
+      "hi": 6000,
+      "mid": 1500,
+      "midFile": "models/trees/b-mid.glb",
       "tex": 1024
     },
     {
@@ -106,7 +170,9 @@
       "card": 1.02,
       "height": 6.5,
       "width": 4.2,
-      "hi": 4500, "mid": 1100, "midFile": "models/trees/c-mid.glb",
+      "hi": 4500,
+      "mid": 1100,
+      "midFile": "models/trees/c-mid.glb",
       "tex": 1024
     },
     {
@@ -119,7 +185,9 @@
       "card": 1.02,
       "height": 7.0,
       "width": 5.6,
-      "hi": 6000, "mid": 1500, "midFile": "models/trees/d-mid.glb",
+      "hi": 6000,
+      "mid": 1500,
+      "midFile": "models/trees/d-mid.glb",
       "tex": 1024
     },
     {
@@ -132,7 +200,9 @@
       "card": 1.02,
       "height": 6.5,
       "width": 4.4,
-      "hi": 6000, "mid": 1500, "midFile": "models/trees/e-mid.glb",
+      "hi": 6000,
+      "mid": 1500,
+      "midFile": "models/trees/e-mid.glb",
       "tex": 1024
     },
     {
@@ -145,7 +215,9 @@
       "card": 1.272,
       "height": 7.0,
       "width": 6.6,
-      "hi": 6000, "mid": 1500, "midFile": "models/trees/f-mid.glb",
+      "hi": 6000,
+      "mid": 1500,
+      "midFile": "models/trees/f-mid.glb",
       "tex": 1024
     },
     {
@@ -157,7 +229,9 @@
       "card": 1.02,
       "height": 8.0,
       "width": 3.6,
-      "hi": 2000, "mid": 500, "midFile": "models/trees/palm-mid.glb",
+      "hi": 2000,
+      "mid": 500,
+      "midFile": "models/trees/palm-mid.glb",
       "tex": 1024
     },
     {
@@ -170,7 +244,9 @@
       "card": 1.02,
       "height": 9.0,
       "width": 4.6,
-      "hi": 2000, "mid": 500, "midFile": "models/trees/coconut-mid.glb",
+      "hi": 2000,
+      "mid": 500,
+      "midFile": "models/trees/coconut-mid.glb",
       "tex": 1024
     },
     {
@@ -182,7 +258,9 @@
       "card": 1.02,
       "height": 3.5,
       "width": 3.0,
-      "hi": 2000, "mid": 500, "midFile": "models/trees/fan-mid.glb",
+      "hi": 2000,
+      "mid": 500,
+      "midFile": "models/trees/fan-mid.glb",
       "tex": 1024
     },
     {
@@ -195,7 +273,9 @@
       "card": 1.02,
       "height": 3.4,
       "width": 2.6,
-      "hi": 2000, "mid": 500, "midFile": "models/trees/banana-mid.glb",
+      "hi": 2000,
+      "mid": 500,
+      "midFile": "models/trees/banana-mid.glb",
       "tex": 1024
     },
     {
@@ -208,7 +288,9 @@
       "card": 1.02,
       "height": 3.2,
       "width": 2.6,
-      "hi": 2000, "mid": 500, "midFile": "models/trees/banana2-mid.glb",
+      "hi": 2000,
+      "mid": 500,
+      "midFile": "models/trees/banana2-mid.glb",
       "tex": 1024
     }
   ],
@@ -249,17 +331,11 @@
       }
     ],
     "village": {
-      "houseTypes": [
-        "house",
-        "nobleHouse"
-      ],
+      "houseTypes": ["house", "nobleHouse"],
       "minHouses": 3,
       "linkM": 16,
       "coconut": "coconut",
-      "banana": [
-        "banana",
-        "banana2"
-      ]
+      "banana": ["banana", "banana2"]
     },
     "wayside": {
       "near": "storehouse",

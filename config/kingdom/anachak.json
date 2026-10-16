@@ -508,10 +508,35 @@
       "lift": 0.35
     },
     "models": {
-      "$comment": "PK: real 3D model files (rigged .glb) made from the concept sheets replace the built-in figure in the 3D mode and on the sheet; put them in apps/game/public-mobile/models/. hips = the hip height (m) the model is scaled to. A kit with no file keeps the built-in figure.",
+      "$comment": "PK: real 3D model files (rigged .glb) made from the concept sheets replace the built-in figure in the 3D mode and on the sheet; put them in apps/game/public-mobile/models/. hips = the hip height (m) the model is scaled to. A kit with no file keeps the built-in figure. PK 1.9.0 (D146 ខ១): PK's Meshy people for every hero on foot (models/heroes/: rig and colour map only, clips stripped, 4 bone weights a vertex); the phone build leaves models/heroes/ out and keeps the built-in figures; the king is the Meshy king of 879 (`phone`: the old Golden Temple Guardian stays on the phone).",
       "king": {
-        "file": "models/king-guardian.glb",
+        "file": "models/heroes/king-879.glb",
+        "hips": 0.94,
+        "phone": "models/king-guardian.glb"
+      },
+      "worker": {
+        "file": "models/heroes/farmer-man.glb",
+        "hips": 0.92
+      },
+      "spear": {
+        "file": "models/heroes/spearman.glb",
+        "hips": 0.92
+      },
+      "sword": {
+        "file": "models/heroes/swordsman.glb",
+        "hips": 0.92
+      },
+      "bow": {
+        "file": "models/heroes/archer.glb",
+        "hips": 0.92
+      },
+      "commander": {
+        "file": "models/heroes/commander.glb",
         "hips": 0.94
+      },
+      "hunter": {
+        "file": "models/heroes/hunter.glb",
+        "hips": 0.92
       }
     }
   },

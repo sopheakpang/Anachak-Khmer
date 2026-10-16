@@ -46,6 +46,8 @@ export interface KingdomGfx {
   atmosphere?: boolean;
   /** PK 1.8.0: zoomed in, cover turns see-through round the people (diorama.json seeThrough). */
   seeThrough?: boolean;
+  /** PK 1.9.0 (D149): PK's Meshy buildings (props.json buildings marked `pc`) — PC presets only. */
+  meshyModels?: boolean;
 }
 
 export const NO_GFX: KingdomGfx = {

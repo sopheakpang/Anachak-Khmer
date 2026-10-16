@@ -1293,7 +1293,7 @@ export class KingdomScene {
   private loadBuildingModels(): void {
     for (const [type, slot] of Object.entries(this.sim.data.props.buildings ?? {})) {
       const set = this.sets.get(type);
-      if (!set) continue;
+      if (!set || (slot.pc && !this.gfx.meshyModels)) continue;
       void loadProp(modelUrl(slot.file)).then((m) => {
         if (m && applyProp(set.mesh, m, slot)) this.propsOn++;
       });

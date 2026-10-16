@@ -1097,3 +1097,38 @@ test('KG-12: PK 1.9.0 Sprint 1: danger rings and the edge arrow, the 🤖 auto h
     k.keymap.reset();
   });
 });
+
+test('KG-13: PK 1.9.0 (D146 ខ១ ខ៣, D149): PC 1660 preset — Meshy buildings, the Meshy heroes, the 🖥 panel', async ({
+  page,
+}) => {
+  await page.goto('/?mode=kingdom&offline=1&kingdomDemo=1&preset=pc1660');
+  await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.kingdom, null, {
+    timeout: 180_000,
+    polling: 500,
+  });
+  expect(await page.evaluate(() => window.__temples.preset)).toBe('pc1660');
+  // The Meshy buildings load in the background and replace the built-in shapes.
+  await page.waitForFunction(
+    () => {
+      const v = window.__temples.kingdom!.view as unknown as { propsOn: number };
+      return v.propsOn >= 4;
+    },
+    null,
+    { timeout: 240_000, polling: 1000 },
+  );
+  await page.evaluate(() => {
+    const k = window.__temples.kingdom!;
+    const b = [...k.sim.buildings.values()].find((x) => x.type === 'storehouse' || x.type === 'barracks') ??
+      [...k.sim.buildings.values()].find((x) => x.type === 'townCentre')!;
+    const [cx, cz] = k.sim.center(b);
+    k.panTo(cx, cz);
+    k.zoom(45);
+  });
+  await page.waitForTimeout(5000);
+  await page.screenshot({ path: 'docs/screens/k-pc1660.png' });
+  // The 🖥 panel shows the frame rate and the presets.
+  await page.locator('.k-yearbar [data-act="gfx"]').dispatchEvent('pointerdown');
+  await expect(page.locator('.k-gfx-fps')).toContainText('FPS', { timeout: 10_000 });
+  await expect(page.locator('[data-act="gfx-set:pc1660"].k-on')).toBeVisible();
+  await page.screenshot({ path: 'docs/screens/k-gfx-panel.png' });
+});

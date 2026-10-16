@@ -1,4 +1,4 @@
-import { readdirSync, renameSync, statSync, writeFileSync } from 'node:fs';
+import { readdirSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import { cacheVersion, offlineFiles, serviceWorkerSource } from './src/pwa/offline';
@@ -17,6 +17,9 @@ function walk(dir: string): string[] {
     return statSync(p).isDirectory() ? walk(p) : [p];
   });
 }
+
+/** Model folders the phone build leaves out (the PC's Meshy models). */
+export const PC_ONLY = ['models/heroes', 'models/buildings'];
 
 export default defineConfig({
   base: './',
@@ -37,6 +40,9 @@ export default defineConfig({
       closeBundle() {
         const out = resolve(__dirname, 'dist-mobile');
         renameSync(resolve(out, 'mobile.html'), resolve(out, 'index.html'));
+        // PK's Meshy heroes and buildings are for the PC (D146 ខ១, ខ២): the phone keeps its
+        // built-in figures and buildings, and its app stays small (about 23 MB less).
+        for (const dir of PC_ONLY) rmSync(resolve(out, dir), { recursive: true, force: true });
         const files = walk(out).map((p) => [relative(out, p).replace(/\\/g, '/'), statSync(p).size] as const);
         const list = offlineFiles(files.map(([f]) => f));
         writeFileSync(resolve(out, 'sw.js'), serviceWorkerSource(list, cacheVersion(files)));

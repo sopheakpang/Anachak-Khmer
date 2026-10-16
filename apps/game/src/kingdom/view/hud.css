@@ -1476,3 +1476,39 @@
   border-color: #7a2a14;
   font-weight: 700;
 }
+/* PK 1.9.0 (D149): the 🖥 graphics panel — live FPS and the preset switch. */
+.k-gfx-fps {
+  font-size: 30px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 0.35);
+}
+.k-gfx-fps.k-ok b {
+  color: #9dff6a;
+}
+.k-gfx-fps.k-slow b {
+  color: #ff8a6a;
+}
+.k-gfx-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.k-keys .k-gfx-p {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+.k-gfx-p small {
+  font-size: 26px;
+  opacity: 0.8;
+}
+.k-keys .k-gfx-p.k-on {
+  background: linear-gradient(#fff6d6, #ffd977);
+  border-color: #7a2a14;
+}
+.k-gfx-hint {
+  font-size: 26px;
+  opacity: 0.85;
+}

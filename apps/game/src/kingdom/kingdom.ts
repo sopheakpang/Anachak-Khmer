@@ -23,7 +23,9 @@ import { manuscriptGeometry } from './view/art';
 import { basketReady, collectBasket } from './sim/market';
 import { templeShortfall } from './sim/decree';
 import { currentCeremony } from './sim/ceremony';
-import { KingdomHud, RES_LABEL, km, monumentProgressHtml, type Button } from './view/hud';
+import { KingdomHud, RES_LABEL, gfxPanelHtml, km, monumentProgressHtml, type Button } from './view/hud';
+import { PRESET_KEY } from '../engine/app';
+import type { FrameStats } from '../meter';
 import { AncientMap, mapViewOf } from './view/ancientMap';
 import './view/ancientMap.css';
 import { KingdomSound, panFor, sfxForEvent } from './view/sound';
@@ -143,6 +145,8 @@ export class Kingdom {
   readonly keymap: Keymap;
   /** The keyboard panel (year bar 🎮): open, its tab, the slot waiting for a key. */
   private keysOpen = false;
+  /** The 🖥 graphics panel (D149). */
+  private gfxOpen = false;
   private keysTab: KeyGroup = 'map';
   private keysWait: { group: KeyGroup; id: string; slot: number } | null = null;
   private blessAt = 0;
@@ -486,6 +490,7 @@ export class Kingdom {
         boat: s.market.orders.some((o) => o.buyer === 'boat'),
       },
       keys: this.opts.mobile ? undefined : this.keysOpen,
+      gfx: this.opts.mobile ? undefined : this.gfxOpen,
     });
   }
 
@@ -990,7 +995,24 @@ export class Kingdom {
     // The keyboard panel (PK 1.8.0): open/close, tabs, a key slot to change, reset.
     if (kind === 'keys' || kind === 'keys-close') {
       this.keysOpen = kind === 'keys' ? !this.keysOpen : false;
+      if (this.keysOpen) this.gfxOpen = false;
       this.keysWait = null;
+      return;
+    }
+    if (kind === 'gfx' || kind === 'gfx-close') {
+      this.gfxOpen = kind === 'gfx' ? !this.gfxOpen : false;
+      if (this.gfxOpen) this.keysOpen = false;
+      return;
+    }
+    if (kind === 'gfx-set') {
+      // Another preset (D149): save the game, keep the choice, and start again with it.
+      this.save('quick');
+      try {
+        localStorage.setItem(PRESET_KEY, id ?? 'low');
+      } catch {
+        /* no storage: the window's preset stays */
+      }
+      location.reload();
       return;
     }
     if (kind === 'keys-tab') {
@@ -2845,8 +2867,15 @@ export class Kingdom {
       musicVolume: this.sound.musicVolume,
       fullscreen: !this.opts.mobile && canFullscreen() ? isFullscreen() : undefined,
     });
+    const T = (window as { __temples?: { preset?: string; fps?: number; stats?: FrameStats } }).__temples;
     this.hud.renderKeys(
-      this.keysOpen && !this.opts.mobile ? keysPanelHtml(this.keymap, this.keysTab, this.keysWait) : null,
+      this.opts.mobile
+        ? null
+        : this.keysOpen
+          ? keysPanelHtml(this.keymap, this.keysTab, this.keysWait)
+          : this.gfxOpen && T?.stats
+            ? gfxPanelHtml(T.preset ?? 'low', T.stats, T.fps ?? 30)
+            : null,
     );
     if (now >= this.nextMoodCheck) {
       this.nextMoodCheck = now + 1000;

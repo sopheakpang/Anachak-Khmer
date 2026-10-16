@@ -176,3 +176,44 @@ describe('real 3D models (rigged .glb)', () => {
     registerModel(modelUrl(spec.file), null);
   });
 });
+
+describe('PK 1.9.0 (D146 ខ១): Meshy heroes on the PC, the phone keeps its own', () => {
+  it('every hero on foot has a Meshy model; the phone table drops models/heroes/ and swaps the king', async () => {
+    const { loadKingdom } = await import('@temples/shared');
+    const { phoneModels } = await import('./glbModel');
+    const models = loadKingdom().anachak.hero.models!;
+    for (const k of ['king', 'worker', 'spear', 'sword', 'bow', 'commander', 'hunter'])
+      expect(typeof models[k] === 'object' && models[k].file.startsWith('models/heroes/')).toBe(true);
+    const phone = phoneModels(models)!;
+    expect(Object.keys(phone).filter((k) => !k.startsWith('$'))).toEqual(['king']);
+    expect((phone.king as { file: string }).file).toBe('models/king-guardian.glb');
+  });
+
+  it('the model files are in the game, rig and colour map only, no clips', async () => {
+    const { loadKingdom } = await import('@temples/shared');
+    const models = loadKingdom().anachak.hero.models!;
+    for (const [k, m] of Object.entries(models)) {
+      if (k.startsWith('$') || typeof m !== 'object') continue;
+      const json = await glbJson(m.file);
+      expect(json, m.file).not.toBeNull();
+      expect(json!.skins?.length ?? 0).toBeGreaterThan(0);
+      if (m.file.startsWith('models/heroes/')) {
+        expect(json!.animations ?? []).toHaveLength(0);
+        expect(json!.textures?.length ?? 0).toBe(1);
+      }
+    }
+  });
+});
+
+/** The JSON chunk of a .glb under public-mobile/ (null when the file is not there). */
+async function glbJson(file: string): Promise<{ meshes?: unknown[]; textures?: unknown[]; skins?: unknown[]; animations?: unknown[] } | null> {
+  const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
+    existsSync(p: URL): boolean;
+    readFileSync(p: URL): Uint8Array;
+  };
+  const url = new URL(`../../../public-mobile/${file}`, import.meta.url);
+  if (!fs.existsSync(url)) return null;
+  const b = fs.readFileSync(url);
+  const len = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(12, true);
+  return JSON.parse(new TextDecoder().decode(b.subarray(20, 20 + len)));
+}

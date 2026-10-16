@@ -36,7 +36,7 @@ function saveState(win) {
 
 /** Quality preset for the game (config/window.json → ?preset=). */
 function presetQuery() {
-  const preset = ['low', 'high', 'lite'].includes(config.preset) ? config.preset : 'low';
+  const preset = ['low', 'pc1660', 'high', 'ultra', 'lite'].includes(config.preset) ? config.preset : 'low';
   return `preset=${preset}`;
 }
 

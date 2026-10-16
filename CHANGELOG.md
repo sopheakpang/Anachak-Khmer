@@ -16,6 +16,9 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.9.0-08 | **Red danger rings** (PK): red rings on the ground round tigers and other dangerous animals, raiders and rival camps, also on the minimap; in the 3D mode a red arrow at the edge of the screen points to the nearest danger with its name and how far it is. X hides or shows them (D148). |
 | 1.9.0-09 | **Temple progress with its picture**: the objective line shows a small picture of the temple that fills from the foot up as it rises, with a gold bar and the percent (D148). |
 | 1.9.0-10 | **MOBA keys for the 3D hero** (🎮 → Hero): pick "Action (WASD)" as now, or "MOBA": arrows walk, Q skill, A strike, Space dodge, F work, C jump; skills and strikes turn the hero toward the mouse pointer. Right-click to walk works in both (D148). |
+| 1.9.0-11 | **PK's Meshy buildings** on the PC presets (PC 1660, High, Ultra): the barracks with its palisade, the lumber camp, the market stalls, the noble house on stilts, the river landing and the granary storehouse are PK's own Meshy models. Low keeps the built-in buildings (frame budget) (D149). |
+| 1.9.0-12 | **PK's Meshy people as 3D heroes** (PC): play a villager, a spearman, a swordsman, an archer, the commander or the hunter as PK's own models; the king is the Meshy king of 879 (D149). |
+| 1.9.0-13 | **🖥 Graphics** (year bar): see the frame rate (FPS), triangles and draw calls now, and switch the graphics: Low, **PC 1660** (for the GTX 1660 Super: Meshy buildings, sharper shadows), High, Ultra, Lite. The game is saved before it restarts with the new look (D149). |
 
 ## 1.8.0 — 2026-10-09
 

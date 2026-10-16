@@ -1,5 +1,5 @@
 {
-  "$comment": "Quality presets (spec: Performance budget). low = the stream laptop (default). ?preset=high on a stronger PC. ?preset=lite = no shadows, fewer people: use it only if low drops below 30 FPS. look.style: \"lowpoly\" = faceted shapes and flat colours (D41), \"film\" = the soft animated-film look (D25); ?style=film or ?style=lowpoly overrides it. flatColors: true = plain colours, false = painted detail kept on the facets (PK wants textured detail). mobile = the Android phone build of the Kingdom tab (D72): smaller render, no antialias, no shadows. ultra = a strong gaming PC (D79). kingdom = the Kingdom's Anno-style graphics (D79): ao = soft contact shadows (aoScale = its render size), bloom = glow, tiltShift = close-up blur, grade = warm golden-hour colour, water = 'shader' (waves, depth colour, foam) or 'flat', treeKinds = how many tree kinds (1-5), wind = trees sway, life = birds, smoke, garden plots, palms on the paddy dikes, props = PK's real 3D models for trees, palms, rocks and banana plants (config/kingdom/props.json; off on lite and the phone), diorama = PK 1.7.0's Angkor Cel-Diorama look (config/kingdom/diorama.json: NPR toon units with ink outlines, stylised PBR land, HD-2D long lens, tilt-shift, warm/cool grade, laterite/emerald terrain, Prek canal water, ground detail; no screen-space AO). PK 1.8.0: elephantGrass = tall grass rolling in the wind (config/kingdom/diorama.json elephantGrass), grassShadows = it casts shadows (an extra pass), torchLights = how many real lights the nearest night torches give (0 = glow only; config/kingdom/anachak.json night.torches), seeThrough = cover turns see-through round people when zoomed in. atmosphere = ground mist and light shafts (diorama.json atmosphere). sward = the 30 cm meadow grass over every green tile (diorama.json sward, PK's Meshy model).",
+  "$comment": "Quality presets (spec: Performance budget). low = the stream laptop (default). ?preset=high on a stronger PC. ?preset=lite = no shadows, fewer people: use it only if low drops below 30 FPS. look.style: \"lowpoly\" = faceted shapes and flat colours (D41), \"film\" = the soft animated-film look (D25); ?style=film or ?style=lowpoly overrides it. flatColors: true = plain colours, false = painted detail kept on the facets (PK wants textured detail). mobile = the Android phone build of the Kingdom tab (D72): smaller render, no antialias, no shadows. ultra = a strong gaming PC (D79). kingdom = the Kingdom's Anno-style graphics (D79): ao = soft contact shadows (aoScale = its render size), bloom = glow, tiltShift = close-up blur, grade = warm golden-hour colour, water = 'shader' (waves, depth colour, foam) or 'flat', treeKinds = how many tree kinds (1-5), wind = trees sway, life = birds, smoke, garden plots, palms on the paddy dikes, props = PK's real 3D models for trees, palms, rocks and banana plants (config/kingdom/props.json; off on lite and the phone), diorama = PK 1.7.0's Angkor Cel-Diorama look (config/kingdom/diorama.json: NPR toon units with ink outlines, stylised PBR land, HD-2D long lens, tilt-shift, warm/cool grade, laterite/emerald terrain, Prek canal water, ground detail; no screen-space AO). PK 1.8.0: elephantGrass = tall grass rolling in the wind (config/kingdom/diorama.json elephantGrass), grassShadows = it casts shadows (an extra pass), torchLights = how many real lights the nearest night torches give (0 = glow only; config/kingdom/anachak.json night.torches), seeThrough = cover turns see-through round people when zoomed in. atmosphere = ground mist and light shafts (diorama.json atmosphere). sward = the 30 cm meadow grass over every green tile (diorama.json sward, PK's Meshy model). PK 1.9.0 (D144 k1, D146 ខ២, D149): pc1660 = the GTX 1660 Super preset (high plus 4096 shadows and PK's Meshy buildings, kingdom.meshyModels); it becomes the stream preset once PK has measured it on his PC (🖥 on the year bar: live FPS and a preset switch). meshyModels: PK's Meshy buildings (props.json buildings marked pc) — off on low, lite and the phone, where the budget keeps the built-in shapes.",
   "low": {
     "renderScale": 1,
     "antialias": true,
@@ -33,7 +33,45 @@
       "grassShadows": false,
       "torchLights": 4,
       "seeThrough": true,
-      "atmosphere": true
+      "atmosphere": true,
+      "meshyModels": false
+    }
+  },
+  "pc1660": {
+    "renderScale": 1,
+    "antialias": true,
+    "maxCharacters": 300,
+    "trees": 160,
+    "namePlates": 120,
+    "look": {
+      "style": "lowpoly",
+      "flatColors": false,
+      "shadows": true,
+      "shadowMapSize": 4096,
+      "exposure": 1.05,
+      "envIntensity": 0.6,
+      "clouds": 10
+    },
+    "kingdom": {
+      "ao": true,
+      "aoScale": 1,
+      "bloom": true,
+      "tiltShift": true,
+      "grade": true,
+      "water": "shader",
+      "treeKinds": 5,
+      "wind": true,
+      "life": true,
+      "birds": 5,
+      "props": true,
+      "diorama": true,
+      "elephantGrass": true,
+      "sward": true,
+      "grassShadows": true,
+      "torchLights": 6,
+      "seeThrough": true,
+      "atmosphere": true,
+      "meshyModels": true
     }
   },
   "high": {
@@ -69,7 +107,8 @@
       "grassShadows": true,
       "torchLights": 6,
       "seeThrough": true,
-      "atmosphere": true
+      "atmosphere": true,
+      "meshyModels": true
     }
   },
   "ultra": {
@@ -105,7 +144,8 @@
       "grassShadows": true,
       "torchLights": 8,
       "seeThrough": true,
-      "atmosphere": true
+      "atmosphere": true,
+      "meshyModels": true
     }
   },
   "lite": {
@@ -141,7 +181,8 @@
       "grassShadows": false,
       "torchLights": 0,
       "seeThrough": true,
-      "atmosphere": false
+      "atmosphere": false,
+      "meshyModels": false
     }
   },
   "mobile": {
@@ -177,7 +218,8 @@
       "grassShadows": false,
       "torchLights": 0,
       "seeThrough": true,
-      "atmosphere": false
+      "atmosphere": false,
+      "meshyModels": false
     }
   }
 }

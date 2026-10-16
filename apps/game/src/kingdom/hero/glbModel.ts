@@ -17,6 +17,8 @@ export interface ModelSpec {
   file: string;
   /** Hip height in metres the model is scaled to (the built-in figure's is 0.94). */
   hips: number;
+  /** The phone build's own file (it has no models/heroes/). */
+  phone?: string;
 }
 
 /** The joints the game poses, and the bone names that may stand for them in a rig. */
@@ -342,6 +344,17 @@ type ModelTable = Record<string, string | ModelSpec> | undefined;
 export function modelUrl(file: string): string {
   const base = (import.meta as unknown as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/';
   return `${base}${file}`;
+}
+
+/** The phone build has no models/heroes/ (vite.mobile.config.ts PC_ONLY): those kits keep the built-in figure. */
+export function phoneModels(models: ModelTable): ModelTable {
+  if (!models) return models;
+  const out: Record<string, string | ModelSpec> = {};
+  for (const [k, m] of Object.entries(models)) {
+    if (typeof m === 'object' && m.phone) out[k] = { ...m, file: m.phone };
+    else if (!(typeof m === 'object' ? m.file : m).startsWith('models/heroes/')) out[k] = m;
+  }
+  return out;
 }
 
 /** The model spec for a kit, if the config names one. */

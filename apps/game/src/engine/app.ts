@@ -12,13 +12,35 @@ import { environmentFrom, setLook, setupRenderer, styleScene } from './look';
 
 export type Quality = (typeof qualityJson)['low'];
 
-export type PresetName = 'low' | 'high' | 'ultra' | 'lite';
+export type PresetName = 'low' | 'pc1660' | 'high' | 'ultra' | 'lite';
+export const PRESETS: readonly PresetName[] = ['low', 'pc1660', 'high', 'ultra', 'lite'];
+/** The player's own choice of graphics (🖥 on the year bar, D149), kept in the browser. */
+export const PRESET_KEY = 'temples.preset.v1';
 
-export function qualityFrom(search: string): { name: PresetName; q: Quality } {
-  const asked = new URLSearchParams(search).get('preset');
-  const name: PresetName = asked === 'high' || asked === 'ultra' || asked === 'lite' ? asked : 'low';
+/** The preset the player chose in the game, if any (storage may be missing or blocked). */
+export function storedPreset(): PresetName | null {
+  try {
+    const v = typeof localStorage === 'undefined' ? null : localStorage.getItem(PRESET_KEY);
+    return PRESETS.includes(v as PresetName) ? (v as PresetName) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The graphics preset: the player's own choice in the game wins over the desktop window's
+ * default (?preset= from config/window.json), except `?presetLock=1` (tests) which takes the URL.
+ */
+export function qualityFrom(
+  search: string,
+  stored: PresetName | null = storedPreset(),
+): { name: PresetName; q: Quality } {
+  const params = new URLSearchParams(search);
+  const asked = params.get('preset');
+  const fromUrl = PRESETS.includes(asked as PresetName) ? (asked as PresetName) : 'low';
+  const name: PresetName = stored && params.get('presetLock') !== '1' ? stored : fromUrl;
   const style = new URLSearchParams(search).get('style');
-  const q = qualityJson[name];
+  const q = (qualityJson as unknown as Record<PresetName, Quality>)[name];
   // ?style=film | lowpoly lets the host compare the two looks without editing config.
   return { name, q: style === 'film' || style === 'lowpoly' ? { ...q, look: { ...q.look, style } } : q };
 }

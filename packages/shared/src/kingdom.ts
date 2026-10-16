@@ -950,7 +950,15 @@ export const AnachakSchema = z.object({
     models: z
       .record(
         z.string(),
-        z.union([z.string(), z.object({ file: z.string().min(1), hips: z.number().positive() })]),
+        z.union([
+          z.string(),
+          z.object({
+            file: z.string().min(1),
+            hips: z.number().positive(),
+            /** PK 1.9.0: the phone build's own file (it has no models/heroes/). */
+            phone: z.string().min(1).optional(),
+          }),
+        ]),
       )
       .optional(),
     quests: z.object({
@@ -1052,6 +1060,8 @@ export const PropSlotSchema = z.object({
   sat: z.number().min(0).optional(),
   /** false: keep the built-in shape in the diorama look (PK 1.7.0). */
   diorama: z.boolean().optional(),
+  /** PK 1.9.0 (D149): only on presets with kingdom.meshyModels (the PC; Low keeps its budget). */
+  pc: z.boolean().optional(),
   en: z.string(),
 });
 export type PropSlot = z.infer<typeof PropSlotSchema>;
