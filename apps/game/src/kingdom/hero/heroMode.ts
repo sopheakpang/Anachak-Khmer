@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { Keymap, keyLabel } from '../keymap';
-import type { Anachak, Cost, HeroKit, KingdomData } from '@temples/shared';
+import type { Anachak, Cost, HeroKit, HeroSkill, KingdomData } from '@temples/shared';
 import { PLAYER, type KingdomSim, type Unit } from '../sim/sim';
 import type { KingdomScene } from '../view/scene';
-import type { KingdomSound } from '../view/sound';
+import { SFX_NAMES, type KingdomSound, type SfxName } from '../view/sound';
 import { tileToWorld, worldToTile, type XZ } from '../sim/map';
-import { HeroCore, NO_INPUT, kitFor, type HeroAct, type HeroInput } from './heroCore';
+import { HeroCore, NO_INPUT, kitFor, kitSkills, type HeroAct, type HeroInput } from './heroCore';
 import { HeroModel, lookFor } from './heroModel';
 import { CelPass, animeSky } from './celPass';
 import { Backdrop } from './backdrop';
@@ -131,7 +131,7 @@ export class HeroMode {
   private readonly keys = new Set<string>();
   private readonly keymap: Keymap;
   /** Presses waiting for the next step (edge-triggered actions). */
-  private readonly press = new Set<'attack' | 'skill' | 'jump' | 'dash' | 'work'>();
+  private readonly press = new Set<'attack' | 'skill' | 'skill2' | 'skill3' | 'skill4' | 'jump' | 'dash' | 'work'>();
   private stick = { x: 0, y: 0, id: -1, ox: 0, oy: 0 };
   private look: { id: number; x: number; y: number } | null = null;
   /** A right press that may be a click (walk there) rather than a camera drag. */
@@ -431,7 +431,7 @@ export class HeroMode {
   private bind(): void {
     // Keys by position (e.code), so a Khmer keyboard layout plays the same (UI review), and
     // as the player set them (PK 1.8.0: year bar 🎮, config/kingdom/controls.json).
-    const presses = new Set(['attack', 'skill', 'jump', 'dash', 'work'] as const);
+    const presses = new Set(['attack', 'skill', 'skill2', 'skill3', 'skill4', 'jump', 'dash', 'work'] as const);
     const moves = new Set(['forward', 'back', 'left', 'right', 'work']);
     window.addEventListener(
       'keydown',
@@ -678,7 +678,11 @@ export class HeroMode {
     } else {
       if (this.auto) this.drive(sim, u ?? null, now);
       // MOBA keys (D146 ខ៤): a skill or a strike turns him to the mouse pointer first.
-      if (this.keymap.aimAtCursor && this.cursor && (this.press.has('skill') || this.press.has('attack'))) {
+      if (
+        this.keymap.aimAtCursor &&
+        this.cursor &&
+        ['skill', 'skill2', 'skill3', 'skill4', 'attack'].some((k) => this.press.has(k as 'skill'))
+      ) {
         const g = view.groundAt(this.cursor.x, this.cursor.y);
         if (g) core.faceTo(g[0], g[1]);
       }
@@ -732,7 +736,7 @@ export class HeroMode {
       y: core.y,
       t: core.t,
       strikeSec: core.strikeSec(),
-      skillKind: kit.skill.kind,
+      skillKind: core.skillNow.kind,
     });
     // Camera, with a little shake on hits.
     const C = this.cfg.camera;
@@ -851,9 +855,25 @@ export class HeroMode {
       return;
     }
     if (a.kind !== 'skill') return;
-    const S = kit.skill;
-    this.yantraFor(S.kind, S.radius, body, ahead);
+    const S = kitSkills(kit)[a.slot] ?? kit.skill;
+    this.yantraFor(S, body, ahead);
+    // Its own sound first (D146 ខ៥), then the kind's usual one below.
+    if (S.sound && SFX_NAMES.includes(S.sound as SfxName)) this.host.sound.play(S.sound as SfxName, { gain: 0.9 });
     switch (S.kind) {
+      case 'ultimate': {
+        // The great skill: everything round him is struck under a great yantra canopy.
+        const r = strike(sim, this.cfg, body, S.radius, Math.PI * 2, S.power);
+        for (let i = 0; i < 6; i++)
+          this.slash({ ...body, heading: body.heading + (i * Math.PI * 2) / 6 }, i % 3, S.radius / 1.4);
+        this.showHits(r.hits, sim);
+        fx.burst('gold', body.x, 1.2, body.z, 40);
+        fx.burst('dust', body.x, 0.3, body.z, 30, { ring: true });
+        view.flash(body.x, body.z, S.radius, now / 1000);
+        this.shake = 0.7;
+        this.hitStop = 0.12;
+        this.host.sound.play('thunder', { gain: 0.8 });
+        break;
+      }
       case 'spin': {
         const r = strike(sim, this.cfg, body, S.radius, Math.PI * 2, S.power);
         for (let i = 0; i < 3; i++)
@@ -968,21 +988,33 @@ export class HeroMode {
    * (above head height: a yantra is never put under the feet). Gold for the king and for
    * blessings, moonlight blue for the others.
    */
-  private yantraFor(skill: string, radius: number, body: HeroBody, ahead: (d: number) => XZ): void {
+  private yantraFor(S: HeroSkill, body: HeroBody, ahead: (d: number) => XZ): void {
     const kit = this.kit!;
     const lift = this.model?.lift ?? 0;
-    const color = kit.id === 'king' || skill === 'heal' ? 0xffcf6a : 0x9fd8ff;
-    const kind = yantraFor(skill);
+    const skill = S.kind;
+    const radius = S.radius;
+    // Each skill may name its own colour and yantra (D146 ខ៥); otherwise by kind.
+    const color = S.color
+      ? parseInt(S.color.slice(1), 16)
+      : kit.id === 'king' || skill === 'heal'
+        ? 0xffcf6a
+        : 0x9fd8ff;
+    const kind = S.yantra ?? yantraFor(skill);
     const bx = body.x - Math.sin(body.heading) * 0.45;
     const bz = body.z - Math.cos(body.heading) * 0.45;
-    this.yantra.spawn(kind, bx, 1.45 + lift, bz, kit.id === 'king' ? 3.2 : 2.6, color);
+    this.yantra.spawn(kind, bx, 1.45 + lift, bz, kit.id === 'king' || skill === 'ultimate' ? 3.2 : 2.6, color);
     if (skill === 'heal' || skill === 'spin' || skill === 'chop')
       this.yantra.spawn(kind, body.x, 3.4 + lift, body.z, Math.max(3, radius * 2), color, true);
-    else if (skill === 'volley') {
+    else if (skill === 'ultimate') {
+      // A great canopy high over the place, a smaller one turning inside it.
+      this.yantra.spawn(kind, body.x, 5.2 + lift, body.z, Math.max(6, radius * 2.2), color, true);
+      this.yantra.spawn('lotus', body.x, 4.2 + lift, body.z, Math.max(3, radius), 0xfff2c4, true);
+    } else if (skill === 'volley') {
       const [x, z] = ahead(this.cfg.tuning.volleyAhead);
-      this.yantra.spawn('grid', x, 3.6, z, Math.max(4, radius * 2), color, true);
+      this.yantra.spawn(S.yantra ?? 'grid', x, 3.6, z, Math.max(4, radius * 2), color, true);
     }
   }
+
 
   /** A sword-slash crescent for this swing (gold for the king's sacred sword). */
   private slash(body: HeroBody, combo: number, size: number): void {
@@ -1290,7 +1322,16 @@ export class HeroMode {
       volley: '🏹',
       heal: '✨',
       dog: '🐕',
+      ultimate: '🔱',
     };
+    // The kit's other skills (D146 ខ៥): one button each, named with the player's key.
+    const more = kitSkills(kit)
+      .slice(1)
+      .map((S, i) => {
+        const id = `skill${i + 2}`;
+        return btn(id, skillIcon[S.kind] ?? '⭐', esc(S.km), `${esc(S.en)} · ${esc(key(id))}`);
+      })
+      .join('');
     if (this.watching) {
       // Watching: the story goes on by itself; one button (or E / a move key) takes control.
       this.el.innerHTML =
@@ -1317,6 +1358,7 @@ export class HeroMode {
       btn('auto', '🤖', 'ស្វ័យប្រវត្តិ', `Auto · ${esc(key('auto'))}`) +
       btn('work', '🛠️', 'ធ្វើការ', `Work · ${esc(key('work'))}`) +
       btn('skill', skillIcon[kit.skill.kind] ?? '⭐', esc(kit.skill.km), `${esc(kit.skill.en)} · ${esc(key('skill'))}`) +
+      more +
       btn('dash', '💨', 'គេច', `Dash · ${esc(key('dash'))}`) +
       btn('jump', '⤒', 'លោត', `Jump · ${esc(key('jump'))}`) +
       btn('attack', kit.weapon === 'bow' ? '🏹' : '⚔️', 'វាយ', `Strike · Click/${esc(key('attack'))}`) +
@@ -1390,7 +1432,11 @@ export class HeroMode {
       if (d <= kit.reach) {
         core.goal = null;
         core.faceTo(o.x, o.z);
-        this.press.add('attack');
+        // A ready fighting skill first (the great one when foes crowd round), else a strike.
+        const slot = kitSkills(kit).findIndex(
+          (S, i) => S.kind !== 'heal' && S.kind !== 'dog' && core.skillLeft(i) === 0 && d <= Math.max(kit.reach, S.radius),
+        );
+        this.press.add(slot < 0 ? 'attack' : slot ? (`skill${slot + 1}` as 'skill2') : 'skill');
       } else core.setGoal(o.x, o.z, kit.reach * 0.8, true);
     } else if (o.kind === 'work') {
       core.goal = null;
@@ -1451,7 +1497,7 @@ export class HeroMode {
       }
     };
     this.el.querySelector('.k-hb-auto')?.classList.toggle('on', this.auto);
-    cd('skill', core.skillLeft(), kit.skill.cd);
+    kitSkills(kit).forEach((S, i) => cd(i ? `skill${i + 1}` : 'skill', core.skillLeft(i), S.cd));
     cd('dash', Math.max(0, core.dashReady - core.t), this.cfg.move.dashCd);
     const knob = this.parts.get('knob');
     if (knob)

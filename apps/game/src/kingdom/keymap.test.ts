@@ -118,7 +118,7 @@ describe('hero key schemes (PK 1.9.0, D146 ខ៤)', () => {
     expect(k.action('hero', 'Space')).toBe('dash');
     expect(k.action('hero', 'KeyF')).toBe('work');
     expect(k.action('hero', 'KeyC')).toBe('jump');
-    expect(k.action('hero', 'KeyW')).toBeNull();
+    expect(k.action('hero', 'KeyW')).toBe('skill2'); // ខ៥: W E R are the other skills
     // Keys the scheme does not list keep their defaults; still no key twice.
     expect(k.keys('hero', 'exit')).toEqual(['Escape']);
     const all = k.actions('hero').flatMap((a) => [...k.keys('hero', a.id)]);

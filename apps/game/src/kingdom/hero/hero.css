@@ -518,3 +518,41 @@
   box-shadow: 0 0 22px 6px rgb(255 213 74 / 0.75);
   background: radial-gradient(circle at 35% 30%, rgb(255 250 210 / 0.7), rgb(200 150 30 / 0.75));
 }
+
+/* PK 1.9.0 (D146 ខ៥): the kit's other skills, above the action buttons; the great one gold. */
+.k-hb-skill2,
+.k-hb-skill3,
+.k-hb-skill4 {
+  background: radial-gradient(circle at 35% 30%, rgb(220 240 255 / 0.55), rgb(40 90 150 / 0.6));
+}
+.k-hb-skill2 {
+  right: 20px;
+  bottom: 370px;
+}
+.k-hb-skill3 {
+  right: 160px;
+  bottom: 320px;
+}
+.k-hb-skill4 {
+  right: 300px;
+  bottom: 360px;
+  border-color: #ffd54a;
+  background: radial-gradient(circle at 35% 30%, rgb(255 246 200 / 0.7), rgb(170 110 20 / 0.75));
+}
+/* Long Khmer skill names wrap onto two lines inside the circle instead of being cut (D150). */
+.k-hb-skill .k-hb-t,
+.k-hb-skill2 .k-hb-t,
+.k-hb-skill3 .k-hb-t,
+.k-hb-skill4 .k-hb-t {
+  max-width: 112px;
+  line-height: 1.12;
+  margin-top: -26px;
+  word-break: normal;
+}
+.k-hb-skill .k-hb-i,
+.k-hb-skill2 .k-hb-i,
+.k-hb-skill3 .k-hb-i,
+.k-hb-skill4 .k-hb-i {
+  font-size: 40px;
+  margin-top: 10px;
+}

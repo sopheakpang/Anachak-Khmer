@@ -1,4 +1,4 @@
-import type { Anachak, HeroKit } from '@temples/shared';
+import type { Anachak, HeroKit, HeroSkill } from '@temples/shared';
 
 /**
  * The 3D hero mode's own rules (Anachak Khmer, D92), free of three.js and the DOM so they can
@@ -16,6 +16,10 @@ export interface HeroInput {
   jump: boolean;
   attack: boolean;
   skill: boolean;
+  /** PK 1.9.0 (D146 ខ៥): the kit's other skills, slots 2–4 (MOBA W E R, Action 1 2 3). */
+  skill2?: boolean;
+  skill3?: boolean;
+  skill4?: boolean;
   dash: boolean;
   work: boolean;
   /**
@@ -39,7 +43,8 @@ export const NO_INPUT: HeroInput = {
 /** What happened this step, for the game to act on (hits, the skill, a work swing). */
 export type HeroAct =
   | { kind: 'strike'; step: number; mul: number }
-  | { kind: 'skill' }
+  /** A skill lands; `slot` 0–3 (kitSkills order). */
+  | { kind: 'skill'; slot: number }
   | { kind: 'work' }
   | { kind: 'jump' }
   | { kind: 'dash' }
@@ -88,7 +93,10 @@ export class HeroCore {
   /** Strike damage already dealt for this swing. */
   private struck = false;
   stamina: number;
-  skillReady = 0;
+  /** When each skill slot is ready again (seconds of `t`). */
+  readonly skillAt = [0, 0, 0, 0];
+  /** The slot of the skill playing (or played last). */
+  skillSlot = 0;
   dashReady = 0;
   /** Running clock (seconds). */
   t = 0;
@@ -130,9 +138,15 @@ export class HeroCore {
     return this.y > 0.001 || this.vy > 0;
   }
 
-  /** Seconds the skill still needs. */
-  skillLeft(): number {
-    return Math.max(0, this.skillReady - this.t);
+  /** Seconds a skill slot still needs. */
+  skillLeft(slot = 0): number {
+    return Math.max(0, (this.skillAt[slot] ?? 0) - this.t);
+  }
+
+  /** The skill playing now (or played last). */
+  get skillNow(): HeroSkill {
+    const all = kitSkills(this.kit);
+    return all[Math.min(this.skillSlot, all.length - 1)]!;
   }
 
   /** The current strike's length (seconds). */
@@ -183,10 +197,15 @@ export class HeroCore {
         this.struck = false;
       }
     }
-    if (input.skill && !this.busy && this.t >= this.skillReady) {
-      this.skillReady = this.t + this.kit.skill.cd;
+    const asked = [input.skill, input.skill2, input.skill3, input.skill4];
+    const skills = kitSkills(this.kit);
+    for (let i = 0; i < skills.length; i++) {
+      if (!asked[i] || this.busy || this.t < this.skillAt[i]!) continue;
+      this.skillAt[i] = this.t + skills[i]!.cd;
+      this.skillSlot = i;
       this.enter('skill');
       this.struck = false;
+      break;
     }
     if (input.dash && this.t >= this.dashReady && this.stamina >= M.staminaDash && this.state !== 'skill') {
       this.stamina -= M.staminaDash;
@@ -225,7 +244,7 @@ export class HeroCore {
     } else if (this.state === 'skill') {
       if (!this.struck && this.stateT >= 0.3) {
         this.struck = true;
-        out.push({ kind: 'skill' });
+        out.push({ kind: 'skill', slot: this.skillSlot });
       }
       if (this.stateT >= 0.9) this.enter('idle');
     } else if (this.state === 'work') {
@@ -413,6 +432,11 @@ export function inArc(
 }
 
 /** The hero kit for a unit type (the king has his own). */
+/** Every skill of a kit in slot order: its first skill, then the others (D146 ខ៥). */
+export function kitSkills(kit: HeroKit): HeroSkill[] {
+  return [kit.skill, ...(kit.skills ?? [])];
+}
+
 export function kitFor(cfg: Cfg, type: string | 'king'): HeroKit {
   const k =
     type === 'king' ? cfg.kits.find((x) => x.id === 'king') : cfg.kits.find((x) => x.units.includes(type));

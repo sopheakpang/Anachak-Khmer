@@ -1132,3 +1132,31 @@ test('KG-13: PK 1.9.0 (D146 ខ១ ខ៣, D149): PC 1660 preset — Meshy build
   await expect(page.locator('[data-act="gfx-set:pc1660"].k-on')).toBeVisible();
   await page.screenshot({ path: 'docs/screens/k-gfx-panel.png' });
 });
+
+test('KG-14: PK 1.9.0 (D146 ខ៥, D150): the king’s four skills, the great one under a yantra canopy', async ({ page }) => {
+  await page.goto('/?mode=anachak&offline=1&preset=lite');
+  await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.anachak, null, {
+    timeout: 180_000,
+    polling: 500,
+  });
+  if (await page.locator('.k-anachak #k-card').isVisible())
+    await page.locator('.k-anachak #k-card .k-card-x').dispatchEvent('pointerdown');
+  const ui = page.locator('.k-anachak');
+  await page.evaluate(() => window.__temples.anachak!.act('hero:king'));
+  await expect(ui.locator('.k-hero-card')).toContainText('King', { timeout: 60_000 });
+  // Four skill buttons: the first, two more, the great one.
+  for (const b of ['skill', 'skill2', 'skill3', 'skill4']) await expect(ui.locator(`.k-hb-${b}`)).toBeVisible();
+  await page.evaluate(() => {
+    const c = window.__temples.anachak!.hero!.core!;
+    c.camYaw = c.heading + 0.6;
+    c.camDist = 7;
+  });
+  await page.keyboard.press('Digit3');
+  await page.waitForFunction(() => window.__temples.anachak!.hero!.core!.skillSlot === 3, null, { timeout: 10_000 });
+  await page.waitForTimeout(450);
+  await page.screenshot({ path: 'docs/screens/k-hero-ultimate.png' });
+  await expect(ui.locator('.k-hb-skill4 .k-hb-cd')).toBeVisible({ timeout: 5_000 });
+  const left = await page.evaluate(() => window.__temples.anachak!.hero!.core!.skillLeft(3));
+  expect(left).toBeGreaterThan(30);
+  await page.keyboard.press('Escape');
+});

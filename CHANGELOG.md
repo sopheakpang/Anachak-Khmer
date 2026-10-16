@@ -19,6 +19,7 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.9.0-11 | **PK's Meshy buildings** on the PC presets (PC 1660, High, Ultra): the barracks with its palisade, the lumber camp, the market stalls, the noble house on stilts, the river landing and the granary storehouse are PK's own Meshy models. Low keeps the built-in buildings (frame budget) (D149). |
 | 1.9.0-12 | **PK's Meshy people as 3D heroes** (PC): play a villager, a spearman, a swordsman, an archer, the commander or the hunter as PK's own models; the king is the Meshy king of 879 (D149). |
 | 1.9.0-13 | **🖥 Graphics** (year bar): see the frame rate (FPS), triangles and draw calls now, and switch the graphics: Low, **PC 1660** (for the GTX 1660 Super: Meshy buildings, sharper shadows), High, Ultra, Lite. The game is saved before it restarts with the new look (D149). |
+| 1.9.0-14 | **More skills for the 3D hero** (PK): kings, soldiers, the hunter, the rider and the war elephant have four skills, villagers and the cart two — keys 1 2 3 (or W E R in MOBA), each with its own button and cooldown. The fourth is a great skill: the king's Power of the Devaraja strikes all round him under a golden yantra in the sky (D150). |
 
 ## 1.8.0 — 2026-10-09
 

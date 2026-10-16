@@ -691,6 +691,27 @@ const Pt = z.tuple([z.number(), z.number()]);
  * Anachak Khmer (PK's second Kingdom tab, D92): the levy, the battle order, the royal roads
  * and the 3D hero mode (config/kingdom/anachak.json).
  */
+/**
+ * A hero skill (D92; PK 1.9.0 ខ៥: each with its own yantra, colour and sound). kind = what it
+ * does; `ultimate` strikes everything round the hero under a great yantra canopy (never under
+ * the feet, out of respect).
+ */
+export const HeroSkillSchema = z.object({
+  id: z.string(),
+  ...Bi,
+  cd: z.number().positive(),
+  radius: z.number().positive(),
+  power: z.number().positive(),
+  kind: z.enum(['chop', 'spin', 'dash', 'volley', 'heal', 'dog', 'ultimate']),
+  /** The yantra drawn for it (default by kind). */
+  yantra: z.enum(['lotus', 'spiral', 'grid']).optional(),
+  /** Its light colour, #rrggbb (default: gold for the king and healing, sky blue otherwise). */
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  /** Its sound (KingdomSound effect name; default by kind). */
+  sound: z.string().optional(),
+});
+export type HeroSkill = z.infer<typeof HeroSkillSchema>;
+
 export const AnachakSchema = z.object({
   tab: z.object({ ...Bi, savePrefix: z.string().min(1) }),
   /**
@@ -934,14 +955,12 @@ export const AnachakSchema = z.object({
           weapon: z.enum(['axe', 'spear', 'sword', 'bow', 'lance', 'goad', 'staff', 'preahKhan']),
           reach: z.number().positive(),
           arc: z.number().positive(),
-          skill: z.object({
-            id: z.string(),
-            ...Bi,
-            cd: z.number().positive(),
-            radius: z.number().positive(),
-            power: z.number().positive(),
-            kind: z.enum(['chop', 'spin', 'dash', 'volley', 'heal', 'dog']),
-          }),
+          skill: HeroSkillSchema,
+          /**
+           * PK 1.9.0 (D146 ខ៥ B): the kit's other skills, slots 2–4 (MOBA W E R, Action 1 2 3);
+           * the last of four is the big one (`ultimate`).
+           */
+          skills: z.array(HeroSkillSchema).max(3).default([]),
         }),
       )
       .min(1),

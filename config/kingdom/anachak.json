@@ -197,7 +197,7 @@
     "$comment": "The king's book (PK): resources, people by work, soldiers by kind, houses, stores, buildings going up and the plan. lowRes marks a resource red."
   },
   "hero": {
-    "$comment": "3D hero mode (PK): any character (and the king) is played from behind in the live world, anime cel-shaded. Distances in metres, times in seconds. The unit stays in the sim (its HP, its carry); the AI lets go of it while it is played. Damage = the unit's attack × attackMul (the king uses king.attack).",
+    "$comment": "3D hero mode (PK): any character (and the king) is played from behind in the live world, anime cel-shaded. Distances in metres, times in seconds. The unit stays in the sim (its HP, its carry); the AI lets go of it while it is played. Damage = the unit's attack × attackMul (the king uses king.attack). PK 1.9.0 (D146 ខ៥ B, D150): each kit's `skills` are its other skills, slots 2–4 (MOBA W E R, Action 1 2 3): four for the king, soldiers, riders, the war elephant, the commander and the hunter, two for villagers and the ox-cart; the fourth is the great skill (kind `ultimate` strikes all round under a great yantra canopy, or a great volley for bows). Each skill names its yantra (lotus, spiral, grid), its light colour and its sound; the gesture comes from its kind.",
     "camera": {
       "dist": 5.6,
       "height": 1.9,
@@ -264,7 +264,21 @@
           "radius": 3.2,
           "power": 3,
           "kind": "chop"
-        }
+        },
+        "skills": [
+          {
+            "id": "poleSweep",
+            "km": "វាយ​ដងបង្គី",
+            "en": "Pole sweep",
+            "cd": 7,
+            "radius": 2.6,
+            "power": 1.6,
+            "kind": "spin",
+            "yantra": "spiral",
+            "color": "#ffe2b0",
+            "sound": "hit"
+          }
+        ]
       },
       {
         "id": "spear",
@@ -280,7 +294,45 @@
           "radius": 3.6,
           "power": 2.2,
           "kind": "spin"
-        }
+        },
+        "skills": [
+          {
+            "id": "lunge",
+            "km": "ចាក់ស្ទុះ",
+            "en": "Lunge",
+            "cd": 5,
+            "radius": 3,
+            "power": 2.8,
+            "kind": "dash",
+            "yantra": "spiral",
+            "color": "#9fd8ff",
+            "sound": "spear"
+          },
+          {
+            "id": "javelins",
+            "km": "ចោលលំពែង",
+            "en": "Javelin throw",
+            "cd": 8,
+            "radius": 3,
+            "power": 2.4,
+            "kind": "volley",
+            "yantra": "grid",
+            "color": "#b8e0ff",
+            "sound": "arrow"
+          },
+          {
+            "id": "spearWall",
+            "km": "របាំង​លំពែង",
+            "en": "Wall of spears",
+            "cd": 35,
+            "radius": 7,
+            "power": 3.5,
+            "kind": "ultimate",
+            "yantra": "grid",
+            "color": "#7fc8ff",
+            "sound": "thunder"
+          }
+        ]
       },
       {
         "id": "sword",
@@ -296,7 +348,45 @@
           "radius": 2.6,
           "power": 3.2,
           "kind": "dash"
-        }
+        },
+        "skills": [
+          {
+            "id": "whirl",
+            "km": "កាប់​វិលជុំ",
+            "en": "Whirling blade",
+            "cd": 7,
+            "radius": 3,
+            "power": 2.5,
+            "kind": "spin",
+            "yantra": "spiral",
+            "color": "#c9e8ff",
+            "sound": "hit"
+          },
+          {
+            "id": "braveShout",
+            "km": "សម្រែក​ក្លាហាន",
+            "en": "Brave shout",
+            "cd": 14,
+            "radius": 8,
+            "power": 0.15,
+            "kind": "heal",
+            "yantra": "lotus",
+            "color": "#ffe7a0",
+            "sound": "complete"
+          },
+          {
+            "id": "nagaStrike",
+            "km": "នាគប្រហារ",
+            "en": "Naga strike",
+            "cd": 35,
+            "radius": 6.5,
+            "power": 4.2,
+            "kind": "ultimate",
+            "yantra": "spiral",
+            "color": "#6fe0d0",
+            "sound": "thunder"
+          }
+        ]
       },
       {
         "id": "bow",
@@ -312,7 +402,45 @@
           "radius": 5,
           "power": 2,
           "kind": "volley"
-        }
+        },
+        "skills": [
+          {
+            "id": "longShot",
+            "km": "ព្រួញវែង",
+            "en": "Long shot",
+            "cd": 6,
+            "radius": 1.6,
+            "power": 4,
+            "kind": "volley",
+            "yantra": "grid",
+            "color": "#d0f0ff",
+            "sound": "arrow"
+          },
+          {
+            "id": "herbs",
+            "km": "ថ្នាំព្រៃ",
+            "en": "Forest herbs",
+            "cd": 16,
+            "radius": 4,
+            "power": 0.2,
+            "kind": "heal",
+            "yantra": "lotus",
+            "color": "#b8ffb0",
+            "sound": "complete"
+          },
+          {
+            "id": "skyOfArrows",
+            "km": "មេឃព្រួញ",
+            "en": "Sky of arrows",
+            "cd": 35,
+            "radius": 9,
+            "power": 3,
+            "kind": "volley",
+            "yantra": "grid",
+            "color": "#9fe8ff",
+            "sound": "arrow"
+          }
+        ]
       },
       {
         "id": "rider",
@@ -328,7 +456,45 @@
           "radius": 2.8,
           "power": 2.6,
           "kind": "dash"
-        }
+        },
+        "skills": [
+          {
+            "id": "trample",
+            "km": "ជាន់កំទេច",
+            "en": "Trample",
+            "cd": 7,
+            "radius": 3.4,
+            "power": 2.2,
+            "kind": "spin",
+            "yantra": "spiral",
+            "color": "#e0c090",
+            "sound": "hit"
+          },
+          {
+            "id": "rally",
+            "km": "ស្រែក​រួបរួម",
+            "en": "Rally",
+            "cd": 14,
+            "radius": 10,
+            "power": 0.15,
+            "kind": "heal",
+            "yantra": "lotus",
+            "color": "#ffe7a0",
+            "sound": "complete"
+          },
+          {
+            "id": "greatCharge",
+            "km": "សម្រុកធំ",
+            "en": "Great charge",
+            "cd": 35,
+            "radius": 7,
+            "power": 4,
+            "kind": "ultimate",
+            "yantra": "spiral",
+            "color": "#ffb070",
+            "sound": "thunder"
+          }
+        ]
       },
       {
         "id": "elephant",
@@ -344,7 +510,45 @@
           "radius": 6,
           "power": 2.5,
           "kind": "spin"
-        }
+        },
+        "skills": [
+          {
+            "id": "tuskCharge",
+            "km": "ភ្លុកបុក",
+            "en": "Tusk charge",
+            "cd": 7,
+            "radius": 3.6,
+            "power": 3,
+            "kind": "dash",
+            "yantra": "spiral",
+            "color": "#e8d8b0",
+            "sound": "hit"
+          },
+          {
+            "id": "trumpet",
+            "km": "ស្រែក​ដំរី",
+            "en": "Trumpet call",
+            "cd": 16,
+            "radius": 12,
+            "power": 0.2,
+            "kind": "heal",
+            "yantra": "lotus",
+            "color": "#ffe7a0",
+            "sound": "animal"
+          },
+          {
+            "id": "earthshaker",
+            "km": "ផែនដី​រញ្ជួយ",
+            "en": "Earthshaker",
+            "cd": 40,
+            "radius": 11,
+            "power": 4.5,
+            "kind": "ultimate",
+            "yantra": "lotus",
+            "color": "#d8b070",
+            "sound": "thunder"
+          }
+        ]
       },
       {
         "id": "commander",
@@ -360,7 +564,45 @@
           "radius": 12,
           "power": 0.25,
           "kind": "heal"
-        }
+        },
+        "skills": [
+          {
+            "id": "cleave",
+            "km": "កាប់​បំបែក",
+            "en": "Cleave",
+            "cd": 7,
+            "radius": 3,
+            "power": 2.6,
+            "kind": "spin",
+            "yantra": "spiral",
+            "color": "#c9e8ff",
+            "sound": "hit"
+          },
+          {
+            "id": "chargeOrder",
+            "km": "បញ្ជា​សម្រុក",
+            "en": "Order to charge",
+            "cd": 8,
+            "radius": 3,
+            "power": 3,
+            "kind": "dash",
+            "yantra": "spiral",
+            "color": "#9fd8ff",
+            "sound": "sword"
+          },
+          {
+            "id": "generalsCommand",
+            "km": "បញ្ជា​មេទ័ព",
+            "en": "The general's command",
+            "cd": 40,
+            "radius": 9,
+            "power": 4,
+            "kind": "ultimate",
+            "yantra": "grid",
+            "color": "#ffd27a",
+            "sound": "thunder"
+          }
+        ]
       },
       {
         "id": "hunter",
@@ -376,7 +618,45 @@
           "radius": 18,
           "power": 4,
           "kind": "dog"
-        }
+        },
+        "skills": [
+          {
+            "id": "sureShot",
+            "km": "ព្រួញ​ត្រង់",
+            "en": "Sure shot",
+            "cd": 7,
+            "radius": 1.8,
+            "power": 3.5,
+            "kind": "volley",
+            "yantra": "grid",
+            "color": "#b0ff90",
+            "sound": "arrow"
+          },
+          {
+            "id": "snare",
+            "km": "អន្ទាក់",
+            "en": "Snare",
+            "cd": 10,
+            "radius": 2.4,
+            "power": 1.8,
+            "kind": "spin",
+            "yantra": "grid",
+            "color": "#d0c090",
+            "sound": "hit"
+          },
+          {
+            "id": "greatHunt",
+            "km": "បរបាញ់ធំ",
+            "en": "The great hunt",
+            "cd": 35,
+            "radius": 8,
+            "power": 3,
+            "kind": "volley",
+            "yantra": "grid",
+            "color": "#a0f0a0",
+            "sound": "arrow"
+          }
+        ]
       },
       {
         "id": "cart",
@@ -392,7 +672,21 @@
           "radius": 10,
           "power": 0.3,
           "kind": "heal"
-        }
+        },
+        "skills": [
+          {
+            "id": "oxCharge",
+            "km": "គោបុក",
+            "en": "Ox charge",
+            "cd": 8,
+            "radius": 2.6,
+            "power": 2,
+            "kind": "dash",
+            "yantra": "spiral",
+            "color": "#e0c090",
+            "sound": "hit"
+          }
+        ]
       },
       {
         "id": "king",
@@ -408,7 +702,45 @@
           "radius": 14,
           "power": 0.4,
           "kind": "heal"
-        }
+        },
+        "skills": [
+          {
+            "id": "khanStrike",
+            "km": "ព្រះខ័ន​ប្រហារ",
+            "en": "Preah Khan strike",
+            "cd": 7,
+            "radius": 3,
+            "power": 3.5,
+            "kind": "dash",
+            "yantra": "spiral",
+            "color": "#ffd27a",
+            "sound": "sword"
+          },
+          {
+            "id": "khanWheel",
+            "km": "កង្ហារ​ព្រះខ័ន",
+            "en": "Sacred sword wheel",
+            "cd": 9,
+            "radius": 4.2,
+            "power": 2.8,
+            "kind": "spin",
+            "yantra": "lotus",
+            "color": "#ffe08a",
+            "sound": "hit"
+          },
+          {
+            "id": "devaraja",
+            "km": "អំណាច​ទេវរាជ",
+            "en": "Power of the Devaraja",
+            "cd": 40,
+            "radius": 10,
+            "power": 5,
+            "kind": "ultimate",
+            "yantra": "lotus",
+            "color": "#ffcf4a",
+            "sound": "thunder"
+          }
+        ]
       }
     ],
     "kingNote": {
@@ -559,8 +891,26 @@
       "lightElevation": [10, 62],
       "golden": 0.3,
       "seasons": [
-        {"id": "dry", "km": "រដូវប្រាំង", "en": "Dry season", "months": [10, 11, 0, 1, 2, 3], "sunrise": "#ffcf70", "sunset": "#ff8a20", "skyRise": "#ffd27a", "skySet": "#ffa040"},
-        {"id": "wet", "km": "រដូវវស្សា", "en": "Wet season", "months": [4, 5, 6, 7, 8, 9], "sunrise": "#ffb3a8", "sunset": "#ff5f6e", "skyRise": "#f7c0cc", "skySet": "#d97aa8"}
+        {
+          "id": "dry",
+          "km": "រដូវប្រាំង",
+          "en": "Dry season",
+          "months": [10, 11, 0, 1, 2, 3],
+          "sunrise": "#ffcf70",
+          "sunset": "#ff8a20",
+          "skyRise": "#ffd27a",
+          "skySet": "#ffa040"
+        },
+        {
+          "id": "wet",
+          "km": "រដូវវស្សា",
+          "en": "Wet season",
+          "months": [4, 5, 6, 7, 8, 9],
+          "sunrise": "#ffb3a8",
+          "sunset": "#ff5f6e",
+          "skyRise": "#f7c0cc",
+          "skySet": "#d97aa8"
+        }
       ]
     },
     "fire": {
@@ -571,7 +921,15 @@
     "torches": {
       "$comment": "PK 1.8.0 (ពេលយប់ដុតគប់ភ្លើង ដើម្បីបំភ្លឺ): at night a torch burns by the door of every house in `houses`, `work` torches stand round each work place, people walking after dark carry one (carry) and a torch is planted by people still working in the open (planted). Torches light when the night passes `from` (0..1). max = most flames at once near the view. Colours: flame, glow (halo and the pool on the ground), light (the real light of the nearest few; how many: config/quality.json kingdom.torchLights). glowSize and pool in m; lightRange in m and lightIntensity in candela. Resin torches and oil lamps are known from Angkor-period finds and from Zhou Daguan's account of lamps at night festivals; their placement here is a game abstraction.",
       "houses": ["house", "nobleHouse"],
-      "work": {"townCentre": 4, "storehouse": 2, "lumberCamp": 2, "port": 2, "market": 4, "barracks": 2, "monument": 6},
+      "work": {
+        "townCentre": 4,
+        "storehouse": 2,
+        "lumberCamp": 2,
+        "port": 2,
+        "market": 4,
+        "barracks": 2,
+        "monument": 6
+      },
       "carry": true,
       "planted": true,
       "max": 260,

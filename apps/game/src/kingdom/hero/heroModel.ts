@@ -916,6 +916,24 @@ export class HeroModel {
           j.shoulderL.rotation.x = -3.0 + p * 3.4;
           j.spine.rotation.x = -0.3 + p * 0.8;
           break;
+        case 'ultimate': {
+          // The great skill (D146 ខ៥): both hands raised to the sky, then brought down hard
+          // with a bend of the knees on the blow (a third of the way in).
+          const up = Math.min(1, p / 0.3);
+          const down = p < 0.3 ? 0 : Math.min(1, (p - 0.3) / 0.15);
+          j.shoulderL.rotation.set(-2.9 * up + 2.5 * down, 0, 0.35 * (1 - down));
+          j.shoulderR.rotation.set(-2.9 * up + 2.5 * down, 0, -0.35 * (1 - down));
+          j.head.rotation.x = -0.35 * up + 0.45 * down;
+          j.spine.rotation.x = -0.25 * up + 0.6 * down;
+          if (!mounted) {
+            j.hipL.rotation.x = -0.6 * down;
+            j.hipR.rotation.x = -0.6 * down;
+            j.kneeL.rotation.x = 1.0 * down;
+            j.kneeR.rotation.x = 1.0 * down;
+          }
+          this.trailMat.opacity = down > 0 ? 0.8 * (1 - down) : 0;
+          break;
+        }
       }
     }
     if (s === 'work') {

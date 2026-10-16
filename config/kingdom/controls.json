@@ -1,5 +1,5 @@
 {
-  "$comment": "PK 1.8.0: the keyboard, as each player likes it. PK 1.9.0 (D146 ខ៤): heroSchemes are ready sets of hero keys picked in 🎮 — Action (WASD, the default) or MOBA (arrows walk, skills on Q W E R at the mouse pointer, Space dodge, F work, C jump); a scheme replaces only the keys it lists. Every action has up to two keys, named by their place on the keyboard (KeyboardEvent.code: KeyW is the W key whatever the layout, so a Khmer keyboard plays the same). The player changes them in the game (year bar 🎮); their choice is kept in the browser; these are the defaults and Reset brings them back. map = the kingdom view; hero = the 3D hero mode.",
+  "$comment": "PK 1.8.0: the keyboard, as each player likes it. PK 1.9.0 (D146 ខ៤): heroSchemes are ready sets of hero keys picked in 🎮 — Action (WASD, the default) or MOBA (arrows walk, skills on Q W E R at the mouse pointer — in Action the other skills are 1 2 3, Space dodge, F work, C jump); a scheme replaces only the keys it lists. Every action has up to two keys, named by their place on the keyboard (KeyboardEvent.code: KeyW is the W key whatever the layout, so a Khmer keyboard plays the same). The player changes them in the game (year bar 🎮); their choice is kept in the browser; these are the defaults and Reset brings them back. map = the kingdom view; hero = the 3D hero mode.",
   "map": [
     { "id": "panUp", "km": "រំកិលឡើង", "en": "Move the view up", "keys": ["KeyW", "ArrowUp"] },
     { "id": "panDown", "km": "រំកិលចុះ", "en": "Move the view down", "keys": ["KeyS", "ArrowDown"] },
@@ -29,6 +29,9 @@
     { "id": "jump", "km": "លោត", "en": "Jump", "keys": ["Space"] },
     { "id": "attack", "km": "វាយ", "en": "Strike", "keys": ["KeyJ"] },
     { "id": "skill", "km": "ក្បាច់ពិសេស", "en": "Skill", "keys": ["KeyK", "KeyR"] },
+    { "id": "skill2", "km": "ក្បាច់ទី ២", "en": "Second skill", "keys": ["Digit1"] },
+    { "id": "skill3", "km": "ក្បាច់ទី ៣", "en": "Third skill", "keys": ["Digit2"] },
+    { "id": "skill4", "km": "ក្បាច់ធំ", "en": "Great skill", "keys": ["Digit3"] },
     { "id": "dash", "km": "គេច", "en": "Dodge", "keys": ["KeyQ"] },
     { "id": "work", "km": "ធ្វើការ", "en": "Work, talk, take", "keys": ["KeyE"] },
     { "id": "camLeft", "km": "បង្វិលកាមេរ៉ាឆ្វេង", "en": "Turn the camera left", "keys": ["ArrowLeft"] },
@@ -58,6 +61,9 @@
         "left": ["ArrowLeft"],
         "right": ["ArrowRight"],
         "skill": ["KeyQ"],
+        "skill2": ["KeyW"],
+        "skill3": ["KeyE"],
+        "skill4": ["KeyR"],
         "dash": ["Space"],
         "work": ["KeyF"],
         "jump": ["KeyC"],

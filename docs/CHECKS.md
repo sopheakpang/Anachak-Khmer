@@ -644,3 +644,13 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | e2e KG-02, KG-13 | ✅ | |
 
 **Not verified here:** frame rate of PC 1660 on PK's GTX 1660 Super with LIVE Studio running (PK: 🖥 on the year bar). **Not done yet:** the five new buildings (forge, healer's hut, arogyasala, quarry, training ground) and their rules; Meshy people in the crowds (ខ១ A: near the camera); animals in the game.
+
+## 1.9.0-14 hero skills (D150) — 2026-10-16
+
+| Check | Result | How |
+| --- | --- | --- |
+| Config: every kit's skills valid, fighters 3 extra, villager/cart 1, great skill longest cooldown | ✅ | `hero/heroSkills.test.ts` |
+| Keys: Action 1/2/3, MOBA W/E/R, no key repeated in a scheme | ✅ | `kingdom/keymap.test.ts` |
+| The king's four buttons, the great skill fires on 3, cooldown shown, yantra canopy above him | ✅ | e2e KG-14, `docs/screens/k-hero-ultimate.png` |
+| `npm run verify` (lint, typecheck, 85 test files / 729 tests, build) | ✅ | |
+| e2e KG-12, KG-14 | ✅ | |
