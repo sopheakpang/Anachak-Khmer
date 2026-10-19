@@ -1149,6 +1149,13 @@ test('KG-14: PK 1.9.0 (D146 ខ៥, D150): the king’s four skills, the great o
   await expect(ui.locator('.k-hero-card')).toContainText('King', { timeout: 60_000 });
   // Four skill buttons: the first, two more, the great one.
   for (const b of ['skill', 'skill2', 'skill3', 'skill4']) await expect(ui.locator(`.k-hb-${b}`)).toBeVisible();
+  // PK 2026-10-20 (D156): on the PC they are one bar along the bottom, each with its key.
+  await expect(ui.locator('.k-hero-hotbar')).toBeVisible();
+  for (const b of ['attack', 'skill', 'skill2', 'skill3', 'skill4', 'dash', 'jump', 'work', 'auto'])
+    await expect(ui.locator(`.k-hero-hotbar .k-hb-${b} .k-hb-k`)).not.toBeEmpty();
+  const bar = (await ui.locator('.k-hero-hotbar').boundingBox())!;
+  const stage = (await ui.boundingBox())!;
+  expect(bar.y + bar.height).toBeGreaterThan(stage.y + stage.height * 0.9);
   await page.evaluate(() => {
     const c = window.__temples.anachak!.hero!.core!;
     c.camYaw = c.heading + 0.6;

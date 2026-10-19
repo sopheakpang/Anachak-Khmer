@@ -714,3 +714,17 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | e2e KG-16 (PC look village, scatter, near people) | ❌ times out | In the software renderer a frame of the whole explored Anachak map now takes ≈ 20 s (the 21 m trees and their shadows); at the KG-13 close view one frame took 56 ms with the old trees and > 4 min with the new ones (4096 shadows; 1.1 s at 2048, 0.2 s without shadows). **The frame rate must be measured on PK's GTX 1660 Super** (🖥 panel) before the tall forest is kept as it is. |
 | `npm run verify` (89 test files / 770 tests, build) | ✅ | |
 
+## 1.9.0-21 PK's notes of 2026-10-20 (D156)
+
+| Check | Result | How |
+| --- | --- | --- |
+| Palms ≤ 14 m, scattered palms ≤ 1.6× their model; buildings drawn bigger (house 1.5, others 1.3); land blend set | ✅ | `view/props.test.ts` |
+| A building can be drawn bigger than its footprint, still standing on the ground; the blend reaches the shader (colour to the land, dusted foot) | ✅ | `view/props.test.ts` |
+| Bank trees smaller the nearer the water, none in it; water distance by tiles | ✅ | `view/props.test.ts` |
+| Big scattered trees keep 3 tiles from open water (whole Anachak map) | ✅ | `view/scatter.test.ts` |
+| Emerald tree gone; the big tropical tree from Blender (4 100 triangles, one mesh, bark-and-leaf atlas) in its place, checked by renders | ✅ | `view/scatter.test.ts`, renders on PK's PC |
+| 3D hero: scatter picked round him (trees by him no longer vanish) | ✅ | `view/scatter.test.ts` |
+| 3D hero wades: into the shallows up to the chest, never deep water; fords count as water; the depth eases between tiles; rings and splashes | ✅ | `hero/hero.test.ts`, `hero/wading.test.ts`; browser probe: knee-deep in the river, 5 rings, `docs/screens/k-hero-wade.png` |
+| PC hero buttons: one bar at the bottom, every button with its key | ✅ | e2e KG-14, `docs/screens/k-hero-ultimate.png` |
+
+| `npm run verify` (90 test files / 781 tests, build) | ✅ | |

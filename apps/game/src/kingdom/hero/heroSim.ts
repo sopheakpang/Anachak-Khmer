@@ -33,12 +33,25 @@ export interface StrikeResult {
   hits: Array<{ x: number; z: number; dmg: number; kill: boolean; what: 'unit' | 'animal' | 'building' }>;
 }
 
-/** Can the hero stand here: open ground, a ford or a bridge (no water, trees, rocks, walls)? */
+/**
+ * Can the hero stand here: open ground, a ford or a bridge, or the river's shallows up to his
+ * chest (PK 2026-10-20, D156: he wades in, as the people do) — no deep water, trees, rocks, walls.
+ */
 export function heroOpen(sim: KingdomSim, x: number, z: number): boolean {
   const half = (sim.map.size * sim.map.tile) / 2 - 2;
   if (Math.abs(x) > half || Math.abs(z) > half) return false;
   const [tx, tz] = worldToTile(sim.map, x, z);
-  return sim.grid.ok(tx, tz);
+  if (sim.grid.ok(tx, tz)) return true;
+  return sim.grid.isWater(tx, tz) && sim.depthAt(x, z) <= sim.data.rules.water.chestDepth;
+}
+
+/** How deep the water he stands in is at a tile (m): the river's depth, or a ford's (drawn as water). */
+export function heroWaterDepth(sim: KingdomSim, x: number, z: number, fordDepth: number): number {
+  const d = sim.depthAt(x, z);
+  if (d > 0) return d;
+  const [tx, tz] = worldToTile(sim.map, x, z);
+  const N = sim.map.size;
+  return tx >= 0 && tz >= 0 && tx < N && tz < N && sim.map.terrain[tz * N + tx] === 'ford' ? fordDepth : 0;
 }
 
 /** The hero's attack per hit before armour. */

@@ -1315,12 +1315,12 @@
       "status": "pk"
     },
     {
-      "game": "tree.emerald",
-      "src": "3D model/Meshy_AI_Emerald_Canopy_1003152337_texture.glb",
-      "out": "plants/emerald-tree.glb",
+      "game": "tree.bigTropical",
+      "src": "scripts/models/blender/make_bigtree.py (made in Blender; PK 2026-10-20 replaced the emerald tree)",
+      "out": "plants/big-tropical-tree.glb",
       "kind": "plant",
-      "size": ["h", 8],
-      "tris": 4000,
+      "size": ["h", 26],
+      "tris": 4100,
       "status": "pk"
     },
     {

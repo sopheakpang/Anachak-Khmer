@@ -65,6 +65,51 @@ export interface TreeSpot {
   shade: number;
 }
 
+/**
+ * PK 2026-10-20 (D156) "Trees should not growing in water": how many tiles each tile is from
+ * open water (0 = water, up to `max`), so trees on the bank are drawn smaller and stand back
+ * from the edge instead of hanging their 20 m crowns over the river.
+ */
+export function waterDistance(map: { size: number; terrain: ArrayLike<string> }, max = 4): Uint8Array {
+  const N = map.size;
+  const d = new Uint8Array(N * N).fill(max);
+  let front: number[] = [];
+  for (let i = 0; i < N * N; i++)
+    if (map.terrain[i] === 'water') {
+      d[i] = 0;
+      front.push(i);
+    }
+  for (let step = 1; step < max && front.length; step++) {
+    const next: number[] = [];
+    for (const i of front) {
+      const x = i % N;
+      const z = (i - x) / N;
+      for (const [dx, dz] of [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ] as const) {
+        const nx = x + dx;
+        const nz = z + dz;
+        if (nx < 0 || nz < 0 || nx >= N || nz >= N) continue;
+        const j = nz * N + nx;
+        if (d[j]! > step) {
+          d[j] = step;
+          next.push(j);
+        }
+      }
+    }
+    front = next;
+  }
+  return d;
+}
+
+/** A tree this many tiles from the water is drawn this much of its size (1 well inland). */
+export function shoreScale(tiles: number): number {
+  return tiles <= 0 ? 0 : tiles === 1 ? 0.35 : tiles === 2 ? 0.55 : tiles === 3 ? 0.8 : 1;
+}
+
 /** Pick one of a weighted list by a number 0..1. */
 export function pickWeighted<T extends { weight: number }>(list: readonly T[], r: number): T {
   const total = list.reduce((a, b) => a + b.weight, 0);

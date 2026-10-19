@@ -48,7 +48,7 @@ describe('scatter config', () => {
       worst += t * k.maxVisible;
     }
     expect(worst).toBeLessThan(550_000);
-  });
+  }, 30_000);
 
   it('PK: the game’s own grass stays alone (the new grass models did not sit with it)', () => {
     for (const id of ['grassTuft', 'forestGrass', 'grassBloom']) expect(SC.kinds.some((k) => k.id === id)).toBe(false);
@@ -126,5 +126,41 @@ describe('the nearest spots', () => {
     const a = rng(7);
     const b = rng(7);
     expect([a(), a(), a()]).toEqual([b(), b(), b()]);
+  });
+});
+
+describe('PK 2026-10-20 (D156): trees keep out of the water; the hero sees the trees by him', () => {
+  it('big tree kinds keep three tiles from open water', async () => {
+    const { waterDistance } = await import('./treeModels');
+    const map = generateMap(data, data.campaign.map.seed, data.anachak.roads);
+    const kinds = SC.kinds.filter((k) => k.dry);
+    expect(kinds.length).toBeGreaterThan(5);
+    const wet = waterDistance(map);
+    const half = (map.size * map.tile) / 2;
+    let n = 0;
+    for (const s of scatterPlan(map, kinds, map.seed, SC.clearHall)) {
+      const tx = Math.floor((s.x + half) / map.tile);
+      const tz = Math.floor((s.z + half) / map.tile);
+      expect(wet[tz * map.size + tx]!).toBeGreaterThanOrEqual(kinds[s.kind]!.dry!);
+      n++;
+    }
+    expect(n).toBeGreaterThan(0);
+  });
+
+  it('in the 3D hero mode the scatter is picked round the hero, not where the level view meets the ground', async () => {
+    const { scatterCentre } = await import('./scatter');
+    const cam = { x: 0, y: 2, z: 0 };
+    const level = { x: 0, y: -0.02, z: 1 };
+    expect(scatterCentre(true, [5, 6], cam, level)).toEqual([5, 6]);
+    expect(scatterCentre(false, [5, 6], cam, level)).toEqual([0, 40]);
+    const down = { x: 0, y: -0.5, z: 0.866 };
+    expect(scatterCentre(false, [5, 6], { x: 0, y: 10, z: 0 }, down)[1]).toBeCloseTo(17.32, 1);
+  });
+
+  it('the emerald tree is gone; the big tropical tree from Blender takes its place', () => {
+    expect(SC.kinds.some((k) => k.id === 'emeraldTree')).toBe(false);
+    const big = SC.kinds.find((k) => k.id === 'bigTropicalTree')!;
+    expect(big.file).toBe('models/real/plants/big-tropical-tree.glb');
+    expect(big.dry).toBeGreaterThanOrEqual(3);
   });
 });

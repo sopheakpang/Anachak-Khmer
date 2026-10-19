@@ -890,7 +890,17 @@
       "landDust": 20,
       "landDustHeavy": 30,
       "heavyFall": 8,
-      "lift": 0.35
+      "lift": 0.35,
+      "water": {
+        "$comment": "PK 2026-10-20 (D156) 'walk on the water without floating legs and water effect actions': in a ford or shallow water the hero stands in it (sink x the depth, at most chest-deep, as the RTS people wade); rings spread from his legs as he walks (ringSec) or stands (idleRingSec), ringSize m across at their widest; running throws splash drops (splash every splashSec). He wades across fords (drawn as water, fordDepth m deep: before, he walked on top of it) and into the river's shallows up to the chest (rules.water.chestDepth); deeper water stops him.",
+        "sink": 0.92,
+        "ringSec": 0.32,
+        "idleRingSec": 1.4,
+        "splashSec": 0.18,
+        "splash": 4,
+        "ringSize": 2.4,
+        "fordDepth": 0.45
+      }
     },
     "models": {
       "$comment": "PK: real 3D model files (rigged .glb) made from the concept sheets replace the built-in figure in the 3D mode and on the sheet; put them in apps/game/public-mobile/models/. hips = the hip height (m) the model is scaled to. A kit with no file keeps the built-in figure. PK 1.9.0 (D146 ខ១): PK's Meshy people for every hero on foot (models/heroes/: rig and colour map only, clips stripped, 4 bone weights a vertex); the phone build leaves models/heroes/ out and keeps the built-in figures; the king is the Meshy king of 879 (`phone`: the old Golden Temple Guardian stays on the phone). PK 1.9.0 (D155, \"reality logic human gesture behavior\"): the heroes use the game-ready copies in models/real/people/ (same Meshy models, lighter, with their Idle, Walking and Running clips): they stand, walk and run by their own motion capture, and the game poses their arms for strikes, skills and work.",

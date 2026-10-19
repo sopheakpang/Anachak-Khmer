@@ -556,3 +556,96 @@
   font-size: 40px;
   margin-top: 10px;
 }
+
+/*
+ * PK 2026-10-20 (D156): on the PC the hero's buttons are one bar along the bottom, like a game's
+ * hotbar: each tile keeps its symbol and Khmer name, with its key in the corner. The phone keeps
+ * the thumb fan above.
+ */
+.k-hero-acts.k-hero-hotbar {
+  left: 50%;
+  right: auto;
+  bottom: 24px;
+  width: auto;
+  height: auto;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 22px;
+  background: linear-gradient(rgb(30 18 30 / 0.55), rgb(20 12 20 / 0.75));
+  border: 2px solid rgb(255 220 150 / 0.55);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 0.35);
+}
+.k-hero-hotbar .k-hb {
+  position: relative;
+  inset: auto;
+  width: 124px;
+  height: 124px;
+  border-radius: 18px;
+}
+.k-hero-hotbar .k-hb-cd {
+  border-radius: 18px;
+}
+.k-hero-hotbar .k-hb-i,
+.k-hero-hotbar .k-hb-skill .k-hb-i,
+.k-hero-hotbar .k-hb-skill2 .k-hb-i,
+.k-hero-hotbar .k-hb-skill3 .k-hb-i,
+.k-hero-hotbar .k-hb-skill4 .k-hb-i,
+.k-hero-hotbar .k-hb-auto .k-hb-i,
+.k-hero-hotbar .k-hb-attack .k-hb-i {
+  font-size: 46px;
+  margin-top: 10px;
+}
+.k-hero-hotbar .k-hb-t,
+.k-hero-hotbar .k-hb-skill .k-hb-t,
+.k-hero-hotbar .k-hb-skill2 .k-hb-t,
+.k-hero-hotbar .k-hb-skill3 .k-hb-t,
+.k-hero-hotbar .k-hb-skill4 .k-hb-t {
+  max-width: 116px;
+  margin-top: -14px;
+  font-size: 26px;
+  line-height: 1.05;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.k-hero-hotbar .k-hb-attack {
+  width: 140px;
+  height: 140px;
+  align-self: flex-end;
+}
+.k-hero-hotbar .k-hb-k {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  min-width: 34px;
+  padding: 0 7px;
+  border-radius: 8px;
+  background: #fff6e0;
+  color: #2a1a26;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 26px;
+  line-height: 34px;
+  text-align: center;
+  text-shadow: none;
+  z-index: 2;
+}
+.k-hero-hotbar .k-hb:hover .k-hb-t small {
+  bottom: auto;
+  top: -48px;
+  padding: 2px 10px;
+  border-radius: 8px;
+  background: rgb(20 12 20 / 0.85);
+}
+/* The help line sits above the bar on the PC. */
+.k-hero-acts.k-hero-hotbar ~ .k-hero-help {
+  left: 50%;
+  bottom: 200px;
+  transform: translateX(-50%);
+  max-width: 1500px;
+  text-align: center;
+  font-size: 26px;
+  text-shadow: 0 2px 4px rgb(0 0 0 / 0.7);
+}

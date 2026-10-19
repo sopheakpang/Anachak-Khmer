@@ -272,7 +272,7 @@ describe('the hero in the live kingdom', () => {
     expect(r!.dmg).toBeGreaterThan(0);
   });
 
-  it('cannot walk into water, trees or buildings', () => {
+  it('cannot walk into trees or buildings', () => {
     const s = quiet();
     const [hx, hz] = s.center(hall(s));
     expect(heroOpen(s, hx, hz)).toBe(false);
@@ -280,6 +280,33 @@ describe('the hero in the live kingdom', () => {
     expect(heroOpen(s, ...s.nodePos(tree))).toBe(false);
     const [sx, sz] = tileToWorld(s.map, s.map.start[0], s.map.start[1] + 9);
     expect(heroOpen(s, sx, sz)).toBe(true);
+  });
+
+  it('PK 2026-10-20 (D156): wades into the shallows up to his chest, never into deep water; a ford is water too', async () => {
+    const { heroWaterDepth } = await import('./heroSim');
+    const s = quiet();
+    const N = s.map.size;
+    const chest = s.data.rules.water.chestDepth;
+    let shallow = 0;
+    let deep = 0;
+    for (let tz = 1; tz < N - 1 && (shallow < 5 || deep < 5); tz += 3)
+      for (let tx = 1; tx < N - 1; tx += 3) {
+        if (s.map.terrain[tz * N + tx] !== 'water') continue;
+        const [x, z] = tileToWorld(s.map, tx, tz);
+        const d = s.depthAt(x, z);
+        expect(heroOpen(s, x, z)).toBe(d <= chest);
+        if (d <= chest) shallow++;
+        else deep++;
+      }
+    expect(shallow).toBeGreaterThan(0);
+    expect(deep).toBeGreaterThan(0);
+    const ford = s.map.terrain.findIndex((t) => t === 'ford');
+    if (ford >= 0) {
+      const [x, z] = tileToWorld(s.map, ford % N, Math.floor(ford / N));
+      expect(heroWaterDepth(s, x, z, 0.45)).toBe(0.45);
+    }
+    const [lx, lz] = tileToWorld(s.map, s.map.start[0], s.map.start[1] + 9);
+    expect(heroWaterDepth(s, lx, lz, 0.45)).toBe(0);
   });
 
   it('the camera comes in front of a wall between it and the hero', () => {

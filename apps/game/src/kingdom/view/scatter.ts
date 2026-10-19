@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { ScatterKind } from '@temples/shared';
 import type { MapData, Terrain } from '../sim/map';
 import { loadProp, meshOf, realMaterial } from './props';
+import { waterDistance } from './treeModels';
 
 /**
  * PK 1.9.0 (D153): PK's plants, rocks, flowers and small life laid over the land in natural
@@ -71,6 +72,8 @@ export function scatterPlan(map: Map, kinds: readonly ScatterKind[], seed: numbe
   const T = map.tile;
   const half = (N * T) / 2;
   const [sx, sz] = map.start;
+  const wet = kinds.some((k) => k.dry) ? waterDistance(map) : null;
+  const dryOk = (k: ScatterKind, tile: number) => !k.dry || !wet || wet[tile]! >= k.dry;
   kinds.forEach((k, ki) => {
     const r = rng(seed * 31 + ki * 977 + 13);
     // Tiles of the habitat (sampled every other tile on big maps: the plan stays quick).
@@ -79,7 +82,7 @@ export function scatterPlan(map: Map, kinds: readonly ScatterKind[], seed: numbe
     for (let tz = 1; tz < N - 1; tz += step)
       for (let tx = 1; tx < N - 1; tx += step) {
         if (Math.hypot(tx - sx, tz - sz) < clearHall) continue;
-        if (inHabitat(map, tx, tz, k.habitat)) tiles.push(tz * N + tx);
+        if (inHabitat(map, tx, tz, k.habitat) && dryOk(k, tz * N + tx)) tiles.push(tz * N + tx);
       }
     if (!tiles.length) return;
     const clumps = k.rare ? 1 : Math.max(1, Math.round(((tiles.length * step * step) / 1000) * k.per1k));
@@ -97,7 +100,7 @@ export function scatterPlan(map: Map, kinds: readonly ScatterKind[], seed: numbe
         // Stay in the habitat (a shore plant never walks into the water, a lily never onto land).
         const ttx = Math.floor((x + half) / T);
         const ttz = Math.floor((z + half) / T);
-        if (!inHabitat(map, ttx, ttz, k.habitat)) continue;
+        if (!inHabitat(map, ttx, ttz, k.habitat) || !dryOk(k, ttz * N + ttx)) continue;
         out.push({ kind: ki, x, z, rot: r() * Math.PI * 2, scale: k.scale[0] + r() * (k.scale[1] - k.scale[0]) });
       }
     }
@@ -128,6 +131,23 @@ export function nearestSpots(
   }
   pick.sort((a, b) => a[0] - b[0]);
   return pick.slice(0, max).map((p) => p[1]);
+}
+
+/**
+ * Where the scatter is picked round. RTS: where the view meets the ground (or 40 m ahead when it
+ * looks level). The 3D hero mode (PK 2026-10-20, D156): round the hero himself — the camera
+ * looks nearly level there, so its ray met the ground far ahead and the trees right by him were
+ * never among the nearest: they stayed invisible.
+ */
+export function scatterCentre(
+  hero: boolean,
+  look: readonly [number, number],
+  cam: { x: number; y: number; z: number },
+  dir: { x: number; y: number; z: number },
+): [number, number] {
+  if (hero) return [look[0], look[1]];
+  const k = dir.y < -0.05 ? Math.min(400, cam.y / -dir.y) : 40;
+  return [cam.x + dir.x * k, cam.z + dir.z * k];
 }
 
 /** Draws the scatter: one instanced mesh a kind, filled with the nearest spots. */

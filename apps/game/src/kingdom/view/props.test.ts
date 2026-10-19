@@ -142,3 +142,48 @@ describe('every scattered plant, rock and animal has its model (D154)', () => {
     expect(missing).toEqual([]);
   });
 });
+
+describe('PK’s notes of 2026-10-20 (D156)', () => {
+  it('palms sit with the houses (not over twice a house’s height), buildings drawn bigger, banks keep their trees small', async () => {
+    const { loadKingdom } = await import('@temples/shared');
+    const { shoreScale, waterDistance } = await import('./treeModels');
+    const p = loadKingdom().props;
+    for (const id of ['palm', 'coconut']) expect(p.trees!.find((t) => t.id === id)!.height, id).toBeLessThanOrEqual(14);
+    for (const id of ['fanPalm', 'palmA', 'palmB', 'palmC'])
+      expect(p.scatter!.kinds.find((k) => k.id === id)!.scale[1], id).toBeLessThanOrEqual(1.6);
+    expect(p.buildings!.house!.scale).toBeGreaterThan(1);
+    for (const id of ['nobleHouse', 'storehouse', 'market', 'barracks']) expect(p.buildings![id]!.scale ?? 1, id).toBeGreaterThan(1);
+    expect(p.blend!.amount).toBeGreaterThan(0);
+    // A tree on the bank is smaller the nearer the water; none in it.
+    expect(shoreScale(0)).toBe(0);
+    expect(shoreScale(1)).toBeLessThan(shoreScale(2));
+    expect(shoreScale(4)).toBe(1);
+    const N = 7;
+    const terrain = Array.from({ length: N * N }, (_, i) => (i % N === 3 ? 'water' : 'grass'));
+    const d = waterDistance({ size: N, terrain });
+    expect([0, 1, 2, 3, 4, 5, 6].map((x) => d[x])).toEqual([3, 2, 1, 0, 1, 2, 3]);
+  });
+
+  it('the land blend reaches the shader: colours pulled to the land, the walls’ foot dusted', async () => {
+    const { addBlend } = await import('./props');
+    const m = addBlend(new THREE.MeshStandardMaterial(), { color: '#9a8358', amount: 0.2, saturation: 0.8, dust: '#8a5236', dustHeight: 1, dustAmount: 0.5 });
+    const sh = {
+      uniforms: {} as Record<string, unknown>,
+      vertexShader: '#include <common>\n#include <begin_vertex>',
+      fragmentShader: '#include <common>\n#include <map_fragment>',
+    };
+    m.onBeforeCompile(sh as never, undefined as never);
+    expect(sh.vertexShader).toContain('vBaseH');
+    expect(sh.fragmentShader).toContain('uDust');
+    expect(sh.uniforms.uAmount).toBeTruthy();
+  });
+
+  it('a building can be drawn bigger than its footprint', () => {
+    const like = new THREE.BoxGeometry(4, 3, 4).translate(0, 1.5, 0);
+    const model = new THREE.BoxGeometry(2, 2, 2);
+    const g = fitGeometry(model, like, { fit: 'width', scale: 1.5 }, false);
+    g.computeBoundingBox();
+    expect(g.boundingBox!.max.x - g.boundingBox!.min.x).toBeCloseTo(6, 5);
+    expect(g.boundingBox!.min.y).toBeCloseTo(0, 5);
+  });
+});

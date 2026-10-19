@@ -70,6 +70,7 @@
     },
     "barracks": {
       "en": "Barracks (PK's Meshy model, ground square cut)",
+      "scale": 1.3,
       "file": "models/real/buildings/barracks.glb",
       "source": "Meshy \"Fortified Longhouse\" (06-buildings\\barracks)",
       "tris": 9000,
@@ -80,6 +81,7 @@
     },
     "lumberCamp": {
       "en": "Lumber camp (PK's Meshy model, ground square cut)",
+      "scale": 1.3,
       "file": "models/real/buildings/lumber-camp.glb",
       "source": "Meshy \"Thatchwood Workshop\" (06-buildings\\lumber-camp)",
       "tris": 6000,
@@ -90,6 +92,7 @@
     },
     "market": {
       "en": "Market (PK's Meshy model, ground square cut)",
+      "scale": 1.3,
       "file": "models/real/buildings/market.glb",
       "source": "Meshy \"Thatchroof Marketplace\" (06-buildings\\market)",
       "tris": 7000,
@@ -100,6 +103,7 @@
     },
     "nobleHouse": {
       "en": "Noble house (PK's Meshy model, ground square cut)",
+      "scale": 1.3,
       "file": "models/real/buildings/noble-house.glb",
       "source": "Meshy \"Golden Stilt House\" (06-buildings\\noble-house)",
       "tris": 9000,
@@ -110,6 +114,7 @@
     },
     "port": {
       "en": "River landing (PK's Meshy model)",
+      "scale": 1.3,
       "file": "models/real/buildings/port.glb",
       "source": "Meshy \"Thatched River Dock\" (06-buildings\\port)",
       "tris": 7000,
@@ -120,6 +125,7 @@
     },
     "storehouse": {
       "en": "Storehouse (PK's Meshy model, ground square cut)",
+      "scale": 1.3,
       "file": "models/real/buildings/storehouse.glb",
       "source": "Meshy \"Stilted Thatch Granary\" (06-buildings\\storehouse)",
       "tris": 7000,
@@ -130,6 +136,7 @@
     },
     "house": {
       "en": "Village house (PK's Meshy Herbalist Hut; PK 2026-10-19)",
+      "scale": 1.5,
       "file": "models/real/buildings/house.glb",
       "source": "Meshy \"Herbalist Hut\" (06-buildings\\healer-hut), its ground square cut in Blender",
       "tris": 5000,
@@ -238,8 +245,8 @@
       "file": "models/trees/palm.glb",
       "cards": "models/trees/palm-cards.webp",
       "card": 1.02,
-      "height": 20,
-      "width": 7.2,
+      "height": 12,
+      "width": 4.4,
       "hi": 2000,
       "mid": 500,
       "midFile": "models/trees/palm-mid.glb",
@@ -253,8 +260,8 @@
       "file": "models/trees/coconut.glb",
       "cards": "models/trees/coconut-cards.webp",
       "card": 1.02,
-      "height": 22.5,
-      "width": 9.2,
+      "height": 13.5,
+      "width": 5.5,
       "hi": 2000,
       "mid": 500,
       "midFile": "models/trees/coconut-mid.glb",
@@ -267,8 +274,8 @@
       "file": "models/trees/fan.glb",
       "cards": "models/trees/fan-cards.webp",
       "card": 1.02,
-      "height": 7,
-      "width": 6,
+      "height": 5,
+      "width": 4.3,
       "hi": 2000,
       "mid": 500,
       "midFile": "models/trees/fan-mid.glb",
@@ -374,6 +381,15 @@
       "rts": 30000,
       "hero": 60000
     }
+  },
+  "blend": {
+    "$comment": "PK 2026-10-20 (D156): 'blend the color pattern mix with the environments' — PK's Meshy buildings on the PC look: colours pulled 18 % toward the land's warm earth, a little less saturated, the foot of the walls dusted with red laterite up to 0.9 m.",
+    "color": "#9a8358",
+    "amount": 0.18,
+    "saturation": 0.85,
+    "dust": "#8a5236",
+    "dustHeight": 0.9,
+    "dustAmount": 0.5
   },
   "people": {
     "$comment": "PK 1.9.0 (D155, 'reality logic human gesture behavior'): the villagers and soldiers nearest the middle of the view, zoomed in to maxDist or closer, are PK's Meshy people (PC look only): they stand, walk and run with their own clips and work and fight with the crowd's motions on their arms (hammer, chop, plant, reap, cast the net, thrust, cut, draw the bow, guard). byType wins over byJob; a list is shared out by unit id. Mounted units, elephants and the cart keep the built-in figures.",
@@ -599,9 +615,10 @@
         "per1k": 20,
         "clump": [1, 3],
         "spread": 3,
-        "scale": [1.76, 2.64],
+        "scale": [1.1, 1.6],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": false
       },
       {
@@ -612,7 +629,7 @@
         "per1k": 15,
         "clump": [1, 3],
         "spread": 4,
-        "scale": [1.76, 2.64],
+        "scale": [1.1, 1.6],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": false
@@ -625,9 +642,10 @@
         "per1k": 8,
         "clump": [1, 2],
         "spread": 4,
-        "scale": [1.76, 2.64],
+        "scale": [1.1, 1.6],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": false
       },
       {
@@ -638,9 +656,10 @@
         "per1k": 10,
         "clump": [1, 2],
         "spread": 4,
-        "scale": [1.76, 2.64],
+        "scale": [1.1, 1.6],
         "sink": 0.02,
         "maxVisible": 3,
+        "dry": 3,
         "rare": false
       },
       {
@@ -651,9 +670,10 @@
         "per1k": 12,
         "clump": [1, 2],
         "spread": 5,
-        "scale": [1.76, 2.64],
+        "scale": [1.0, 1.5],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": false
       },
       {
@@ -664,9 +684,10 @@
         "per1k": 12,
         "clump": [1, 2],
         "spread": 5,
-        "scale": [1.76, 2.64],
+        "scale": [1.0, 1.5],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": false
       },
       {
@@ -677,22 +698,24 @@
         "per1k": 6,
         "clump": [1, 2],
         "spread": 5,
-        "scale": [1.76, 2.64],
+        "scale": [1.0, 1.5],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": false
       },
       {
-        "id": "emeraldTree",
-        "en": "Round-crowned tree",
-        "file": "models/real/plants/emerald-tree.glb",
-        "habitat": "grass",
+        "id": "bigTropicalTree",
+        "en": "Big tropical tree (spung, Tetrameles: buttress roots, umbrella crown; made in Blender, PK 2026-10-20)",
+        "file": "models/real/plants/big-tropical-tree.glb",
+        "habitat": "forestEdge",
         "per1k": 6,
         "clump": [1, 2],
         "spread": 5,
-        "scale": [1.76, 2.64],
+        "scale": [0.8, 1.0],
         "sink": 0.02,
-        "maxVisible": 1,
+        "maxVisible": 2,
+        "dry": 3,
         "rare": false
       },
       {
@@ -703,9 +726,10 @@
         "per1k": 4,
         "clump": [1, 1],
         "spread": 0,
-        "scale": [1.76, 2.64],
+        "scale": [1.0, 1.5],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": false
       },
       {
@@ -719,6 +743,7 @@
         "scale": [1.76, 2.42],
         "sink": 0.02,
         "maxVisible": 2,
+        "dry": 3,
         "rare": false
       },
       {
@@ -729,9 +754,10 @@
         "per1k": 6,
         "clump": [1, 1],
         "spread": 0,
-        "scale": [1.76, 2.64],
+        "scale": [1.0, 1.5],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": false
       },
       {
@@ -742,9 +768,10 @@
         "per1k": 8,
         "clump": [1, 2],
         "spread": 4,
-        "scale": [1.76, 2.64],
+        "scale": [1.0, 1.5],
         "sink": 0.02,
         "maxVisible": 3,
+        "dry": 3,
         "rare": false
       },
       {
@@ -1197,9 +1224,10 @@
         "per1k": 1,
         "clump": [1, 1],
         "spread": 0,
-        "scale": [1.98, 2.42],
+        "scale": [1.0, 1.3],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": true
       },
       {
@@ -1210,9 +1238,10 @@
         "per1k": 1,
         "clump": [1, 1],
         "spread": 0,
-        "scale": [1.98, 2.42],
+        "scale": [1.0, 1.3],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": true
       },
       {
@@ -1223,9 +1252,10 @@
         "per1k": 1,
         "clump": [1, 1],
         "spread": 0,
-        "scale": [1.98, 2.42],
+        "scale": [1.0, 1.5],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": true
       },
       {
@@ -1236,9 +1266,10 @@
         "per1k": 1,
         "clump": [1, 2],
         "spread": 3,
-        "scale": [1.98, 2.42],
+        "scale": [1.0, 1.5],
         "sink": 0.02,
         "maxVisible": 1,
+        "dry": 3,
         "rare": true
       }
     ]

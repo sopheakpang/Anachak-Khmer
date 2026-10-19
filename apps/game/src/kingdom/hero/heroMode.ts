@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { Keymap, keyLabel } from '../keymap';
 import type { Anachak, Cost, HeroKit, HeroSkill, KingdomData } from '@temples/shared';
 import { PLAYER, type KingdomSim, type Unit } from '../sim/sim';
-import type { KingdomScene } from '../view/scene';
+import { WATER_Y, type KingdomScene } from '../view/scene';
+import { Ripples, smoothDepth, wadeDrop, wakeDue } from './wading';
 import { SFX_NAMES, type KingdomSound, type SfxName } from '../view/sound';
 import { tileToWorld, worldToTile, type XZ } from '../sim/map';
 import { HeroCore, NO_INPUT, kitFor, kitSkills, type HeroAct, type HeroInput } from './heroCore';
@@ -22,6 +23,7 @@ import {
   doWork,
   heal,
   heroOpen,
+  heroWaterDepth,
   hitFoe,
   nearestFoe,
   strike,
@@ -102,6 +104,12 @@ export class HeroMode {
   watching = false;
   /** Sword slashes (PK: the tiger fight). */
   readonly slashes = new Slashes();
+  /** D156: rings on the water round his legs when he wades. */
+  readonly ripples = new Ripples();
+  private ringAt = 0;
+  private splashAt = 0;
+  /** How far below the land his feet stand now (m; 0 on dry land), eased. */
+  private drop = 0;
   /** Yantra light for the skills (PK: Khmer yantra magic), in the air, never underfoot. */
   readonly yantra = new YantraFx();
   /** The skills' effects (D151): weapon rains, waves, guardian spirits, pillars, rings. */
@@ -240,6 +248,7 @@ export class HeroMode {
     this.core = new HeroCore(this.cfg, this.kit, x, z, heading);
     if (this.watching) this.core.camDist = this.host.data.anachak.danger.watchDist;
     view.scene.add(this.slashes.group);
+    view.scene.add(this.ripples.group);
     view.scene.add(this.yantra.group);
     this.skillFx = new SkillFx(() => this.host.view().particles, this.cfg.vfx.maxLive);
     view.scene.add(this.skillFx.group);
@@ -392,6 +401,7 @@ export class HeroMode {
     this.shots = [];
     this.slashes.clear();
     view.scene.remove(this.slashes.group);
+    view.scene.remove(this.ripples.group);
     this.yantra.clear();
     view.scene.remove(this.yantra.group);
     if (this.skillFx) {
@@ -736,8 +746,33 @@ export class HeroMode {
     this.updateRings(now);
     if (!this.watching) this.updateTiger(dt, body, sim);
     this.showTiger(dt, body, sim, now);
+    // D156: in a ford or shallow water he stands in it, and the water answers his steps.
+    const W = this.cfg.fx.water;
+    // The water he is in: the river's own depth, or where the bank dips under the water's
+    // surface (the land drawn below the waterline: PK saw him walk on top of it there).
+    const depth = Math.max(
+      smoothDepth((x, z) => heroWaterDepth(sim, x, z, W.fordDepth), core.x, core.z, sim.map.tile),
+      WATER_Y - view.groundY(core.x, core.z),
+    );
+    const want = wadeDrop(depth, WATER_Y, sim.data.rules.water.chestDepth, W.sink) * (model.lift > 0 ? 0.4 : 1);
+    this.drop += (want - this.drop) * Math.min(1, dt * 8);
+    this.ripples.update(dt);
+    if (depth > 0.05 && core.y < 0.05) {
+      const moving = core.speed > 0.3;
+      const due = wakeDue(W, moving, core.speed > 3.2);
+      const t = now / 1000;
+      if (t - this.ringAt > due.ring) {
+        this.ringAt = t;
+        this.ripples.spawn(core.x, WATER_Y, core.z, W.ringSize * (moving ? 1 : 0.6));
+      }
+      if (t - this.splashAt > due.splash) {
+        this.splashAt = t;
+        const f = 0.5;
+        view.particles.burst('splash', core.x + Math.sin(core.heading) * f, WATER_Y + 0.05, core.z + Math.cos(core.heading) * f, W.splash);
+      }
+    }
     // Pose and place the model.
-    model.group.position.set(core.x, core.y, core.z);
+    model.group.position.set(core.x, core.y + this.drop, core.z);
     model.group.rotation.y = core.heading;
     model.pose({
       state: core.state,
@@ -753,8 +788,8 @@ export class HeroMode {
     // Camera, with a little shake on hits.
     const C = this.cfg.camera;
     const { eye, look } = core.cameraPose();
-    look[1] += model.lift;
-    eye[1] += model.lift;
+    look[1] += model.lift + this.drop;
+    eye[1] += model.lift + this.drop;
     if (this.shake > 0) {
       eye[0] += (Math.random() - 0.5) * this.shake;
       eye[1] += (Math.random() - 0.5) * this.shake;
@@ -1354,8 +1389,13 @@ export class HeroMode {
     const key = (id: string) => this.keymap.keys('hero', id).map(keyLabel).join('/') || '—';
     const first = (id: string) => (this.keymap.keys('hero', id)[0] ? keyLabel(this.keymap.keys('hero', id)[0]!) : '—');
     const move = ['forward', 'left', 'back', 'right'].map(first).join('');
+    // PK 2026-10-20 (D156): on the PC the buttons sit in one bar along the bottom, each with its
+    // key on it (the phone keeps the thumb fan).
+    const bar = !this.host.mobile;
     const btn = (a: string, icon: string, kmT: string, en: string) =>
-      `<button class="k-hb k-hb-${a}" data-hero="${a}" data-ui><span class="k-hb-i">${icon}</span><span class="k-hb-t">${kmT}<small>${en}</small></span><span class="k-hb-cd" hidden></span></button>`;
+      `<button class="k-hb k-hb-${a}" data-hero="${a}" data-ui>` +
+      (bar ? `<kbd class="k-hb-k">${esc(a === 'attack' ? `🖱 ${first('attack')}` : first(a))}</kbd>` : '') +
+      `<span class="k-hb-i">${icon}</span><span class="k-hb-t">${kmT}<small>${en}</small></span><span class="k-hb-cd" hidden></span></button>`;
     const skillIcon: Record<string, string> = {
       chop: '🪓',
       spin: '🌀',
@@ -1395,14 +1435,23 @@ export class HeroMode {
       `<div data-part="quest"></div>` +
       `<button class="k-hero-exit" data-hero="exit" data-ui>✕ ត្រឡប់ · Back <small>Esc</small></button>` +
       `<div data-part="prompt"></div>` +
-      `<div class="k-hero-acts">` +
-      btn('auto', '🤖', 'ស្វ័យប្រវត្តិ', `Auto · ${esc(key('auto'))}`) +
-      btn('work', '🛠️', 'ធ្វើការ', `Work · ${esc(key('work'))}`) +
-      btn('skill', skillIcon[kit.skill.kind] ?? '⭐', esc(kit.skill.km), `${esc(kit.skill.en)} · ${esc(key('skill'))}`) +
-      more +
-      btn('dash', '💨', 'គេច', `Dash · ${esc(key('dash'))}`) +
-      btn('jump', '⤒', 'លោត', `Jump · ${esc(key('jump'))}`) +
-      btn('attack', kit.weapon === 'bow' ? '🏹' : '⚔️', 'វាយ', `Strike · Click/${esc(key('attack'))}`) +
+      `<div class="k-hero-acts${bar ? ' k-hero-hotbar' : ''}">` +
+      (bar
+        ? // The bar reads like a game's hotbar: strike and skills first, then moves, then work.
+          btn('attack', kit.weapon === 'bow' ? '🏹' : '⚔️', 'វាយ', `Strike · Click/${esc(key('attack'))}`) +
+          btn('skill', skillIcon[kit.skill.kind] ?? '⭐', esc(kit.skill.km), `${esc(kit.skill.en)} · ${esc(key('skill'))}`) +
+          more +
+          btn('dash', '💨', 'គេច', `Dash · ${esc(key('dash'))}`) +
+          btn('jump', '⤒', 'លោត', `Jump · ${esc(key('jump'))}`) +
+          btn('work', '🛠️', 'ធ្វើការ', `Work · ${esc(key('work'))}`) +
+          btn('auto', '🤖', 'ស្វ័យប្រវត្តិ', `Auto · ${esc(key('auto'))}`)
+        : btn('auto', '🤖', 'ស្វ័យប្រវត្តិ', `Auto · ${esc(key('auto'))}`) +
+          btn('work', '🛠️', 'ធ្វើការ', `Work · ${esc(key('work'))}`) +
+          btn('skill', skillIcon[kit.skill.kind] ?? '⭐', esc(kit.skill.km), `${esc(kit.skill.en)} · ${esc(key('skill'))}`) +
+          more +
+          btn('dash', '💨', 'គេច', `Dash · ${esc(key('dash'))}`) +
+          btn('jump', '⤒', 'លោត', `Jump · ${esc(key('jump'))}`) +
+          btn('attack', kit.weapon === 'bow' ? '🏹' : '⚔️', 'វាយ', `Strike · Click/${esc(key('attack'))}`)) +
       `</div>` +
       (this.host.mobile
         ? `<div class="k-hero-stick" data-hero="stick" data-ui><i data-part="knob"></i></div>`

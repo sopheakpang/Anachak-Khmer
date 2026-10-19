@@ -44,7 +44,7 @@ import { repeated, textures } from '../../engine/textures';
 import { TempleView } from '../../world/temple';
 import { bigsDue, growStep } from '../../world/templeGrow';
 import { DangerRings } from './dangerRings';
-import { ScatterView, scatterPlan } from './scatter';
+import { ScatterView, scatterCentre, scatterPlan } from './scatter';
 import { NearPeople, personFile, pickNear } from './nearPeople';
 import { dressOf, lookFor } from '../hero/heroModel';
 import { kitFor } from '../hero/heroCore';
@@ -101,7 +101,7 @@ import { GroundDetailRts, hash as detailHash, type Patch } from './detail';
 import { WearMap } from './wear';
 import { ElephantGrass, grassReach } from './elephantGrass';
 import { LightShafts, MistLayer, mistAmount, shaftAmount } from './atmosphere';
-import { ModelTrees, pickWeighted, villageTrees, waysideTrees, type Lot, type TreeSpot } from './treeModels';
+import { ModelTrees, pickWeighted, shoreScale, villageTrees, waterDistance, waysideTrees, type Lot, type TreeSpot } from './treeModels';
 import { addSeeThrough, seeAmount, seeUniforms, setTargets, type SeeUniforms } from './seeThrough';
 import { TorchView, torchSpots, type TorchSite } from './torches';
 import { NightSky } from './nightSky';
@@ -135,7 +135,7 @@ export const CAM_PITCH_DEG = 46;
 export const TEAM_COLOR: Record<Team, number> = { 0: 0x2f5fa8, 1: 0xb8412f };
 const STILL = { speed: 0, leg: 0, arm: 0, armSync: 0 };
 /** The water plane's height (m). */
-const WATER_Y = -0.12;
+export const WATER_Y = -0.12;
 /**
  * Grass grows where the ground stands this far (m) above the water plane: not on a bank that dips
  * under it, but on the low meadows, which lie only a few cm higher (PK 1.8.0: the lawn left a
@@ -1102,6 +1102,8 @@ export class KingdomScene {
 
   /** Explored trees within reach of the camera, nearest first, up to TREE_CAP. */
   private treesAt: [number, number, number] = [NaN, NaN, NaN];
+  /** Tiles from open water, per tile (D156: bank trees drawn smaller). */
+  private wetDist: Uint8Array | null = null;
   private syncTrees(force: boolean): void {
     const [cx, cz, dist] = this.view;
     const [ax, az, ad] = this.treesAt;
@@ -1117,12 +1119,14 @@ export class KingdomScene {
     const x1 = Math.ceil((cx + reach) / T + size / 2);
     const z0 = Math.floor((cz - reach * north) / T + size / 2);
     const z1 = Math.ceil((cz + reach * south) / T + size / 2);
-    const list: Array<[number, number, number, number]> = [];
+    const list: Array<[number, number, number, number, number]> = [];
+    this.wetDist ??= waterDistance(s.map);
+    const wet = this.wetDist;
     for (const n of s.nodes.values()) {
       if (n.kind !== 'tree' || n.tx < x0 || n.tx > x1 || n.tz < z0 || n.tz > z1) continue;
       if (!s.fog.explored[n.tz * size + n.tx]) continue;
       const [x, z] = s.nodePos(n);
-      list.push([Math.hypot(x - cx, z - cz), x, z, n.tx * 7 + n.tz * 13]);
+      list.push([Math.hypot(x - cx, z - cz), x, z, n.tx * 7 + n.tz * 13, n.tz * size + n.tx]);
     }
     if (list.length > TREE_CAP) list.sort((a, b) => a[0] - b[0]).length = TREE_CAP;
     // Which kind grows where: fixed per tree (from its tile), common trees most often.
@@ -1133,11 +1137,13 @@ export class KingdomScene {
     const models = this.models && this.models.loaded > 0 ? this.models : null;
     const place = this.sim.data.props.treePlacement;
     const spots: TreeSpot[] = [];
-    for (const [, x, z, h] of list) {
+    for (const [, x, z, h, tile] of list) {
       let k: number;
+      // D156: on the bank a tree is smaller, so it never stands in or over the river.
+      const bank = shoreScale(wet[tile] ?? 4);
       if (models && place) {
         const kind = pickWeighted(place.forest, (((h * 2654435761) % 1000) + 1000) % 1000 / 1000);
-        const scale = 0.75 + (h % 10) / 20;
+        const scale = (0.75 + (h % 10) / 20) * bank;
         if (kind.id !== 'bamboo' && models.has(kind.id)) {
           spots.push({ id: kind.id, x, y: 0, z, rot: (h * 0.37) % 6.28, scale, shade: 0.9 + ((h * 37) % 100) / 500 });
           continue;
@@ -1151,7 +1157,7 @@ export class KingdomScene {
       }
       const set = this.treeSets[k]!;
       this.m.makeRotationY((h * 0.37) % 6.28);
-      this.m.scale(this.v.setScalar(0.75 + (h % 10) / 20));
+      this.m.scale(this.v.setScalar((0.75 + (h % 10) / 20) * Math.max(0.35, bank)));
       this.m.setPosition(x, 0, z);
       if (this.foliage) {
         // Deeper natural greens, each tree its own shade (PK 1.7.0).
@@ -1350,7 +1356,9 @@ export class KingdomScene {
       const set = this.sets.get(type);
       if (!set || (slot.pc && !this.gfx.meshyModels)) continue;
       void loadProp(modelUrl(slot.file)).then((m) => {
-        if (m && applyProp(set.mesh, m, slot)) this.propsOn++;
+        // D156: PK's Meshy buildings blend with the land (the royal hall keeps its own colours).
+        const blend = slot.pc ? this.sim.data.props.blend : undefined;
+        if (m && applyProp(set.mesh, m, slot, blend)) this.propsOn++;
       });
     }
   }
@@ -2524,9 +2532,8 @@ export class KingdomScene {
     const cam = this.camera.position;
     this.camera.getWorldDirection(this.ray);
     // Where the view meets the ground (or 40 m ahead when it looks level).
-    const k = this.ray.y < -0.05 ? Math.min(400, cam.y / -this.ray.y) : 40;
-    const cx = cam.x + this.ray.x * k;
-    const cz = cam.z + this.ray.z * k;
+    // PK 2026-10-20 (D156): round the hero himself in the 3D mode (see scatterCentre).
+    const [cx, cz] = scatterCentre(this.heroView, [this.view[0], this.view[1]], cam, this.ray);
     const T = this.sim.map.tile;
     const blds: Array<[number, number, number]> = [];
     for (const b of this.sim.buildings.values()) {

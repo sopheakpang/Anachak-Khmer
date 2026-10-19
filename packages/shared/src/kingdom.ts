@@ -944,6 +944,21 @@ export const AnachakSchema = z.object({
       landDustHeavy: z.number().int().positive(),
       heavyFall: z.number().positive(),
       lift: z.number().nonnegative(),
+      /**
+       * PK 2026-10-20 (D156): wading. The hero stands in the water to `sink` × its depth (at most
+       * the chest); rings spread from his legs every `ringSec` walking (`idleRingSec` standing),
+       * and running throws `splash` drops every `splashSec`.
+       */
+      water: z.object({
+        sink: z.number().min(0).max(1),
+        ringSec: z.number().positive(),
+        idleRingSec: z.number().positive(),
+        splashSec: z.number().positive(),
+        splash: z.number().int().nonnegative(),
+        ringSize: z.number().positive(),
+        /** How deep the water stands over a ford (m): fords are drawn as water. */
+        fordDepth: z.number().nonnegative(),
+      }),
     }),
     attackMul: z.number().positive(),
     armorBonus: z.number().nonnegative(),
@@ -1112,6 +1127,8 @@ export const PropSlotSchema = z.object({
   pc: z.boolean().optional(),
   /** PK 2026-10-19: stretch the fitted model's height (the Khmer house a little taller). */
   scaleY: z.number().positive().optional(),
+  /** PK 2026-10-20: draw the model bigger than its footprint (×, after the fit). */
+  scale: z.number().positive().max(3).optional(),
   en: z.string(),
 });
 export type PropSlot = z.infer<typeof PropSlotSchema>;
@@ -1141,6 +1158,8 @@ export const ScatterKindSchema = z.object({
   maxVisible: z.number().int().positive(),
   /** True = a rare find (PK's fantasy plants): never more than `clump`'s max on the whole map. */
   rare: z.boolean().default(false),
+  /** D156: keep at least this many tiles from open water (big trees never lean over the river). */
+  dry: z.number().int().min(0).max(4).optional(),
 });
 export type ScatterKind = z.infer<typeof ScatterKindSchema>;
 
@@ -1164,6 +1183,21 @@ export const PropsSchema = z.object({
       clearHall: z.number().nonnegative(),
       clearBuilding: z.number().nonnegative(),
       kinds: z.array(ScatterKindSchema),
+    })
+    .optional(),
+  /**
+   * PK 2026-10-20 (D156): the buildings' colours blended with the land on the PC look — pulled
+   * `amount` toward the land's colour (`color`), saturation × `saturation`, and the walls'
+   * foot dusted with the earth (`dust`) up to `dustHeight` m, so they sit in the landscape.
+   */
+  blend: z
+    .object({
+      color: z.string(),
+      amount: z.number().min(0).max(1),
+      saturation: z.number().min(0).max(1.5),
+      dust: z.string(),
+      dustHeight: z.number().min(0),
+      dustAmount: z.number().min(0).max(1),
     })
     .optional(),
   /**
