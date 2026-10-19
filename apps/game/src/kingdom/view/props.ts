@@ -28,7 +28,7 @@ export function meshOf(root: THREE.Object3D): THREE.Mesh | null {
 export function fitGeometry(
   src: THREE.BufferGeometry,
   like: THREE.BufferGeometry,
-  slot: Pick<PropSlot, 'fit' | 'sink'>,
+  slot: Pick<PropSlot, 'fit' | 'sink' | 'scaleY'>,
   /** Faceted (low-poly style) or smooth (the stylised mid-poly look, PK 1.6.0). */
   faceted = lowPoly(),
 ): THREE.BufferGeometry {
@@ -50,7 +50,7 @@ export function fitGeometry(
   const cx = (a.min.x + a.max.x) / 2;
   const cz = (a.min.z + a.max.z) / 2;
   g.translate(-cx, -a.min.y, -cz);
-  g.scale(k, k, k);
+  g.scale(k, k * (slot.scaleY ?? 1), k);
   g.translate(0, b.min.y - (slot.sink ?? 0) * sa.y * k, 0);
   if (!keepNormals) g.computeVertexNormals();
   g.computeBoundingBox();

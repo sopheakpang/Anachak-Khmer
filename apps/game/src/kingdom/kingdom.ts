@@ -2203,7 +2203,7 @@ export class Kingdom {
     const name = u.name ?? { km: s.def(u.type).km, en: s.def(u.type).en };
     const title =
       danger === 'raid'
-        ? '⚔️ <b>ចោរវាយលុក!</b> · Raiders!'
+        ? `⚔️ <b>${this.esc(s.foe.km)} វាយលុក!</b> · ${this.esc(s.foe.en)}: raiders!`
         : `${/tiger/i.test(what) ? '🐅' : '⚠️'} <b>សត្វសាហាវ!</b> · A ${this.esc(what.toLowerCase())}!`;
     const el = document.createElement('div');
     el.className = 'k-danger';
@@ -2544,7 +2544,11 @@ export class Kingdom {
       const e = ev[i]!;
       this.eventSound(e);
       if (e.kind === 'raid')
-        this.hud.toast(`<b>ចោរប្លន់មកដល់!</b> Raid! ${km(e.size)} ពួកអ្នកប្រឆាំង`, now, 7);
+        this.hud.toast(
+          `⚔️ <b>${this.esc(this.sim.foe.km)} វាយលុក!</b> ${km(e.size)} នាក់ · ${this.esc(this.sim.foe.en)} raid: ${e.size} soldiers`,
+          now,
+          7,
+        );
       if (e.kind === 'researched')
         this.hud.toast(
           `បានរកឃើញ <b>${this.data.techs[e.tech]!.km}</b> · ${this.data.techs[e.tech]!.en}`,
@@ -2677,7 +2681,7 @@ export class Kingdom {
       if (e.kind === 'alarm') {
         this.hud.toast(
           e.danger === 'raid'
-            ? `⚠️ <b>ប្រុងប្រយ័ត្ន! ចោរ!</b> · Alarm: raiders! The people run, the soldiers are called`
+            ? `⚠️ <b>ប្រុងប្រយ័ត្ន! ${this.esc(this.sim.foe.km)}!</b> · Alarm: ${this.esc(this.sim.foe.en)} raiders! The people run, the soldiers are called`
             : `⚠️ <b>ប្រុងប្រយ័ត្ន! សត្វសាហាវ!</b> · Alarm: a ${this.esc(e.what.toLowerCase())}! The people run, the soldiers are called`,
           now,
           6,
@@ -2808,7 +2812,7 @@ export class Kingdom {
     const extra =
       monumentProgressHtml(name.km, mon ? mon.progress : null, this.icon('building', 'monument')) +
       (next < 60
-        ? `<span class="k-pill k-warn"><b>ចោរប្លន់ ${km(next)}s · Raid in ${next}s</b></span>`
+        ? `<span class="k-pill k-warn"><b>${this.esc(s.foe.km)} ${km(next)}s · ${this.esc(s.opponent.en)} raid in ${next}s</b></span>`
         : '') +
       // PK: the royal power built by ceremonies, and the decree while it holds.
       `<span class="k-pill k-royal" data-tip="${this.esc('<b>ព្រះបារមី</b> · Royal power: it grows with every royal ceremony')}" data-ui>👑 <b>${km(Math.floor(s.prestige))}</b></span>` +

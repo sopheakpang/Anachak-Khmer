@@ -591,8 +591,10 @@ export class HeroModel {
   private foughtAt = -1e9;
   /** Is the sword in the hand now (for the tests)? */
   get drawn(): boolean {
-    return this.weapon.parent === this.j.gripR;
+    return this.weapon.parent === this.gripR;
   }
+  /** The hand that holds the weapon: the model's own hand when it plays its clips (D155). */
+  private gripR: THREE.Object3D;
   /** A soft light-ring at the feet (the selected hero) and the slash trail. */
   readonly trail: THREE.Mesh;
   private readonly trailMat: THREE.MeshBasicMaterial;
@@ -634,6 +636,7 @@ export class HeroModel {
     }
     this.group.add(f.root);
     this.lift = this.beast ? f.root.position.y : 0;
+    this.gripR = this.j.gripR;
     this.weapon = weapon(kit.weapon);
     this.weapon.userData.gear = true;
     this.j.gripR.add(this.weapon);
@@ -668,6 +671,23 @@ export class HeroModel {
         if ((o as THREE.Mesh).isMesh && !gear(o)) o.visible = false;
       });
       this.rig = rig;
+      // D155: the model walks and stands by its own clips, so its hands are not the hidden
+      // figure's: the weapon, bow, quiver, shield and sheath move onto the model's bones, each
+      // in the same place it had on the figure.
+      if (rig.clips) {
+        const moves: Array<[THREE.Object3D, THREE.Group | undefined]> = [
+          [this.j.gripR, rig.anchors.gripR],
+          [this.j.gripL, rig.anchors.gripL],
+          [this.j.spine, rig.anchors.spine],
+          [this.j.elbowL, rig.anchors.elbowL],
+          [this.j.pelvis, rig.anchors.pelvis],
+        ];
+        for (const [from, to] of moves) {
+          if (!to) continue;
+          for (const c of [...from.children]) if (c.userData.gear) to.add(c);
+          if (from === this.j.gripR) this.gripR = to;
+        }
+      }
     }
     if (this.dog) bakeModel(this.dog.root);
     // Slash trail: a thin ribbon arc, additive, flashed during strikes.
@@ -711,7 +731,7 @@ export class HeroModel {
    */
   pose(h: Parameters<HeroModel['poseJoints']>[0]): void {
     this.poseJoints(h);
-    this.rig?.drive();
+    this.rig?.drive({ state: h.state, speed: h.speed, t: h.t, mounted: !!this.beast });
   }
 
   private poseJoints(h: {
@@ -745,7 +765,7 @@ export class HeroModel {
     // The sword: drawn while fighting and for a moment after, else back at the hip.
     if (this.sheathes) {
       if (h.state === 'attack' || h.state === 'skill') this.foughtAt = h.t;
-      const want = h.t - this.foughtAt < SHEATH.keepDrawn ? this.j.gripR : this.sheath;
+      const want = h.t - this.foughtAt < SHEATH.keepDrawn ? this.gripR : this.sheath;
       if (this.weapon.parent !== want) want.add(this.weapon);
     }
     if (this.beast) this.beast.root.rotation.x = 0;
@@ -978,7 +998,7 @@ export class HeroModel {
   forearmWorld(): THREE.Vector3 {
     this.group.updateMatrixWorld(true);
     const e = this.j.elbowR.getWorldPosition(new THREE.Vector3());
-    return e.lerp(this.j.gripR.getWorldPosition(new THREE.Vector3()), 0.55);
+    return e.lerp(this.gripR.getWorldPosition(new THREE.Vector3()), 0.55);
   }
 
   /** Pose the dog: running alongside, or leaping at a foe. */

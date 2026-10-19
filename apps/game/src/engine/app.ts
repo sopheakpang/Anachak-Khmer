@@ -40,12 +40,14 @@ export function qualityFrom(
   const fromUrl = PRESETS.includes(asked as PresetName) ? (asked as PresetName) : 'low';
   const name: PresetName = stored && params.get('presetLock') !== '1' ? stored : fromUrl;
   const style = new URLSearchParams(search).get('style');
-  const q = (qualityJson as unknown as Record<PresetName, Quality>)[name];
+  const q0 = (qualityJson as unknown as Record<PresetName, Quality>)[name];
   // ?style=film | lowpoly | real lets the host compare the looks without editing config.
-  return {
-    name,
-    q: style === 'film' || style === 'lowpoly' || style === 'real' ? { ...q, look: { ...q.look, style } } : q,
-  };
+  let q = style === 'film' || style === 'lowpoly' || style === 'real' ? { ...q0, look: { ...q0.look, style } } : q0;
+  // ?shadowMap=512…4096 (a power of two): the browser tests' software renderer cannot draw the
+  // PC presets' 4096 shadows under 21 m trees in time (D154); a real GPU keeps the preset's.
+  const sm = Number(params.get('shadowMap'));
+  if (sm >= 512 && sm <= 4096 && Math.log2(sm) % 1 === 0) q = { ...q, look: { ...q.look, shadowMapSize: sm } };
+  return { name, q };
 }
 
 const PIP = (layoutJson.zones as Record<string, { x: number; y: number; w: number; h: number }>).pip!;

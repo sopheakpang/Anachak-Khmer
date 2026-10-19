@@ -108,3 +108,37 @@ async function glbJson(file: string): Promise<{ meshes?: unknown[]; textures?: u
   const len = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(12, true);
   return JSON.parse(new TextDecoder().decode(b.subarray(20, 20 + len)));
 }
+
+describe('PK’s look notes of 2026-10-19', () => {
+  it('the forest trees are three times taller (18 m and up), the Khmer house a little taller, boats sit in the water', async () => {
+    const { loadKingdom } = await import('@temples/shared');
+    const p = loadKingdom().props;
+    for (const id of ['a', 'b', 'c', 'd', 'e', 'f']) expect(p.trees!.find((t) => t.id === id)!.height, id).toBeGreaterThanOrEqual(18);
+    expect(p.buildings!.house!.scaleY).toBeGreaterThan(1);
+    for (const b of Object.values(p.boats!).filter((x) => typeof x === 'object')) expect((b as { sink: number }).sink).toBeGreaterThanOrEqual(0.3);
+  });
+});
+
+describe('every scattered plant, rock and animal has its model (D154)', () => {
+  it('each scatter kind’s file is in the game: one mesh of one part (one instanced draw), full PBR maps at most', async () => {
+    const { loadKingdom } = await import('@temples/shared');
+    const kinds = loadKingdom().props.scatter!.kinds;
+    // The PC-only folder may be missing on a phone-only checkout: then there is nothing to check.
+    const first = await glbJson(kinds[0]!.file);
+    if (!first) return;
+    const missing: string[] = [];
+    for (const k of kinds) {
+      const json = await glbJson(k.file);
+      if (!json) {
+        missing.push(k.file);
+        continue;
+      }
+      const m = json.meshes as Array<{ primitives: unknown[] }>;
+      expect(m.length, k.id).toBe(1);
+      expect(m[0]!.primitives.length, k.id).toBe(1);
+      // Colour, metal/roughness, normal and emissive (Meshy's PBR set).
+      expect(json.textures?.length ?? 0, k.id).toBeLessThanOrEqual(4);
+    }
+    expect(missing).toEqual([]);
+  });
+});

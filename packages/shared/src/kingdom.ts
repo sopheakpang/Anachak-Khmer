@@ -1110,6 +1110,8 @@ export const PropSlotSchema = z.object({
   diorama: z.boolean().optional(),
   /** PK 1.9.0 (D149): only on presets with kingdom.meshyModels (the PC; Low keeps its budget). */
   pc: z.boolean().optional(),
+  /** PK 2026-10-19: stretch the fitted model's height (the Khmer house a little taller). */
+  scaleY: z.number().positive().optional(),
   en: z.string(),
 });
 export type PropSlot = z.infer<typeof PropSlotSchema>;
@@ -1147,9 +1149,9 @@ export const PropsSchema = z.object({
   /** PK 1.9.0 (D153): boats from PK's models on the PC presets; the trader boat stands in for the junk. */
   boats: z
     .object({
-      dugout: PropSlotSchema.pick({ file: true, fit: true, sink: true }).extend({ en: z.string() }),
-      bambooRaft: PropSlotSchema.pick({ file: true, fit: true, sink: true }).extend({ en: z.string() }),
-      trader: PropSlotSchema.pick({ file: true, fit: true, sink: true }).extend({ en: z.string() }),
+      dugout: PropSlotSchema.pick({ file: true, fit: true }).extend({ en: z.string(), sink: z.number().min(0).max(0.9) }),
+      bambooRaft: PropSlotSchema.pick({ file: true, fit: true }).extend({ en: z.string(), sink: z.number().min(0).max(0.9) }),
+      trader: PropSlotSchema.pick({ file: true, fit: true }).extend({ en: z.string(), sink: z.number().min(0).max(0.9) }),
     })
     .optional(),
   /** PK 1.9.0 (D153): scattered plants, rocks and small life (PC presets). */
@@ -1162,6 +1164,25 @@ export const PropsSchema = z.object({
       clearHall: z.number().nonnegative(),
       clearBuilding: z.number().nonnegative(),
       kinds: z.array(ScatterKindSchema),
+    })
+    .optional(),
+  /**
+   * PK 1.9.0 (D155): PK's Meshy people for the villagers and soldiers nearest the middle of the
+   * view, zoomed in, on the PC look — their own walk, run and idle clips, the crowd's work and
+   * fight motions on their arms. File names under `dir`, picked by unit type, else by job; a
+   * list is shared out by unit id.
+   */
+  people: z
+    .object({
+      dir: z.string(),
+      /** At most this many, within `radius` m of the view's centre, when zoomed to `maxDist` or closer. */
+      max: z.number().int().min(0).max(64),
+      radius: z.number().positive(),
+      maxDist: z.number().positive(),
+      /** The hip height (m) the models are scaled to. */
+      hips: z.number().positive(),
+      byType: z.record(z.string(), z.array(z.string()).min(1)),
+      byJob: z.record(z.string(), z.array(z.string()).min(1)),
     })
     .optional(),
   /**

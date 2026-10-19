@@ -376,6 +376,16 @@ export class KingdomSim {
     return this.data.campaign.opponents.find((o) => o.id === this.chapterData.opponent)!;
   }
 
+  /**
+   * PK 2026-10-19: the enemy named by the chapter's era (campaign.json opponents: a rival
+   * chiefdom to 900, Champa, a rival claimant, Đại Việt…); an invented one says so.
+   */
+  get foe(): { km: string; en: string; invented: boolean } {
+    const o = this.opponent;
+    const invented = o.confidence === 'FICTIONAL';
+    return { km: o.km, en: invented ? `${o.en} (invented: no war is recorded)` : o.en, invented };
+  }
+
   /** Game time when this chapter began (the calendar counts from it). */
   chapterStart = 0;
 

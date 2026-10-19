@@ -893,34 +893,34 @@
       "lift": 0.35
     },
     "models": {
-      "$comment": "PK: real 3D model files (rigged .glb) made from the concept sheets replace the built-in figure in the 3D mode and on the sheet; put them in apps/game/public-mobile/models/. hips = the hip height (m) the model is scaled to. A kit with no file keeps the built-in figure. PK 1.9.0 (D146 ខ១): PK's Meshy people for every hero on foot (models/heroes/: rig and colour map only, clips stripped, 4 bone weights a vertex); the phone build leaves models/heroes/ out and keeps the built-in figures; the king is the Meshy king of 879 (`phone`: the old Golden Temple Guardian stays on the phone).",
+      "$comment": "PK: real 3D model files (rigged .glb) made from the concept sheets replace the built-in figure in the 3D mode and on the sheet; put them in apps/game/public-mobile/models/. hips = the hip height (m) the model is scaled to. A kit with no file keeps the built-in figure. PK 1.9.0 (D146 ខ១): PK's Meshy people for every hero on foot (models/heroes/: rig and colour map only, clips stripped, 4 bone weights a vertex); the phone build leaves models/heroes/ out and keeps the built-in figures; the king is the Meshy king of 879 (`phone`: the old Golden Temple Guardian stays on the phone). PK 1.9.0 (D155, \"reality logic human gesture behavior\"): the heroes use the game-ready copies in models/real/people/ (same Meshy models, lighter, with their Idle, Walking and Running clips): they stand, walk and run by their own motion capture, and the game poses their arms for strikes, skills and work.",
       "king": {
-        "file": "models/heroes/king-879.glb",
+        "file": "models/real/people/king.glb",
         "hips": 0.94,
         "phone": "models/king-guardian.glb"
       },
       "worker": {
-        "file": "models/heroes/farmer-man.glb",
+        "file": "models/real/people/farmer-man.glb",
         "hips": 0.92
       },
       "spear": {
-        "file": "models/heroes/spearman.glb",
+        "file": "models/real/people/spearman.glb",
         "hips": 0.92
       },
       "sword": {
-        "file": "models/heroes/swordsman.glb",
+        "file": "models/real/people/swordsman.glb",
         "hips": 0.92
       },
       "bow": {
-        "file": "models/heroes/archer.glb",
+        "file": "models/real/people/archer.glb",
         "hips": 0.92
       },
       "commander": {
-        "file": "models/heroes/commander.glb",
+        "file": "models/real/people/commander.glb",
         "hips": 0.94
       },
       "hunter": {
-        "file": "models/heroes/hunter.glb",
+        "file": "models/real/people/hunter.glb",
         "hips": 0.92
       }
     }

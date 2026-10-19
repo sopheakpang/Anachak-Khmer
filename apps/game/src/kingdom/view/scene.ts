@@ -45,6 +45,9 @@ import { TempleView } from '../../world/temple';
 import { bigsDue, growStep } from '../../world/templeGrow';
 import { DangerRings } from './dangerRings';
 import { ScatterView, scatterPlan } from './scatter';
+import { NearPeople, personFile, pickNear } from './nearPeople';
+import { dressOf, lookFor } from '../hero/heroModel';
+import { kitFor } from '../hero/heroCore';
 import { tileToWorld, worldToTile, type XZ } from '../sim/map';
 import { PLAYER, RIVAL, type Building, type KingdomSim, type Team, type Unit } from '../sim/sim';
 import {
@@ -378,6 +381,8 @@ export class KingdomScene {
   readonly dangerRings: DangerRings;
   /** PK's plants, rocks and small life over the land (D153, the semi-realistic PC look). */
   readonly scatter: ScatterView | null = null;
+  /** PK 1.9.0 (D155): PK's Meshy people for the units nearest the middle of the view (PC look). */
+  readonly people: NearPeople | null = null;
   private readonly ray = new THREE.Vector3();
   private readonly bars: { bg: THREE.InstancedMesh; fg: THREE.InstancedMesh };
   private readonly arrows: THREE.InstancedMesh;
@@ -722,6 +727,14 @@ export class KingdomScene {
     if (this.gfx.real && SC) {
       this.scatter = new ScatterView(SC.kinds, scatterPlan(sim.map, SC.kinds, sim.map.seed, SC.clearHall), SC, modelUrl);
       this.scene.add(this.scatter.group);
+    }
+    // PK 1.9.0 (D155): the people nearest the middle of the view move like people.
+    const PC = sim.data.props.people;
+    if (this.gfx.real && PC && PC.max > 0) {
+      const dress = dressOf(lookFor(kitFor(sim.data.anachak.hero, 'worker'), 'villager'));
+      this.people = new NearPeople(PC, modelUrl, dress);
+      this.people.preload();
+      this.scene.add(this.people.group);
     }
 
     // Building sets per type, scaffolding, the monument (the real Preah Ko kit).
@@ -1286,6 +1299,7 @@ export class KingdomScene {
     this.wear?.texture.dispose();
     this.fogTex.dispose();
     this.scatter?.dispose();
+    this.people?.dispose();
     for (const o of [...this.scene.children]) disposeNode(o, { textures: true });
     this.scene.clear();
   }
@@ -2103,6 +2117,23 @@ export class KingdomScene {
     const camQ = this.camera.quaternion;
     this.fallen.setTree(this.treeSets[0]!.geometry, this.treeSets[0]!.material as THREE.Material);
     this.fallen.update(t);
+    // D155: who is drawn as one of PK's people this frame (zoomed in, nearest the middle).
+    const NP = this.people;
+    const nearIds =
+      NP && this.view[2] <= NP.cfg.maxDist
+        ? pickNear(
+            [...s.units.values()].filter(
+              (u) =>
+                (u.team !== RIVAL || s.isVisible(u.x, u.z)) &&
+                u.id !== this.hiddenUnit &&
+                personFile(NP.cfg, u.type, u.type === 'villager' ? jobOf(u) : 'idle', u.id) !== null,
+            ),
+            this.view[0],
+            this.view[1],
+            NP.cfg,
+          )
+        : null;
+    NP?.begin();
     for (const u of s.units.values()) {
       if (u.team === RIVAL && !s.isVisible(u.x, u.z)) continue;
       if (u.id === this.hiddenUnit) continue; // drawn by the 3D hero mode
@@ -2169,8 +2200,12 @@ export class KingdomScene {
           this.paddles.setMatrixAt(nrafts++, paddleMatrix(this.m, x, y, z, heading, t));
         }
       }
-      list.push({ place: () => ({ x, y, z, heading, act, lean }) });
-      groups.set(key, list);
+      const file = nearIds?.has(u.id) ? personFile(NP!.cfg, u.type, job, u.id) : null;
+      const speed = u.anim === 'walk' ? s.def(u.type).speed : 0;
+      if (!(file && NP!.place(u.id, file, { x, y, z, heading, act, lean, speed }, t))) {
+        list.push({ place: () => ({ x, y, z, heading, act, lean }) });
+        groups.set(key, list);
+      }
       // Work shows: chips fly, dust puffs, water splashes, with a sound, near the camera only.
       const fx = u.anim === 'gather' || u.anim === 'build' ? WORK_FX[job] : undefined;
       if (fx && Math.abs(x - this.view[0]) < this.view[2] && Math.abs(z - this.view[1]) < this.view[2]) {
@@ -2216,6 +2251,7 @@ export class KingdomScene {
         );
       }
     }
+    NP?.end();
     for (const [key, c] of this.crowds) c.setAgents(groups.get(key) ?? []);
     for (const [key, list] of groups) this.crowd(key).setAgents(list);
     for (const c of this.crowds.values()) c.update(t);

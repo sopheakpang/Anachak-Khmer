@@ -136,7 +136,8 @@
       "tex": 1024,
       "fit": "width",
       "sink": 0,
-      "pc": true
+      "pc": true,
+      "scaleY": 1.3
     }
   },
   "trees": [
@@ -148,8 +149,8 @@
       "file": "models/trees/a.glb",
       "cards": "models/trees/a-cards.webp",
       "card": 1.02,
-      "height": 6,
-      "width": 4,
+      "height": 18,
+      "width": 10,
       "hi": 4500,
       "mid": 1100,
       "midFile": "models/trees/a-mid.glb",
@@ -163,8 +164,8 @@
       "file": "models/trees/b.glb",
       "cards": "models/trees/b-cards.webp",
       "card": 1.02,
-      "height": 6.5,
-      "width": 4.6,
+      "height": 19.5,
+      "width": 11.5,
       "hi": 6000,
       "mid": 1500,
       "midFile": "models/trees/b-mid.glb",
@@ -178,8 +179,8 @@
       "file": "models/trees/c.glb",
       "cards": "models/trees/c-cards.webp",
       "card": 1.02,
-      "height": 6.5,
-      "width": 4.2,
+      "height": 19.5,
+      "width": 10.5,
       "hi": 4500,
       "mid": 1100,
       "midFile": "models/trees/c-mid.glb",
@@ -193,8 +194,8 @@
       "file": "models/trees/d.glb",
       "cards": "models/trees/d-cards.webp",
       "card": 1.02,
-      "height": 7,
-      "width": 5.6,
+      "height": 21,
+      "width": 14,
       "hi": 6000,
       "mid": 1500,
       "midFile": "models/trees/d-mid.glb",
@@ -208,8 +209,8 @@
       "file": "models/trees/e.glb",
       "cards": "models/trees/e-cards.webp",
       "card": 1.02,
-      "height": 6.5,
-      "width": 4.4,
+      "height": 19.5,
+      "width": 11,
       "hi": 6000,
       "mid": 1500,
       "midFile": "models/trees/e-mid.glb",
@@ -223,8 +224,8 @@
       "file": "models/trees/f.glb",
       "cards": "models/trees/f-cards.webp",
       "card": 1.272,
-      "height": 7,
-      "width": 6.6,
+      "height": 21,
+      "width": 16.5,
       "hi": 6000,
       "mid": 1500,
       "midFile": "models/trees/f-mid.glb",
@@ -237,8 +238,8 @@
       "file": "models/trees/palm.glb",
       "cards": "models/trees/palm-cards.webp",
       "card": 1.02,
-      "height": 8,
-      "width": 3.6,
+      "height": 20,
+      "width": 7.2,
       "hi": 2000,
       "mid": 500,
       "midFile": "models/trees/palm-mid.glb",
@@ -252,8 +253,8 @@
       "file": "models/trees/coconut.glb",
       "cards": "models/trees/coconut-cards.webp",
       "card": 1.02,
-      "height": 9,
-      "width": 4.6,
+      "height": 22.5,
+      "width": 9.2,
       "hi": 2000,
       "mid": 500,
       "midFile": "models/trees/coconut-mid.glb",
@@ -266,8 +267,8 @@
       "file": "models/trees/fan.glb",
       "cards": "models/trees/fan-cards.webp",
       "card": 1.02,
-      "height": 3.5,
-      "width": 3,
+      "height": 7,
+      "width": 6,
       "hi": 2000,
       "mid": 500,
       "midFile": "models/trees/fan-mid.glb",
@@ -341,17 +342,11 @@
       }
     ],
     "village": {
-      "houseTypes": [
-        "house",
-        "nobleHouse"
-      ],
+      "houseTypes": ["house", "nobleHouse"],
       "minHouses": 3,
       "linkM": 16,
       "coconut": "coconut",
-      "banana": [
-        "banana",
-        "banana2"
-      ]
+      "banana": ["banana", "banana2"]
     },
     "wayside": {
       "near": "storehouse",
@@ -380,6 +375,33 @@
       "hero": 60000
     }
   },
+  "people": {
+    "$comment": "PK 1.9.0 (D155, 'reality logic human gesture behavior'): the villagers and soldiers nearest the middle of the view, zoomed in to maxDist or closer, are PK's Meshy people (PC look only): they stand, walk and run with their own clips and work and fight with the crowd's motions on their arms (hammer, chop, plant, reap, cast the net, thrust, cut, draw the bow, guard). byType wins over byJob; a list is shared out by unit id. Mounted units, elephants and the cart keep the built-in figures.",
+    "dir": "models/real/people/",
+    "max": 16,
+    "radius": 40,
+    "maxDist": 70,
+    "hips": 0.92,
+    "byType": {
+      "spearman": ["spearman"],
+      "swordsman": ["swordsman"],
+      "archer": ["archer"],
+      "commander": ["commander"],
+      "watchman": ["royal-guard"]
+    },
+    "byJob": {
+      "builder": ["builder", "stone-carver"],
+      "farmer": ["farmer-man", "farmer-woman"],
+      "fisher": ["fisher"],
+      "woodcutter": ["woodcutter"],
+      "quarryman": ["quarryman", "stone-hauler"],
+      "goldworker": ["blacksmith"],
+      "hunter": ["hunter"],
+      "forager": ["farmer-woman", "healer"],
+      "porter": ["porter"],
+      "idle": ["farmer-man", "farmer-woman", "elder", "market-seller"]
+    }
+  },
   "scatter": {
     "$comment": "PK 1.9.0 (D153): PK's plants, rocks, flowers and small life laid over the land in natural patterns on the PC presets (view/scatter.ts). per1k = clumps per 1000 tiles of the habitat; clump = how many in a clump; spread m; scale range; the nearest maxVisible of each kind are drawn within radius of the view. rare = one clump on the whole map (PK asked to use every model, the fantasy ones too: kept rare, deep in the forest).",
     "radius": 120,
@@ -388,79 +410,16 @@
     "clearBuilding": 2,
     "kinds": [
       {
-        "id": "grassTuft",
-        "en": "Grass tuft",
-        "file": "models/real/plants/grass-tuft.glb",
-        "habitat": "grass",
-        "per1k": 120,
-        "clump": [
-          4,
-          9
-        ],
-        "spread": 3,
-        "scale": [
-          0.8,
-          1.3
-        ],
-        "sink": 0.02,
-        "maxVisible": 36,
-        "rare": false
-      },
-      {
-        "id": "forestGrass",
-        "en": "Forest grass",
-        "file": "models/real/plants/forest-grass.glb",
-        "habitat": "forestEdge",
-        "per1k": 90,
-        "clump": [
-          3,
-          7
-        ],
-        "spread": 2.5,
-        "scale": [
-          0.8,
-          1.2
-        ],
-        "sink": 0.02,
-        "maxVisible": 27,
-        "rare": false
-      },
-      {
-        "id": "grassBloom",
-        "en": "Flowering grass",
-        "file": "models/real/plants/grass-bloom.glb",
-        "habitat": "grass",
-        "per1k": 40,
-        "clump": [
-          2,
-          5
-        ],
-        "spread": 2.5,
-        "scale": [
-          0.8,
-          1.2
-        ],
-        "sink": 0.02,
-        "maxVisible": 14,
-        "rare": false
-      },
-      {
         "id": "wildflowers",
         "en": "Wildflowers",
         "file": "models/real/plants/wildflowers.glb",
         "habitat": "grass",
         "per1k": 30,
-        "clump": [
-          2,
-          5
-        ],
+        "clump": [2, 5],
         "spread": 2,
-        "scale": [
-          0.7,
-          1.1
-        ],
+        "scale": [0.7, 1.1],
         "sink": 0.02,
-        "maxVisible": 14,
+        "maxVisible": 5,
         "rare": false
       },
       {
@@ -469,17 +428,11 @@
         "file": "models/real/plants/botanical.glb",
         "habitat": "forestEdge",
         "per1k": 20,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 1.5,
-        "scale": [
-          0.8,
-          1.1
-        ],
+        "scale": [0.8, 1.1],
         "sink": 0.02,
-        "maxVisible": 9,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -488,17 +441,11 @@
         "file": "models/real/plants/red-lily.glb",
         "habitat": "forestEdge",
         "per1k": 8,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 1.5,
-        "scale": [
-          0.8,
-          1.1
-        ],
+        "scale": [0.8, 1.1],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 3,
         "rare": false
       },
       {
@@ -507,17 +454,11 @@
         "file": "models/real/plants/dense-shrub.glb",
         "habitat": "forestEdge",
         "per1k": 60,
-        "clump": [
-          1,
-          4
-        ],
+        "clump": [1, 4],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.3
-        ],
+        "scale": [0.8, 1.3],
         "sink": 0.02,
-        "maxVisible": 18,
+        "maxVisible": 8,
         "rare": false
       },
       {
@@ -526,17 +467,11 @@
         "file": "models/real/plants/flower-bush.glb",
         "habitat": "village",
         "per1k": 30,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 2,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.02,
-        "maxVisible": 9,
+        "maxVisible": 8,
         "rare": false
       },
       {
@@ -545,17 +480,11 @@
         "file": "models/real/plants/purple-bush.glb",
         "habitat": "forestEdge",
         "per1k": 12,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 2,
-        "scale": [
-          0.8,
-          1.1
-        ],
+        "scale": [0.8, 1.1],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 3,
         "rare": false
       },
       {
@@ -564,17 +493,11 @@
         "file": "models/real/plants/glossy-shrub.glb",
         "habitat": "forest",
         "per1k": 60,
-        "clump": [
-          2,
-          5
-        ],
+        "clump": [2, 5],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.3
-        ],
+        "scale": [0.8, 1.3],
         "sink": 0.02,
-        "maxVisible": 18,
+        "maxVisible": 10,
         "rare": false
       },
       {
@@ -583,17 +506,11 @@
         "file": "models/real/plants/bush.glb",
         "habitat": "forest",
         "per1k": 80,
-        "clump": [
-          2,
-          6
-        ],
+        "clump": [2, 6],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.3
-        ],
+        "scale": [0.8, 1.3],
         "sink": 0.02,
-        "maxVisible": 23,
+        "maxVisible": 10,
         "rare": false
       },
       {
@@ -602,17 +519,11 @@
         "file": "models/real/plants/temperate-bush.glb",
         "habitat": "forest",
         "per1k": 30,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.02,
-        "maxVisible": 9,
+        "maxVisible": 4,
         "rare": false
       },
       {
@@ -621,17 +532,11 @@
         "file": "models/real/plants/mushrooms.glb",
         "habitat": "forest",
         "per1k": 25,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 1,
-        "scale": [
-          0.7,
-          1.2
-        ],
+        "scale": [0.7, 1.2],
         "sink": 0.02,
-        "maxVisible": 9,
+        "maxVisible": 8,
         "rare": false
       },
       {
@@ -640,17 +545,11 @@
         "file": "models/real/plants/reeds.glb",
         "habitat": "shore",
         "per1k": 70,
-        "clump": [
-          3,
-          7
-        ],
+        "clump": [3, 7],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.3
-        ],
+        "scale": [0.8, 1.3],
         "sink": 0.05,
-        "maxVisible": 23,
+        "maxVisible": 6,
         "rare": false
       },
       {
@@ -659,17 +558,11 @@
         "file": "models/real/plants/bamboo.glb",
         "habitat": "shore",
         "per1k": 15,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.02,
-        "maxVisible": 6,
+        "maxVisible": 4,
         "rare": false
       },
       {
@@ -678,17 +571,11 @@
         "file": "models/real/plants/lotus.glb",
         "habitat": "pond",
         "per1k": 40,
-        "clump": [
-          2,
-          5
-        ],
+        "clump": [2, 5],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.3,
-        "maxVisible": 14,
+        "maxVisible": 10,
         "rare": false
       },
       {
@@ -697,17 +584,11 @@
         "file": "models/real/plants/lily-pads.glb",
         "habitat": "pond",
         "per1k": 40,
-        "clump": [
-          2,
-          5
-        ],
+        "clump": [2, 5],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.3,
-        "maxVisible": 14,
+        "maxVisible": 8,
         "rare": false
       },
       {
@@ -716,17 +597,11 @@
         "file": "models/real/plants/fan-palm.glb",
         "habitat": "village",
         "per1k": 20,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 7,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -735,17 +610,11 @@
         "file": "models/real/plants/palm-a.glb",
         "habitat": "shore",
         "per1k": 15,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -754,17 +623,11 @@
         "file": "models/real/plants/palm-b.glb",
         "habitat": "grass",
         "per1k": 8,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -773,17 +636,11 @@
         "file": "models/real/plants/palm-c.glb",
         "habitat": "village",
         "per1k": 10,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 3,
         "rare": false
       },
       {
@@ -792,17 +649,11 @@
         "file": "models/real/plants/broadleaf-a.glb",
         "habitat": "forestEdge",
         "per1k": 12,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 5,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -811,17 +662,11 @@
         "file": "models/real/plants/broadleaf-b.glb",
         "habitat": "forestEdge",
         "per1k": 12,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 5,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -830,17 +675,11 @@
         "file": "models/real/plants/broadleaf-c.glb",
         "habitat": "grass",
         "per1k": 6,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 5,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 4,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -849,17 +688,11 @@
         "file": "models/real/plants/emerald-tree.glb",
         "habitat": "grass",
         "per1k": 6,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 5,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 4,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -868,17 +701,11 @@
         "file": "models/real/plants/lone-tree.glb",
         "habitat": "grass",
         "per1k": 4,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 3,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -887,17 +714,11 @@
         "file": "models/real/plants/banyan.glb",
         "habitat": "ruin",
         "per1k": 30,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 6,
-        "scale": [
-          0.8,
-          1.1
-        ],
+        "scale": [1.76, 2.42],
         "sink": 0.02,
-        "maxVisible": 3,
+        "maxVisible": 2,
         "rare": false
       },
       {
@@ -906,17 +727,11 @@
         "file": "models/real/plants/dead-tree.glb",
         "habitat": "forest",
         "per1k": 6,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
-        "maxVisible": 3,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -925,15 +740,9 @@
         "file": "models/real/plants/bare-tree.glb",
         "habitat": "hill",
         "per1k": 8,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [1.76, 2.64],
         "sink": 0.02,
         "maxVisible": 3,
         "rare": false
@@ -944,17 +753,11 @@
         "file": "models/real/plants/old-stump.glb",
         "habitat": "forest",
         "per1k": 8,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.02,
-        "maxVisible": 3,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -963,17 +766,11 @@
         "file": "models/real/plants/bonsai-rock.glb",
         "habitat": "hill",
         "per1k": 8,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.02,
-        "maxVisible": 3,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -982,17 +779,11 @@
         "file": "models/real/rocks/granite-a.glb",
         "habitat": "hill",
         "per1k": 40,
-        "clump": [
-          1,
-          4
-        ],
+        "clump": [1, 4],
         "spread": 4,
-        "scale": [
-          0.6,
-          1.4
-        ],
+        "scale": [0.6, 1.4],
         "sink": 0.15,
-        "maxVisible": 11,
+        "maxVisible": 8,
         "rare": false
       },
       {
@@ -1001,17 +792,11 @@
         "file": "models/real/rocks/granite-b.glb",
         "habitat": "hill",
         "per1k": 40,
-        "clump": [
-          1,
-          4
-        ],
+        "clump": [1, 4],
         "spread": 4,
-        "scale": [
-          0.6,
-          1.4
-        ],
+        "scale": [0.6, 1.4],
         "sink": 0.15,
-        "maxVisible": 11,
+        "maxVisible": 8,
         "rare": false
       },
       {
@@ -1020,15 +805,9 @@
         "file": "models/real/rocks/gray-stack.glb",
         "habitat": "hill",
         "per1k": 25,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 4,
-        "scale": [
-          0.7,
-          1.3
-        ],
+        "scale": [0.7, 1.3],
         "sink": 0.12,
         "maxVisible": 7,
         "rare": false
@@ -1039,17 +818,11 @@
         "file": "models/real/rocks/monolith.glb",
         "habitat": "hill",
         "per1k": 6,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.08,
-        "maxVisible": 3,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -1058,17 +831,11 @@
         "file": "models/real/rocks/formation-a.glb",
         "habitat": "hill",
         "per1k": 15,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 5,
-        "scale": [
-          0.8,
-          1.3
-        ],
+        "scale": [0.8, 1.3],
         "sink": 0.12,
-        "maxVisible": 5,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -1077,17 +844,11 @@
         "file": "models/real/rocks/formation-b.glb",
         "habitat": "hill",
         "per1k": 15,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 5,
-        "scale": [
-          0.8,
-          1.3
-        ],
+        "scale": [0.8, 1.3],
         "sink": 0.12,
-        "maxVisible": 5,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -1096,15 +857,9 @@
         "file": "models/real/rocks/formation-c.glb",
         "habitat": "forest",
         "per1k": 8,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.3
-        ],
+        "scale": [0.8, 1.3],
         "sink": 0.12,
         "maxVisible": 4,
         "rare": false
@@ -1115,15 +870,9 @@
         "file": "models/real/rocks/pile-a.glb",
         "habitat": "grass",
         "per1k": 10,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 3,
-        "scale": [
-          0.7,
-          1.2
-        ],
+        "scale": [0.7, 1.2],
         "sink": 0.1,
         "maxVisible": 5,
         "rare": false
@@ -1134,15 +883,9 @@
         "file": "models/real/rocks/pile-b.glb",
         "habitat": "forestEdge",
         "per1k": 10,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 3,
-        "scale": [
-          0.7,
-          1.2
-        ],
+        "scale": [0.7, 1.2],
         "sink": 0.1,
         "maxVisible": 5,
         "rare": false
@@ -1153,15 +896,9 @@
         "file": "models/real/rocks/laterite-pile.glb",
         "habitat": "ruin",
         "per1k": 40,
-        "clump": [
-          2,
-          5
-        ],
+        "clump": [2, 5],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.3
-        ],
+        "scale": [0.8, 1.3],
         "sink": 0.1,
         "maxVisible": 7,
         "rare": false
@@ -1172,17 +909,11 @@
         "file": "models/real/rocks/stone-formation.glb",
         "habitat": "hill",
         "per1k": 10,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.12,
-        "maxVisible": 4,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -1191,17 +922,11 @@
         "file": "models/real/rocks/plateau.glb",
         "habitat": "grass",
         "per1k": 4,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.15,
-        "maxVisible": 3,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -1210,17 +935,11 @@
         "file": "models/real/rocks/crags.glb",
         "habitat": "hill",
         "per1k": 6,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.1,
-        "maxVisible": 2,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -1229,15 +948,9 @@
         "file": "models/real/rocks/cliff-wall.glb",
         "habitat": "hill",
         "per1k": 3,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.1,
         "maxVisible": 1,
         "rare": false
@@ -1248,15 +961,9 @@
         "file": "models/real/rocks/hill.glb",
         "habitat": "hill",
         "per1k": 1,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.8,
-          1.1
-        ],
+        "scale": [0.8, 1.1],
         "sink": 0.1,
         "maxVisible": 1,
         "rare": false
@@ -1267,15 +974,9 @@
         "file": "models/real/props/slate-slab.glb",
         "habitat": "ruin",
         "per1k": 10,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 3,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.1,
         "maxVisible": 3,
         "rare": false
@@ -1286,15 +987,9 @@
         "file": "models/real/props/carved-stone.glb",
         "habitat": "ruin",
         "per1k": 20,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.05,
         "maxVisible": 5,
         "rare": false
@@ -1305,15 +1000,9 @@
         "file": "models/real/props/sandstone-block.glb",
         "habitat": "ruin",
         "per1k": 20,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 4,
-        "scale": [
-          0.8,
-          1.2
-        ],
+        "scale": [0.8, 1.2],
         "sink": 0.05,
         "maxVisible": 5,
         "rare": false
@@ -1324,17 +1013,11 @@
         "file": "models/real/props/fence-a.glb",
         "habitat": "village",
         "per1k": 6,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 3,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 4,
         "rare": false
       },
       {
@@ -1343,17 +1026,11 @@
         "file": "models/real/props/fence-b.glb",
         "habitat": "village",
         "per1k": 6,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 3,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 4,
         "rare": false
       },
       {
@@ -1362,15 +1039,9 @@
         "file": "models/real/props/wagon.glb",
         "habitat": "village",
         "per1k": 2,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": false
@@ -1381,15 +1052,9 @@
         "file": "models/real/birds/duck.glb",
         "habitat": "pond",
         "per1k": 15,
-        "clump": [
-          2,
-          5
-        ],
+        "clump": [2, 5],
         "spread": 2,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.25,
         "maxVisible": 7,
         "rare": false
@@ -1400,15 +1065,9 @@
         "file": "models/real/birds/sarus-crane.glb",
         "habitat": "shore",
         "per1k": 4,
-        "clump": [
-          2,
-          3
-        ],
+        "clump": [2, 3],
         "spread": 2,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
         "maxVisible": 3,
         "rare": false
@@ -1419,15 +1078,9 @@
         "file": "models/real/birds/giant-ibis.glb",
         "habitat": "shore",
         "per1k": 2,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 2,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
         "maxVisible": 2,
         "rare": false
@@ -1438,15 +1091,9 @@
         "file": "models/real/birds/peafowl.glb",
         "habitat": "forestEdge",
         "per1k": 3,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 2,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
         "maxVisible": 2,
         "rare": false
@@ -1457,17 +1104,11 @@
         "file": "models/real/birds/hen.glb",
         "habitat": "village",
         "per1k": 8,
-        "clump": [
-          2,
-          4
-        ],
+        "clump": [2, 4],
         "spread": 2,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
-        "maxVisible": 5,
+        "maxVisible": 1,
         "rare": false
       },
       {
@@ -1476,17 +1117,11 @@
         "file": "models/real/plants/sunflower.glb",
         "habitat": "grass",
         "per1k": 1,
-        "clump": [
-          2,
-          4
-        ],
+        "clump": [2, 4],
         "spread": 2,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
-        "maxVisible": 2,
+        "maxVisible": 1,
         "rare": true
       },
       {
@@ -1495,15 +1130,9 @@
         "file": "models/real/plants/mushrooms-amber.glb",
         "habitat": "forest",
         "per1k": 1,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 1.5,
-        "scale": [
-          0.8,
-          1.1
-        ],
+        "scale": [0.8, 1.1],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
@@ -1514,15 +1143,9 @@
         "file": "models/real/plants/mushrooms-red.glb",
         "habitat": "forest",
         "per1k": 1,
-        "clump": [
-          1,
-          3
-        ],
+        "clump": [1, 3],
         "spread": 1.5,
-        "scale": [
-          0.8,
-          1.1
-        ],
+        "scale": [0.8, 1.1],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
@@ -1533,15 +1156,9 @@
         "file": "models/real/plants/glowcap.glb",
         "habitat": "forest",
         "per1k": 1,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
@@ -1552,15 +1169,9 @@
         "file": "models/real/plants/crystal-tree.glb",
         "habitat": "forest",
         "per1k": 1,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
@@ -1571,15 +1182,9 @@
         "file": "models/real/plants/nebula-bloom.glb",
         "habitat": "forest",
         "per1k": 1,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 1,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [0.9, 1.1],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
@@ -1590,15 +1195,9 @@
         "file": "models/real/plants/wisteria.glb",
         "habitat": "forest",
         "per1k": 1,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [1.98, 2.42],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
@@ -1609,15 +1208,9 @@
         "file": "models/real/plants/scale-tree.glb",
         "habitat": "forest",
         "per1k": 1,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [1.98, 2.42],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
@@ -1628,15 +1221,9 @@
         "file": "models/real/plants/oak.glb",
         "habitat": "forestEdge",
         "per1k": 1,
-        "clump": [
-          1,
-          1
-        ],
+        "clump": [1, 1],
         "spread": 0,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [1.98, 2.42],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
@@ -1647,15 +1234,9 @@
         "file": "models/real/plants/pine.glb",
         "habitat": "hill",
         "per1k": 1,
-        "clump": [
-          1,
-          2
-        ],
+        "clump": [1, 2],
         "spread": 3,
-        "scale": [
-          0.9,
-          1.1
-        ],
+        "scale": [1.98, 2.42],
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
@@ -1668,19 +1249,19 @@
       "en": "Dugout boat",
       "file": "models/real/boats/dugout.glb",
       "fit": "width",
-      "sink": 0.05
+      "sink": 0.4
     },
     "bambooRaft": {
       "en": "Bamboo raft",
       "file": "models/real/boats/bamboo-raft.glb",
       "fit": "width",
-      "sink": 0.1
+      "sink": 0.45
     },
     "trader": {
       "en": "Trader boat (in place of the junk)",
       "file": "models/real/boats/trader-boat.glb",
       "fit": "width",
-      "sink": 0.08
+      "sink": 0.35
     }
   }
 }

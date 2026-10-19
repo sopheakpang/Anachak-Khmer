@@ -25,6 +25,10 @@ describe('low-poly style (D41)', () => {
     expect(qualityFrom('').q.look.style).toBe('lowpoly');
     expect(qualityFrom('?style=film').q.look.style).toBe('film');
     expect(qualityFrom('?preset=lite&style=film').q.look.shadows).toBe(false);
+    // The tests' shadow size (D154): powers of two from 512 to 4096 only.
+    expect(qualityFrom('?preset=pc1660&presetLock=1').q.look.shadowMapSize).toBe(4096);
+    expect(qualityFrom('?preset=pc1660&presetLock=1&shadowMap=2048').q.look.shadowMapSize).toBe(2048);
+    expect(qualityFrom('?preset=pc1660&presetLock=1&shadowMap=3000').q.look.shadowMapSize).toBe(4096);
     setLook({ style: 'nonsense' });
     expect(currentLook().style).toBe('lowpoly');
   });

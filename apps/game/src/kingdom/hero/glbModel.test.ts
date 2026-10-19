@@ -3,64 +3,13 @@ import * as THREE from 'three';
 import { loadKingdom } from '@temples/shared';
 import { HeroModel, lookFor } from './heroModel';
 import { kitFor } from './heroCore';
-import { heroModelFor, mapBones, normBone, registerModel, modelUrl, specFor } from './glbModel';
+import { fakeRig } from './testRig';
+import { gaitWeights, heroModelFor, mapBones, normBone, registerModel, modelUrl, specFor } from './glbModel';
 
 /** PK: real rigged models made from the concept sheets, the king first. */
 
 const data = loadKingdom();
 const H = data.anachak.hero;
-
-/** A small humanoid rig in a T-pose, Mixamo names, 100× scale (as Mixamo exports). */
-function fakeRig(prefix = 'mixamorig:', armsDown = false): THREE.Object3D {
-  const b = (name: string, x: number, y: number, z = 0) => {
-    const bone = new THREE.Bone();
-    bone.name = prefix + name;
-    bone.position.set(x, y, z);
-    return bone;
-  };
-  const hips = b('Hips', 0, 95);
-  const spine = b('Spine', 0, 12);
-  const spine1 = b('Spine1', 0, 12);
-  const neck = b('Neck', 0, 25);
-  const head = b('Head', 0, 10);
-  const lArm = b('LeftArm', 18, 20);
-  const lFore = armsDown ? b('LeftForeArm', 12, -28) : b('LeftForeArm', 28, 0);
-  const lHand = armsDown ? b('LeftHand', 1, -26) : b('LeftHand', 26, 0);
-  const rArm = b('RightArm', -18, 20);
-  const rFore = armsDown ? b('RightForeArm', -12, -28) : b('RightForeArm', -28, 0);
-  const rHand = armsDown ? b('RightHand', -1, -26) : b('RightHand', -26, 0);
-  const lUp = b('LeftUpLeg', 9, -5);
-  const lLeg = b('LeftLeg', 0, -44);
-  const lFoot = b('LeftFoot', 0, -42);
-  const rUp = b('RightUpLeg', -9, -5);
-  const rLeg = b('RightLeg', 0, -44);
-  const rFoot = b('RightFoot', 0, -42);
-  hips.add(spine, lUp, rUp);
-  spine.add(spine1);
-  spine1.add(neck, lArm, rArm);
-  neck.add(head);
-  lArm.add(lFore);
-  lFore.add(lHand);
-  rArm.add(rFore);
-  rFore.add(rHand);
-  lUp.add(lLeg);
-  lLeg.add(lFoot);
-  rUp.add(rLeg);
-  rLeg.add(rFoot);
-  const bones: THREE.Bone[] = [];
-  hips.traverse((o) => bones.push(o as THREE.Bone));
-  const geo = new THREE.BoxGeometry(40, 180, 20);
-  geo.translate(0, 90, 0);
-  const n = geo.getAttribute('position').count;
-  geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(new Array(n * 4).fill(0), 4));
-  geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(new Array(n).fill([1, 0, 0, 0]).flat(), 4));
-  const mesh = new THREE.SkinnedMesh(geo, new THREE.MeshStandardMaterial({ color: 0xc8a050 }));
-  const root = new THREE.Group();
-  root.add(hips, mesh);
-  root.updateMatrixWorld(true);
-  mesh.bind(new THREE.Skeleton(bones));
-  return root;
-}
 
 describe('real 3D models (rigged .glb)', () => {
   it('reads the bone names of the usual rigs', () => {
@@ -177,19 +126,93 @@ describe('real 3D models (rigged .glb)', () => {
   });
 });
 
+/** A clip that turns one bone a little round x over 1 s (stands for the Meshy idle, walk, run). */
+function clip(name: string, bone: string, amp: number): THREE.AnimationClip {
+  const q0 = new THREE.Quaternion();
+  const q1 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), amp);
+  return new THREE.AnimationClip(name, 1, [
+    new THREE.QuaternionKeyframeTrack(`${bone}.quaternion`, [0, 0.5, 1], [...q0.toArray(), ...q1.toArray(), ...q0.toArray()]),
+  ]);
+}
+
+describe('D155: PK’s heroes stand, walk and run by their own clips; the game poses strikes and work', () => {
+  const pose = (state: 'idle' | 'run' | 'attack' | 'jump', speed: number, t: number) => ({
+    state,
+    stateT: 0.15,
+    combo: 0,
+    stride: t * 6,
+    speed,
+    y: 0,
+    t,
+    strikeSec: 0.4,
+    skillKind: 'spin' as const,
+  });
+
+  it('the gait blends idle → walk → run by speed, always adding up to 1', () => {
+    expect(gaitWeights(0)).toEqual({ idle: 1, walk: 0, run: 0 });
+    expect(gaitWeights(1.4).walk).toBe(1);
+    expect(gaitWeights(6).run).toBe(1);
+    for (const v of [0, 0.1, 0.5, 1, 2, 2.5, 3, 3.5, 5, 9]) {
+      const g = gaitWeights(v);
+      expect(g.idle + g.walk + g.run).toBeCloseTo(1, 6);
+      for (const w of Object.values(g)) expect(w).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it('a model with clips: the run plays while running, a strike hands the arms to the game, a jump the whole body; the sword moves to the model’s hand', () => {
+    const rig = fakeRig();
+    rig.animations = [
+      clip('Idle', 'mixamorig:Spine', 0.05),
+      clip('Walking', 'mixamorig:LeftUpLeg', 0.5),
+      clip('Running', 'mixamorig:LeftUpLeg', 0.9),
+    ];
+    const spec = specFor(H.models, 'sword')!;
+    registerModel(modelUrl(spec.file), rig);
+    const kit = kitFor(H, 'sword');
+    const m = new HeroModel(kit, lookFor(kit, 'sword'), heroModelFor(H.models, 'sword'));
+    expect(m.rig!.clips).toBe(true);
+    // Standing: the idle, the clips hold the body.
+    for (let t = 0; t < 1; t += 0.05) m.pose(pose('idle', 0, t));
+    let g = m.rig!.gaitNow();
+    expect(g.idle).toBeGreaterThan(0.95);
+    expect(g.upper).toBeLessThan(0.05);
+    expect(g.lower).toBeLessThan(0.05);
+    // Running: the run clip.
+    for (let t = 1; t < 2; t += 0.05) m.pose(pose('run', 5, t));
+    g = m.rig!.gaitNow();
+    expect(g.run).toBeGreaterThan(0.95);
+    // A strike while standing: the game poses the arms, the legs stay the clip's.
+    for (let t = 2; t < 2.6; t += 0.05) m.pose(pose('attack', 0, t));
+    g = m.rig!.gaitNow();
+    expect(g.upper).toBeGreaterThan(0.95);
+    expect(g.lower).toBeLessThan(0.05);
+    // A jump: the game poses all of him.
+    for (let t = 2.6; t < 3.2; t += 0.05) m.pose(pose('jump', 3, t));
+    expect(m.rig!.gaitNow().lower).toBeGreaterThan(0.95);
+    // The drawn sword is in the model's right hand, not the hidden figure's.
+    m.pose(pose('attack', 0, 3.3));
+    expect(m.drawn).toBe(true);
+    let p: THREE.Object3D | null = m.rig!.anchors.gripR!;
+    let onBone = false;
+    for (; p; p = p.parent) if ((p as THREE.Bone).isBone && /RightHand/.test(p.name)) onBone = true;
+    expect(onBone).toBe(true);
+    m.dispose();
+  });
+});
+
 describe('PK 1.9.0 (D146 ខ១): Meshy heroes on the PC, the phone keeps its own', () => {
-  it('every hero on foot has a Meshy model; the phone table drops models/heroes/ and swaps the king', async () => {
+  it('every hero on foot has a Meshy model; the phone table drops the PC-only models and swaps the king', async () => {
     const { loadKingdom } = await import('@temples/shared');
     const { phoneModels } = await import('./glbModel');
     const models = loadKingdom().anachak.hero.models!;
     for (const k of ['king', 'worker', 'spear', 'sword', 'bow', 'commander', 'hunter'])
-      expect(typeof models[k] === 'object' && models[k].file.startsWith('models/heroes/')).toBe(true);
+      expect(typeof models[k] === 'object' && /^models\/(heroes|real\/people)\//.test(models[k].file)).toBe(true);
     const phone = phoneModels(models)!;
     expect(Object.keys(phone).filter((k) => !k.startsWith('$'))).toEqual(['king']);
     expect((phone.king as { file: string }).file).toBe('models/king-guardian.glb');
   });
 
-  it('the model files are in the game, rig and colour map only, no clips', async () => {
+  it('the model files are in the game, rigged; the PC heroes carry idle, walk and run clips (D155)', async () => {
     const { loadKingdom } = await import('@temples/shared');
     const models = loadKingdom().anachak.hero.models!;
     for (const [k, m] of Object.entries(models)) {
@@ -197,9 +220,11 @@ describe('PK 1.9.0 (D146 ខ១): Meshy heroes on the PC, the phone keeps its ow
       const json = await glbJson(m.file);
       expect(json, m.file).not.toBeNull();
       expect(json!.skins?.length ?? 0).toBeGreaterThan(0);
-      if (m.file.startsWith('models/heroes/')) {
-        expect(json!.animations ?? []).toHaveLength(0);
-        expect(json!.textures?.length ?? 0).toBe(1);
+      if (m.file.startsWith('models/real/people/')) {
+        const names = (json!.animations as Array<{ name: string }>).map((a) => a.name).join(' ');
+        expect(names, m.file).toMatch(/idle|stance/i);
+        expect(names, m.file).toMatch(/walk/i);
+        expect(names, m.file).toMatch(/run/i);
       }
     }
   });

@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { asInk, toonGradient } from './toon';
 import type { Joints } from './body';
+import { realLook } from '../../engine/look';
 
 /**
  * Real 3D character models (PK: sculpted, rigged .glb files made from his concept sheets, the
@@ -109,7 +110,11 @@ export function loadModel(url: string): Promise<THREE.Object3D | null> {
   if (!p) {
     p = new GLTFLoader()
       .loadAsync(url)
-      .then((g) => g.scene)
+      .then((g) => {
+        // The clips go with the scene (Object3D.animations), for the walk, run and idle (D155).
+        g.scene.animations = g.animations;
+        return g.scene;
+      })
       .catch(() => null)
       .then((s) => {
         loaded.set(url, s);
@@ -149,6 +154,43 @@ function inkFor(w: number): THREE.MeshBasicMaterial {
   return m;
 }
 
+/** The hands' bones (for the weapon and the bow when the model plays its own clips). */
+const HAND_NAMES = {
+  handR: ['righthand', 'hand_r', 'r_hand'],
+  handL: ['lefthand', 'hand_l', 'l_hand'],
+} as const;
+
+/** How fast (m/s) PK's Meshy walk and run clips move the feet (in place, 1.04 s and 0.67 s a cycle). */
+export const GAIT = { walk: 1.4, run: 4.2 };
+
+/**
+ * D155 (PK: "reality logic human gesture behavior"): how much of each clip plays at a speed —
+ * standing still is the idle, then the walk, and from a jog up the run; between them the two
+ * blend so the step never jumps. The weights add up to 1.
+ */
+export function gaitWeights(speed: number): { idle: number; walk: number; run: number } {
+  const v = Math.max(0, speed);
+  const idle = Math.max(0, 1 - v / 0.3);
+  const run = Math.min(1, Math.max(0, (v - 2.2) / 1.4));
+  return { idle, walk: Math.max(0, 1 - idle - run), run };
+}
+
+/** Joints the game's own poses take over from the clips (upper body: strikes, skills, work). */
+const UPPER: ReadonlySet<RigJoint> = new Set(['spine', 'head', 'shoulderL', 'shoulderR', 'elbowL', 'elbowR']);
+/** States the game poses the arms in, and states it poses the whole body in. */
+const OWN_ARMS = new Set(['attack', 'skill', 'work', 'hurt', 'jump', 'dash']);
+const OWN_BODY = new Set(['skill', 'work', 'hurt', 'jump', 'dash']);
+
+/** What the rig needs to know each frame to blend its clips with the game's poses. */
+export interface DriveInfo {
+  state: string;
+  speed: number;
+  t: number;
+  mounted: boolean;
+  /** Say outright which parts the game poses (the near crowd's work acts, D155); else by state. */
+  own?: { arms: boolean; body: boolean };
+}
+
 /**
  * The model in the game: scaled to the hero's size, feet on the ground, facing +z, drawn
  * cel-shaded with an ink outline, its arms let down from the rig's T-pose, its bones driven by
@@ -167,6 +209,19 @@ export class HeroRig {
   readonly armsAsModeled: boolean;
   /** The toon materials made for this copy of the model (freed by dispose). */
   private readonly ownMats: THREE.Material[] = [];
+  /** D155: the model's own idle, walk and run clips (PC: PK's Meshy people), or null. */
+  private readonly mixer: THREE.AnimationMixer | null = null;
+  private readonly gait: Partial<Record<'idle' | 'walk' | 'run', THREE.AnimationAction>> = {};
+  /** How much the game's own pose holds the arms (upper) and the legs (lower), 0–1, eased. */
+  private readonly own = { upper: 1, lower: 1 };
+  private lastT = Number.NaN;
+  /** Does the model walk, run and stand with its own clips? */
+  readonly clips: boolean;
+  /**
+   * Where the game's joints sit on the model's bones (gear hangs here when the clips play, so
+   * the sword stays in the model's hand): same place as the joint at rest, carried by the bone.
+   */
+  readonly anchors: Partial<Record<'gripR' | 'gripL' | 'spine' | 'elbowL' | 'pelvis', THREE.Group>> = {};
 
   constructor(
     source: THREE.Object3D,
@@ -194,8 +249,15 @@ export class HeroRig {
       if (!m.isMesh) return;
       m.castShadow = true;
       m.frustumCulled = false;
+      const real = realLook();
       const mats = (Array.isArray(m.material) ? m.material : [m.material]).map((src) => {
         const s = src as THREE.MeshStandardMaterial;
+        // The PC's semi-realistic look (D152): the model's own PBR material, no ink outline.
+        if (real) {
+          const r = s.clone();
+          r.roughness = Math.max(0.55, s.roughness ?? 1);
+          return r;
+        }
         return new THREE.MeshToonMaterial({
           color: s.color ?? new THREE.Color(0xffffff),
           map: s.map ?? null,
@@ -207,6 +269,7 @@ export class HeroRig {
       });
       this.ownMats.push(...mats);
       m.material = Array.isArray(m.material) ? mats : mats[0]!;
+      if (real) return;
       const w = 0.012 / Math.max(1e-6, k * worldScale(m.parent));
       const ink = (m as THREE.SkinnedMesh).isSkinnedMesh
         ? new THREE.SkinnedMesh(m.geometry, inkFor(w))
@@ -259,11 +322,82 @@ export class HeroRig {
     }
     this.hipsRestY = this.bones.pelvis?.position.y ?? 0;
     this.pelvisRestY = j.pelvis.position.y;
+    // Anchors: each joint's rest place, carried by its bone.
+    const all: THREE.Bone[] = [];
+    model.traverse((o) => (o as THREE.Bone).isBone && all.push(o as THREE.Bone));
+    const byName = (names: readonly string[]) => all.find((b) => names.includes(normBone(b.name)));
+    const pairs: Array<[keyof HeroRig['anchors'], THREE.Object3D, THREE.Bone | undefined]> = [
+      ['gripR', j.gripR, byName(HAND_NAMES.handR)],
+      ['gripL', j.gripL, byName(HAND_NAMES.handL)],
+      ['spine', j.spine, this.bones.spine],
+      ['elbowL', j.elbowL, this.bones.elbowL],
+      ['pelvis', j.pelvis, this.bones.pelvis],
+    ];
+    const inv = new THREE.Matrix4();
+    for (const [name, joint, bone] of pairs) {
+      if (!bone) continue;
+      const g = new THREE.Group();
+      g.name = `anchor:${name}`;
+      inv.copy(bone.matrixWorld).invert().multiply(joint.matrixWorld);
+      inv.decompose(g.position, g.quaternion, g.scale);
+      bone.add(g);
+      this.anchors[name] = g;
+    }
+    // The clips: idle, walk and run, in place (D155). Rigs without them are posed as before.
+    const clips = source.animations ?? [];
+    const find = (re: RegExp) => clips.find((c) => re.test(c.name));
+    // Soldiers' Meshy rigs stand in a combat stance in place of an idle.
+    const idle = find(/idle/i) ?? find(/stance/i);
+    const walk = find(/walk/i);
+    const run = find(/run/i);
+    this.clips = !!(idle && walk && this.mapped >= 11);
+    if (this.clips) {
+      const mixer = new THREE.AnimationMixer(model);
+      for (const [k, c] of [
+        ['idle', idle],
+        ['walk', walk],
+        ['run', run ?? walk],
+      ] as const) {
+        const a = mixer.clipAction(c!);
+        a.setEffectiveWeight(k === 'idle' ? 1 : 0);
+        a.play();
+        this.gait[k] = a;
+      }
+      this.mixer = mixer;
+    }
   }
 
-  /** Carry the figure's pose over to the bones (call after the figure is posed). */
-  drive(): void {
+  /**
+   * Carry the figure's pose over to the bones (call after the figure is posed). With clips
+   * (D155) the model walks, runs and stands by its own motion capture, and the game's pose takes
+   * over the arms for strikes, skills and work, and the whole body for jumps, dodges, falls,
+   * skills, work and riding — eased in and out so nothing snaps.
+   */
+  drive(h?: DriveInfo): void {
     const j = this.j;
+    let wUp = 1;
+    let wLow = 1;
+    if (this.mixer && h) {
+      const dt = Number.isNaN(this.lastT) ? 0 : Math.min(0.1, Math.max(0, h.t - this.lastT));
+      this.lastT = h.t;
+      const gw = gaitWeights(h.speed);
+      const ease = Math.min(1, dt * 10);
+      for (const k of ['idle', 'walk', 'run'] as const) {
+        const a = this.gait[k]!;
+        a.setEffectiveWeight(a.getEffectiveWeight() + (gw[k] - a.getEffectiveWeight()) * (dt ? ease : 1));
+      }
+      // The feet keep pace with the ground (no skating).
+      this.gait.walk!.timeScale = Math.min(1.6, Math.max(0.6, h.speed / GAIT.walk));
+      this.gait.run!.timeScale = Math.min(1.5, Math.max(0.7, h.speed / GAIT.run));
+      const up = (h.own ? h.own.arms : OWN_ARMS.has(h.state)) || h.mounted ? 1 : 0;
+      const low = (h.own ? h.own.body : OWN_BODY.has(h.state)) || h.mounted ? 1 : 0;
+      const e2 = Math.min(1, dt * 12);
+      this.own.upper += (up - this.own.upper) * (dt ? e2 : 1);
+      this.own.lower += (low - this.own.lower) * (dt ? e2 : 1);
+      this.mixer.update(dt);
+      wUp = this.own.upper;
+      wLow = this.own.lower;
+    }
     j.body.updateMatrixWorld(true);
     const qj = new THREE.Quaternion();
     const qp = new THREE.Quaternion();
@@ -271,6 +405,11 @@ export class HeroRig {
       const bone = this.bones[jn];
       const r = this.rest.get(jn);
       if (!bone || !r) continue;
+      const w = this.mixer && h ? (UPPER.has(jn) ? wUp : wLow) : 1;
+      if (w <= 0.001) {
+        bone.updateMatrixWorld(true);
+        continue;
+      }
       // The joint's turn since rest (in the world), applied to the bone's rest turn.
       (j[jn] as THREE.Object3D).getWorldQuaternion(qj);
       const delta = qj.multiply(r.joint.clone().invert());
@@ -278,15 +417,30 @@ export class HeroRig {
       const parent = bone.parent!;
       parent.updateMatrixWorld(true);
       parent.getWorldQuaternion(qp);
-      bone.quaternion.copy(qp.invert().multiply(want));
+      const local = qp.invert().multiply(want);
+      if (w >= 0.999) bone.quaternion.copy(local);
+      else bone.quaternion.slerp(local, w);
       bone.updateMatrixWorld(true);
     }
     // The body's bob, crouch and jump.
     const hips = this.bones.pelvis;
     if (hips) {
       const k = hips.parent ? worldScale(hips.parent) : 1;
-      hips.position.y = this.hipsRestY + (j.pelvis.position.y - this.pelvisRestY) / Math.max(1e-6, k);
+      const own = this.hipsRestY + (j.pelvis.position.y - this.pelvisRestY) / Math.max(1e-6, k);
+      const w = this.mixer && h ? wLow : 1;
+      hips.position.y += (own - hips.position.y) * w;
     }
+  }
+
+  /** The clips' weights now (for the tests). */
+  gaitNow(): { idle: number; walk: number; run: number; upper: number; lower: number } {
+    return {
+      idle: this.gait.idle?.getEffectiveWeight() ?? 0,
+      walk: this.gait.walk?.getEffectiveWeight() ?? 0,
+      run: this.gait.run?.getEffectiveWeight() ?? 0,
+      upper: this.own.upper,
+      lower: this.own.lower,
+    };
   }
 
   /**
@@ -312,6 +466,7 @@ export class HeroRig {
    * so those stay.
    */
   dispose(): void {
+    this.mixer?.stopAllAction();
     for (const m of this.ownMats) m.dispose();
     this.ownMats.length = 0;
     this.root.traverse(
@@ -346,13 +501,13 @@ export function modelUrl(file: string): string {
   return `${base}${file}`;
 }
 
-/** The phone build has no models/heroes/ (vite.mobile.config.ts PC_ONLY): those kits keep the built-in figure. */
+/** The phone build has no models/heroes/ or models/real/ (vite.mobile.config.ts PC_ONLY): those kits keep the built-in figure. */
 export function phoneModels(models: ModelTable): ModelTable {
   if (!models) return models;
   const out: Record<string, string | ModelSpec> = {};
   for (const [k, m] of Object.entries(models)) {
     if (typeof m === 'object' && m.phone) out[k] = { ...m, file: m.phone };
-    else if (!(typeof m === 'object' ? m.file : m).startsWith('models/heroes/')) out[k] = m;
+    else if (!/^models\/(heroes|real)\//.test(typeof m === 'object' ? m.file : m)) out[k] = m;
   }
   return out;
 }

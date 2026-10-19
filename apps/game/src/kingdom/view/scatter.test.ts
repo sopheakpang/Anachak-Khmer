@@ -23,6 +23,37 @@ describe('scatter config', () => {
     expect(worst).toBeLessThan(650_000);
   });
 
+  it('D154: counted from the model files themselves, every habitat in view at once stays under 550k triangles', async () => {
+    const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
+      existsSync(p: URL): boolean;
+      readFileSync(p: URL): Uint8Array;
+    };
+    const trisOf = (file: string): number | null => {
+      const url = new URL(`../../../public-mobile/${file}`, import.meta.url);
+      if (!fs.existsSync(url)) return null;
+      const b = fs.readFileSync(url);
+      const len = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(12, true);
+      const j = JSON.parse(new TextDecoder().decode(b.subarray(20, 20 + len))) as {
+        meshes: Array<{ primitives: Array<{ indices: number }> }>;
+        accessors: Array<{ count: number }>;
+      };
+      return j.accessors[j.meshes[0]!.primitives[0]!.indices]!.count / 3;
+    };
+    if (trisOf(SC.kinds[0]!.file) === null) return; // a checkout without the PC models
+    let worst = 0;
+    for (const k of SC.kinds) {
+      const t = trisOf(k.file)!;
+      // No kind alone takes more than its share (a heavy scan shows fewer copies).
+      expect(t * k.maxVisible, k.id).toBeLessThanOrEqual(Math.max(t, k.rare ? 6000 : 10_000));
+      worst += t * k.maxVisible;
+    }
+    expect(worst).toBeLessThan(550_000);
+  });
+
+  it('PK: the game’s own grass stays alone (the new grass models did not sit with it)', () => {
+    for (const id of ['grassTuft', 'forestGrass', 'grassBloom']) expect(SC.kinds.some((k) => k.id === id)).toBe(false);
+  });
+
   it('PK’s fantasy finds are rare: one clump on the whole map', () => {
     for (const id of ['glowcap', 'crystalTree', 'nebulaBloom', 'amberMushrooms', 'sunflower'])
       expect(SC.kinds.find((k) => k.id === id)?.rare, id).toBe(true);
@@ -68,7 +99,7 @@ describe('the scatter plan', () => {
   });
 
   it('grows in clumps, not on a grid', () => {
-    const grass = SC.kinds.findIndex((k) => k.id === 'grassTuft');
+    const grass = SC.kinds.findIndex((k) => k.id === 'reeds');
     const all = spots.filter((s) => s.kind === grass);
     const g = all.slice(0, 300);
     // Most tufts have another within their clump's spread.

@@ -1101,7 +1101,10 @@ test('KG-12: PK 1.9.0 Sprint 1: danger rings and the edge arrow, the 🤖 auto h
 test('KG-13: PK 1.9.0 (D146 ខ១ ខ៣, D149): PC 1660 preset — Meshy buildings, the Meshy heroes, the 🖥 panel', async ({
   page,
 }) => {
-  await page.goto('/?mode=kingdom&offline=1&kingdomDemo=1&preset=pc1660');
+  // The software renderer here cannot draw 4096 shadows under the 21 m trees in time, and a frame
+  // of the PC look takes about a second in it (D154).
+  test.setTimeout(1_200_000);
+  await page.goto('/?mode=kingdom&offline=1&kingdomDemo=1&preset=pc1660&shadowMap=2048');
   await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.kingdom, null, {
     timeout: 180_000,
     polling: 500,
@@ -1200,10 +1203,11 @@ test('KG-15: PK 1.9.0 (D151): every hero’s great skill plays its yantra effect
 test('KG-16: PK 1.9.0 (D152, D153): the semi-realistic PC look — PK’s models in the village and scattered over the land', async ({
   page,
 }) => {
-  test.setTimeout(600_000);
-  await page.goto('/?mode=anachak&offline=1&preset=pc1660&presetLock=1');
+  test.setTimeout(1_200_000);
+  await page.goto('/?mode=anachak&offline=1&preset=pc1660&presetLock=1&shadowMap=2048');
+  // The software renderer takes 1–2 minutes to open the PC look on the big Anachak map (D154).
   await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.anachak, null, {
-    timeout: 180_000,
+    timeout: 480_000,
     polling: 500,
   });
   if (await page.locator('.k-anachak #k-card').isVisible())
@@ -1232,7 +1236,8 @@ test('KG-16: PK 1.9.0 (D152, D153): the semi-realistic PC look — PK’s models
   await page.waitForFunction(
     () => {
       const v = window.__temples.anachak!.view as unknown as { propsOn: number; scatter: { shown: number } | null };
-      return v.propsOn >= 4 && (v.scatter?.shown ?? 0) > 50;
+      // D154: heavy scans show fewer copies (each kind ≤ 10k triangles), so fewer than before.
+      return v.propsOn >= 4 && (v.scatter?.shown ?? 0) > 30;
     },
     null,
     { timeout: 300_000, polling: 1000 },
@@ -1244,6 +1249,12 @@ test('KG-16: PK 1.9.0 (D152, D153): the semi-realistic PC look — PK’s models
     k.panTo(cx + 6, cz + 4);
     k.zoom(40);
   });
+  // D155: the people nearest the middle of the view are PK's Meshy people with their own clips.
+  await page.waitForFunction(
+    () => ((window.__temples.anachak!.view as unknown as { people: { shown: number } | null }).people?.shown ?? 0) > 0,
+    null,
+    { timeout: 240_000, polling: 1000 },
+  );
   await page.waitForTimeout(4000);
   await page.screenshot({ path: 'docs/screens/k-real-village.png' });
   await page.evaluate(() => {
@@ -1258,5 +1269,5 @@ test('KG-16: PK 1.9.0 (D152, D153): the semi-realistic PC look — PK’s models
   const shown = await page.evaluate(
     () => (window.__temples.anachak!.view as unknown as { scatter: { shown: number } }).scatter.shown,
   );
-  expect(shown).toBeGreaterThan(50);
+  expect(shown).toBeGreaterThan(30);
 });

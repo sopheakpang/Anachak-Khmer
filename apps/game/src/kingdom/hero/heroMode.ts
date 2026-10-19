@@ -1431,9 +1431,9 @@ export class HeroMode {
     const top = 560 - Math.cos(a) * 340;
     const what =
       zn.kind === 'raid'
-        ? { km: 'ចោរ', en: 'Raiders' }
+        ? { km: sim.opponent.km, en: `${sim.opponent.en} raiders` }
         : zn.kind === 'camp'
-          ? { km: 'ជំរំសត្រូវ', en: 'Rival camp' }
+          ? { km: `ជំរំ${sim.opponent.km}`, en: `${sim.opponent.en} camp` }
           : (() => {
               const an = sim.animals.get(zn.id);
               const k = an ? sim.kindOf(an) : null;

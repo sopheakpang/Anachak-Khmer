@@ -680,3 +680,37 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | `npm run verify` (87 test files / 755 tests) | ✅ | |
 
 **Not yet:** people, animals and livestock from the models (need animation), Preah Ko textured, noble house finials trimmed, the second batch of plants and rocks (running in Blender). Frame rate on PK's PC not measured.
+
+## 1.9.0-18 PK's look notes and the rest of the models (D154) — 2026-10-19
+
+| Check | Result | How |
+| --- | --- | --- |
+| Trees a–f ≥ 18 m, house `scaleY` > 1, boats sink ≥ 0.3 | ✅ | `view/props.test.ts` |
+| Grass kinds gone from the scatter; clumps still in habitat | ✅ | `view/scatter.test.ts` |
+| Enemy named by era; 879 marked invented | ✅ | `sim/foe.test.ts` |
+| Every scatter kind has its model: one mesh, one part, ≤ 4 PBR maps | ✅ | `view/props.test.ts` |
+| 43 models (8 re-made, 35 plants/trees/rocks) checked by picture; old trunk rejected (shredded) and re-made | ✅ | check pictures on PK's PC |
+| Scatter worst case counted from the files < 550k (≈ 524k); no kind over 10k (rare 6k); one software-rendered frame 47 s → 1.1 s, 2.07 M triangles with shadows | ✅ | `view/scatter.test.ts`, browser probe on PC 1660 |
+| 14 heaviest scans (0.9–8 M triangles → ≈ 6 000) made with `scripts/models/heavy.mjs`, checked by picture; glowcap, crystal tree and red mushrooms' textures smear (rare fantasy kinds, kept) | ⚠️ | Blender renders on PK's PC |
+
+## 1.9.0-19 the 3D hero's own clips (D155) — 2026-10-19
+
+| Check | Result | How |
+| --- | --- | --- |
+| Gait weights: idle → walk → run by speed, add up to 1 | ✅ | `hero/glbModel.test.ts` |
+| Rig with clips: idle standing, run running, strike = game's arms over clip legs, jump = game's whole body; drawn sword in the model's right hand | ✅ | `hero/glbModel.test.ts` |
+| Every PC hero file carries idle (or combat stance), walk and run clips; phone keeps its figures | ✅ | `hero/glbModel.test.ts` |
+| `npm run verify` (88 test files / 763 tests, build) | ✅ | |
+
+## 1.9.0-20 the RTS people near the camera (D155) — 2026-10-20
+
+| Check | Result | How |
+| --- | --- | --- |
+| Every act gives finite joint turns; walking and standing left to the clips; a hammer blow raises the arms over the head; the spear arm drives while the shield arm holds; fights and field work hold the legs, planting and reaping the body | ✅ | `view/nearPeople.test.ts` |
+| Model by type or job, shared by id; riders, elephants and the cart stay in the crowd; every named file has idle (or stance) and walk clips | ✅ | `view/nearPeople.test.ts` |
+| Nearest within the radius, at most `max`; a person waits for the model (the crowd draws him), works, goes back to the pool and is reused | ✅ | `view/nearPeople.test.ts` |
+| `?shadowMap=` only takes powers of two 512–4096 (tests' software renderer) | ✅ | `engine/look.test.ts` |
+| e2e KG-13 (PC 1660: Meshy buildings, Meshy heroes, 🖥 panel) | ✅ | 9.8 min in the software renderer, `shadowMap=2048` |
+| e2e KG-16 (PC look village, scatter, near people) | ❌ times out | In the software renderer a frame of the whole explored Anachak map now takes ≈ 20 s (the 21 m trees and their shadows); at the KG-13 close view one frame took 56 ms with the old trees and > 4 min with the new ones (4096 shadows; 1.1 s at 2048, 0.2 s without shadows). **The frame rate must be measured on PK's GTX 1660 Super** (🖥 panel) before the tall forest is kept as it is. |
+| `npm run verify` (89 test files / 770 tests, build) | ✅ | |
+
