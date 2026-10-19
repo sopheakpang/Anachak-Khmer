@@ -19,7 +19,7 @@ function walk(dir: string): string[] {
 }
 
 /** Model folders the phone build leaves out (the PC's Meshy models). */
-export const PC_ONLY = ['models/heroes', 'models/buildings'];
+export const PC_ONLY = ['models/heroes', 'models/buildings', 'models/real'];
 
 export default defineConfig({
   base: './',

@@ -11,7 +11,7 @@ import {
   swayMaterial,
 } from './flora';
 
-const presets = qualityJson as unknown as Record<string, { kingdom: KingdomGfx }>;
+const presets = qualityJson as unknown as Record<string, { kingdom: KingdomGfx; look: { style: string } }>;
 const tris = (g: { getAttribute(n: string): { count: number } }) => g.getAttribute('position').count / 3;
 
 describe('Anno-style graphics per preset (D79)', () => {
@@ -33,7 +33,9 @@ describe('Anno-style graphics per preset (D79)', () => {
     expect(presets.low!.kingdom.aoScale).toBeLessThanOrEqual(0.5);
     expect(postChain(presets.lite!.kingdom)).toEqual(['output', 'grade']);
     // The diorama look (D121) paints its shade into the ground instead of screen-space AO.
-    expect(postChain(presets.high!.kingdom)).toEqual(['bloom', 'output', 'grade']);
+    // PK 1.9.0 (D152): the semi-realistic look on the PC presets brings the soft AO back.
+    expect(postChain(presets.high!.kingdom)).toEqual(['ao', 'bloom', 'output', 'grade']);
+    expect(postChain({ ...presets.high!.kingdom, real: false })).toEqual(['bloom', 'output', 'grade']);
     expect(postChain({ ...presets.high!.kingdom, diorama: false })).toEqual(['ao', 'bloom', 'output', 'grade']);
     expect(postChain(NO_GFX)).toEqual([]);
   });
@@ -56,5 +58,19 @@ describe('Anno-style graphics per preset (D79)', () => {
     const s = swayMaterial();
     expect(s.uniforms.uWind.value).toBeGreaterThan(0);
     expect(s.material.customProgramCacheKey()).toBe('sway');
+  });
+});
+
+describe('the semi-realistic look (D152, D153)', () => {
+  it('is on for PC 1660, High and Ultra only, with no tilt-shift; Low, Lite and the phone keep their look', () => {
+    for (const k of ['pc1660', 'high', 'ultra']) {
+      expect(presets[k]!.look.style, k).toBe('real');
+      expect(presets[k]!.kingdom.real, k).toBe(true);
+      expect(presets[k]!.kingdom.tiltShift, k).toBe(false);
+    }
+    for (const k of ['low', 'lite', 'mobile']) {
+      expect(presets[k]!.look.style, k).toBe('lowpoly');
+      expect(presets[k]!.kingdom.real ?? false, k).toBe(false);
+    }
   });
 });

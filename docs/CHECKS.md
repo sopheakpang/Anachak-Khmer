@@ -666,3 +666,17 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 
 **To change (D152, PK's choice):** the unalom and chedi spires go for 9th-century motifs; the script pillars are faint and will be brightened with the PC realistic look.
 | `npm run verify` (lint, typecheck, 86 test files / 743 tests, build) | ✅ | |
+
+## 1.9.0-16/17 semi-realistic PC look and PK's models (D152, D153) — 2026-10-19
+
+| Check | Result | How |
+| --- | --- | --- |
+| PC 1660 / High / Ultra are `real` (no tilt-shift); Low, Lite, phone unchanged; AO back in the PC chain | ✅ | `view/gfx.test.ts`, `engine/look.test.ts` |
+| `real` never flattens a material | ✅ | `engine/look.test.ts` |
+| Every building type incl. the house has a model (one mesh, ≤ 3 PBR maps, ≤ 15k triangles) | ✅ | `view/props.test.ts` |
+| Scatter: every kind is a matched model; habitats kept, no road, hall clear, rare kinds rare, clumps; worst case < 650k triangles | ✅ | `view/scatter.test.ts` |
+| 107 models made game-ready in Blender, each checked by its picture; 6 broken by over-cutting re-made | ✅ | `scripts/models/blender/gamify.py`, check pictures on PK's PC |
+| In game on PC 1660: house / storehouse / market models, scatter > 50 shown | ✅ | e2e KG-16, `docs/screens/k-real-village.png`, `docs/screens/k-real-land.png` |
+| `npm run verify` (87 test files / 755 tests) | ✅ | |
+
+**Not yet:** people, animals and livestock from the models (need animation), Preah Ko textured, noble house finials trimmed, the second batch of plants and rocks (running in Blender). Frame rate on PK's PC not measured.

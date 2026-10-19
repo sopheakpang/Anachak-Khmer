@@ -1196,3 +1196,67 @@ test('KG-15: PK 1.9.0 (D151): every hero’s great skill plays its yantra effect
     await expect(ui.locator('.k-hb-skill4')).toBeHidden({ timeout: 30_000 });
   }
 });
+
+test('KG-16: PK 1.9.0 (D152, D153): the semi-realistic PC look — PK’s models in the village and scattered over the land', async ({
+  page,
+}) => {
+  test.setTimeout(600_000);
+  await page.goto('/?mode=anachak&offline=1&preset=pc1660&presetLock=1');
+  await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.anachak, null, {
+    timeout: 180_000,
+    polling: 500,
+  });
+  if (await page.locator('.k-anachak #k-card').isVisible())
+    await page.locator('.k-anachak #k-card .k-card-x').dispatchEvent('pointerdown');
+  // Build a little village round the hall so the house and storehouse models show.
+  await page.evaluate(() => {
+    const k = window.__temples.anachak!;
+    const s = k.sim;
+    s.fog.explored.fill(1);
+    s.fog.visible.fill(1);
+    s.exploredVersion++;
+    const hall = [...s.buildings.values()].find((b) => b.type === 'townCentre')!;
+    const [hx, hz] = [hall.tx, hall.tz];
+    const tryPlace = (type: string, dx: number, dz: number) => {
+      if (!s.canPlace(type, hx + dx, hz + dz, 0)) s.addBuilding(type, 0, hx + dx, hz + dz, 1);
+    };
+    for (const [t, dx, dz] of [
+      ['house', 8, 0],
+      ['house', 8, 4],
+      ['house', -6, 6],
+      ['storehouse', -8, -2],
+      ['market', 2, 9],
+    ] as const)
+      tryPlace(t, dx, dz);
+  });
+  await page.waitForFunction(
+    () => {
+      const v = window.__temples.anachak!.view as unknown as { propsOn: number; scatter: { shown: number } | null };
+      return v.propsOn >= 4 && (v.scatter?.shown ?? 0) > 50;
+    },
+    null,
+    { timeout: 300_000, polling: 1000 },
+  );
+  await page.evaluate(() => {
+    const k = window.__temples.anachak!;
+    const hall = [...k.sim.buildings.values()].find((b) => b.type === 'townCentre')!;
+    const [cx, cz] = k.sim.center(hall);
+    k.panTo(cx + 6, cz + 4);
+    k.zoom(40);
+  });
+  await page.waitForTimeout(4000);
+  await page.screenshot({ path: 'docs/screens/k-real-village.png' });
+  await page.evaluate(() => {
+    const k = window.__temples.anachak!;
+    const hall = [...k.sim.buildings.values()].find((b) => b.type === 'townCentre')!;
+    const [cx, cz] = k.sim.center(hall);
+    k.zoom(90);
+    k.panTo(cx + 40, cz + 30);
+  });
+  await page.waitForTimeout(4000);
+  await page.screenshot({ path: 'docs/screens/k-real-land.png' });
+  const shown = await page.evaluate(
+    () => (window.__temples.anachak!.view as unknown as { scatter: { shown: number } }).scatter.shown,
+  );
+  expect(shown).toBeGreaterThan(50);
+});

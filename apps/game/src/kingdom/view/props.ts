@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import type { PropSlot } from '@temples/shared';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { lowPoly, soft } from '../../engine/look';
+import { lowPoly, realLook, soft } from '../../engine/look';
 
 /** The first mesh's geometry in the model's own space (its node transforms applied). */
 export function meshOf(root: THREE.Object3D): THREE.Mesh | null {
@@ -33,8 +33,10 @@ export function fitGeometry(
   faceted = lowPoly(),
 ): THREE.BufferGeometry {
   const g = faceted && src.index ? src.toNonIndexed() : src.clone();
+  // The semi-realistic look keeps the model's own normals (smooth edges, normal maps; D152).
+  const keepNormals = !faceted && realLook() && !!g.getAttribute('normal');
   for (const k of Object.keys(g.attributes))
-    if (k !== 'position' && k !== 'color' && k !== 'uv') g.deleteAttribute(k);
+    if (k !== 'position' && k !== 'color' && k !== 'uv' && !(keepNormals && k === 'normal')) g.deleteAttribute(k);
   g.computeBoundingBox();
   like.computeBoundingBox();
   const a = g.boundingBox!;
@@ -50,7 +52,7 @@ export function fitGeometry(
   g.translate(-cx, -a.min.y, -cz);
   g.scale(k, k, k);
   g.translate(0, b.min.y - (slot.sink ?? 0) * sa.y * k, 0);
-  g.computeVertexNormals();
+  if (!keepNormals) g.computeVertexNormals();
   g.computeBoundingBox();
   g.computeBoundingSphere();
   return g;
@@ -70,6 +72,29 @@ export function gradeColours(g: THREE.BufferGeometry, light: number, sat: number
     c.setXYZ(i, f(r, t.r), f(gr, t.g), f(b, t.b));
   }
   c.needsUpdate = true;
+}
+
+/**
+ * The model's own PBR material for the semi-realistic look (D152): its colour, normal and
+ * roughness maps kept, tinted; a missing roughness map gets a matte, weathered value.
+ */
+export function realMaterial(own: THREE.Material, tint?: string): THREE.MeshStandardMaterial {
+  const src = own as THREE.MeshStandardMaterial;
+  const m = new THREE.MeshStandardMaterial({
+    map: src.map ?? null,
+    normalMap: src.normalMap ?? null,
+    roughnessMap: src.roughnessMap ?? null,
+    metalnessMap: src.metalnessMap ?? null,
+    aoMap: src.aoMap ?? null,
+    color: new THREE.Color(tint ?? '#ffffff'),
+    roughness: src.roughnessMap ? 1 : 0.88,
+    metalness: src.metalnessMap ? 1 : 0,
+    side: src.side,
+    alphaTest: src.alphaTest,
+    transparent: false,
+  });
+  if (src.normalMap) m.normalScale.copy(src.normalScale);
+  return m;
 }
 
 const loads = new Map<string, Promise<THREE.Object3D | null>>();
@@ -105,10 +130,13 @@ export function applyProp(mesh: THREE.InstancedMesh, model: THREE.Object3D, slot
   mesh.geometry = fitted;
   old.dispose();
   if (slot.bake !== 'vertex') {
-    const map = (src.material as THREE.MeshStandardMaterial).map ?? null;
+    const own = src.material as THREE.MeshStandardMaterial;
+    const map = own.map ?? null;
     if (map) map.colorSpace = THREE.SRGBColorSpace;
     const was = mesh.material as THREE.Material;
-    mesh.material = soft({ map, color: new THREE.Color(slot.tint ?? '#ffffff'), roughness: 0.9 }, 0.15);
+    mesh.material = realLook()
+      ? realMaterial(own, slot.tint)
+      : soft({ map, color: new THREE.Color(slot.tint ?? '#ffffff'), roughness: 0.9 }, 0.15);
     // The built-in shape's material is no longer drawn (1.8.0: freed, unless a cache shares it).
     if (!was.userData.shared) was.dispose();
   } else if (!fitted.getAttribute('color')) {

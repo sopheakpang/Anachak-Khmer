@@ -41,8 +41,11 @@ export function qualityFrom(
   const name: PresetName = stored && params.get('presetLock') !== '1' ? stored : fromUrl;
   const style = new URLSearchParams(search).get('style');
   const q = (qualityJson as unknown as Record<PresetName, Quality>)[name];
-  // ?style=film | lowpoly lets the host compare the two looks without editing config.
-  return { name, q: style === 'film' || style === 'lowpoly' ? { ...q, look: { ...q.look, style } } : q };
+  // ?style=film | lowpoly | real lets the host compare the looks without editing config.
+  return {
+    name,
+    q: style === 'film' || style === 'lowpoly' || style === 'real' ? { ...q, look: { ...q.look, style } } : q,
+  };
 }
 
 const PIP = (layoutJson.zones as Record<string, { x: number; y: number; w: number; h: number }>).pip!;

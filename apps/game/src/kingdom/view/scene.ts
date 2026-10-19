@@ -44,6 +44,7 @@ import { repeated, textures } from '../../engine/textures';
 import { TempleView } from '../../world/temple';
 import { bigsDue, growStep } from '../../world/templeGrow';
 import { DangerRings } from './dangerRings';
+import { ScatterView, scatterPlan } from './scatter';
 import { tileToWorld, worldToTile, type XZ } from '../sim/map';
 import { PLAYER, RIVAL, type Building, type KingdomSim, type Team, type Unit } from '../sim/sim';
 import {
@@ -90,7 +91,7 @@ import {
   type Job,
 } from './people';
 import { ANIMAL_LOOK, PERCH_RATE } from './wildLook';
-import { applyProp, loadProp } from './props';
+import { applyProp, fitGeometry, loadProp, meshOf, realMaterial } from './props';
 import { NprUnits } from './npr';
 import { blockAo, splatTerrain, wetness, type SplatUniforms } from './terrain';
 import { GroundDetailRts, hash as detailHash, type Patch } from './detail';
@@ -375,6 +376,9 @@ export class KingdomScene {
   private readonly rings: THREE.InstancedMesh;
   /** Red rings round dangers (D146 ខ៦). */
   readonly dangerRings: DangerRings;
+  /** PK's plants, rocks and small life over the land (D153, the semi-realistic PC look). */
+  readonly scatter: ScatterView | null = null;
+  private readonly ray = new THREE.Vector3();
   private readonly bars: { bg: THREE.InstancedMesh; fg: THREE.InstancedMesh };
   private readonly arrows: THREE.InstancedMesh;
   private readonly rubble: THREE.InstancedMesh;
@@ -445,14 +449,18 @@ export class KingdomScene {
     this.sun = this.scene.children.find((o) => o instanceof THREE.DirectionalLight) as THREE.DirectionalLight;
 
     if (this.gfx.diorama) {
-      this.npr = new NprUnits(sim.data.diorama.units);
-      const C = sim.data.diorama.camera;
-      this.rtsFov = C.fov;
-      this.rtsFar = C.far;
-      this.lensK = lensStretch(RTS_FOV, C.fov);
-      this.camera.fov = C.fov;
-      this.camera.far = C.far;
-      this.camera.updateProjectionMatrix();
+      // The semi-realistic look (D152) keeps the diorama's land but not its toon people, ink
+      // outlines or long lens.
+      if (!this.gfx.real) {
+        this.npr = new NprUnits(sim.data.diorama.units);
+        const C = sim.data.diorama.camera;
+        this.rtsFov = C.fov;
+        this.rtsFar = C.far;
+        this.lensK = lensStretch(RTS_FOV, C.fov);
+        this.camera.fov = C.fov;
+        this.camera.far = C.far;
+        this.camera.updateProjectionMatrix();
+      }
       this.detail = new GroundDetailRts(sim.data.diorama.detail);
       this.wear = new WearMap(sim.map.size, sim.data.diorama.ground);
       this.wear.setBuildings(sim.buildings.values());
@@ -466,7 +474,8 @@ export class KingdomScene {
       this.sun.position.copy(this.sunDirNow).multiplyScalar(120);
       this.sun.intensity = L.sun;
       if (this.sun.castShadow) {
-        this.sun.shadow.mapSize.set(L.shadowMap, L.shadowMap);
+        // The preset's shadow size wins in the semi-realistic look (PC 1660: 4096).
+        if (!this.gfx.real) this.sun.shadow.mapSize.set(L.shadowMap, L.shadowMap);
         this.sun.shadow.camera.far = 400;
       }
       const hemi = this.scene.children.find((o) => o instanceof THREE.HemisphereLight) as
@@ -583,6 +592,8 @@ export class KingdomScene {
       m.receiveShadow = true;
       this.scene.add(m);
     }
+    // PK 1.9.0 (D153): PK's boats on the PC presets; the trader boat sails in the junk's place.
+    if (this.gfx.real && sim.data.props.boats) this.loadBoats();
     // Village life (D79): kitchen gardens by the houses, palms on the paddy dikes, egrets.
     this.yards = new THREE.InstancedMesh(homeYardGeometry(), figureMaterial, 80);
     this.dikePalms = new THREE.InstancedMesh(palmGeometry(), leaves, 120);
@@ -706,6 +717,12 @@ export class KingdomScene {
     for (let i = 0; i < fruits.length; i++) this.fruit.setColorAt(i, this.c.set(0xd9a04a));
     // PK's real 3D props (1.6.0), swapped in as they load.
     if (this.gfx.props) this.loadProps();
+    // PK 1.9.0 (D153): the rest of PK's models scattered over the land in natural patterns.
+    const SC = sim.data.props.scatter;
+    if (this.gfx.real && SC) {
+      this.scatter = new ScatterView(SC.kinds, scatterPlan(sim.map, SC.kinds, sim.map.seed, SC.clearHall), SC, modelUrl);
+      this.scene.add(this.scatter.group);
+    }
 
     // Building sets per type, scaffolding, the monument (the real Preah Ko kit).
     for (const type of [
@@ -1268,6 +1285,7 @@ export class KingdomScene {
     for (const g of [this.egrass, this.sward, this.lawn, this.stones]) g?.dispose();
     this.wear?.texture.dispose();
     this.fogTex.dispose();
+    this.scatter?.dispose();
     for (const o of [...this.scene.children]) disposeNode(o, { textures: true });
     this.scene.clear();
   }
@@ -1287,6 +1305,29 @@ export class KingdomScene {
         if (m && applyProp(mesh, m, slot)) this.propsOn++;
       });
     }
+  }
+
+  /** PK 1.9.0 (D153): the dugouts, bamboo rafts and the trader boat from PK's models. */
+  private loadBoats(): void {
+    const B = this.sim.data.props.boats!;
+    const swap = (target: THREE.Mesh, slot: (typeof B)['dugout']): void => {
+      void loadProp(modelUrl(slot.file)).then((m) => {
+        const src = m && meshOf(m);
+        if (!src || this.disposed) return;
+        const geo = src.geometry.clone();
+        geo.applyMatrix4(src.matrixWorld);
+        const fitted = fitGeometry(geo, target.geometry, slot, false);
+        geo.dispose();
+        target.geometry.dispose();
+        target.geometry = fitted;
+        // The built-in boats share the figures' material: it is left alone, not freed.
+        target.material = realMaterial(src.material as THREE.Material);
+        this.propsOn++;
+      });
+    };
+    swap(this.rafts, B.dugout);
+    swap(this.bamboo, B.bambooRaft);
+    swap(this.junk, B.trader);
   }
 
   /** PK 1.8.0: buildings drawn from PK's own models (the royal hall), in every look. */
@@ -2442,6 +2483,24 @@ export class KingdomScene {
   }
   private skyDome: THREE.Mesh | null = null;
 
+  /** The scatter follows where the camera looks (the RTS view or the 3D hero's), clear of buildings. */
+  private updateScatter(t: number): void {
+    const cam = this.camera.position;
+    this.camera.getWorldDirection(this.ray);
+    // Where the view meets the ground (or 40 m ahead when it looks level).
+    const k = this.ray.y < -0.05 ? Math.min(400, cam.y / -this.ray.y) : 40;
+    const cx = cam.x + this.ray.x * k;
+    const cz = cam.z + this.ray.z * k;
+    const T = this.sim.map.tile;
+    const blds: Array<[number, number, number]> = [];
+    for (const b of this.sim.buildings.values()) {
+      const [bx, bz] = this.sim.center(b);
+      const sz = this.sim.data.buildings[b.type]?.size ?? [2, 2];
+      blds.push([bx, bz, (Math.max(sz[0], sz[1]) * T) / 2]);
+    }
+    this.scatter!.update(t, cx, cz, (x, z) => this.groundY(x, z), blds);
+  }
+
   /** Point the camera: target (x, z), distance along a fixed RTS angle (diagonal, AoE II-like: D67). */
   setCamera(x: number, z: number, dist: number): void {
     const pitch = THREE.MathUtils.degToRad(CAM_PITCH_DEG);
@@ -2477,6 +2536,7 @@ export class KingdomScene {
   private landExplored = -1;
   private landFreshAt = -1e9;
   update(t: number, now: number, selected: Set<number>): void {
+    if (this.scatter) this.updateScatter(t);
     let fresh = false;
     if (this.sim.fogVersion !== this.fogAt) {
       this.fogAt = this.sim.fogVersion;

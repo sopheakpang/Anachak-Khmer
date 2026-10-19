@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
 import qualityJson from '../../../../config/quality.json';
-import { currentLook, detail, flatten, lowPoly, seg, setLook, styleScene } from './look';
+import { currentLook, detail, flatten, lowPoly, realLook, seg, setLook, styleScene } from './look';
 import { qualityFrom } from './app';
 
 /** A stand-in for a painted canvas: every pixel is the given colour. */
@@ -18,8 +18,10 @@ function paintedTexture(rgb: [number, number, number], detailTexture: boolean): 
 describe('low-poly style (D41)', () => {
   afterEach(() => setLook({ style: 'lowpoly', flatColors: false }));
 
-  it('is the default in every quality preset, and ?style=film brings back the film look', () => {
-    for (const p of ['low', 'high', 'lite'] as const) expect(qualityJson[p].look.style).toBe('lowpoly');
+  it('is the default on Low and Lite (the PC presets are semi-realistic, D152), and ?style=film brings back the film look', () => {
+    for (const p of ['low', 'lite'] as const) expect(qualityJson[p].look.style).toBe('lowpoly');
+    expect(qualityJson.high.look.style).toBe('real');
+    expect(qualityFrom('?style=real').q.look.style).toBe('real');
     expect(qualityFrom('').q.look.style).toBe('lowpoly');
     expect(qualityFrom('?style=film').q.look.style).toBe('film');
     expect(qualityFrom('?preset=lite&style=film').q.look.shadows).toBe(false);
@@ -78,5 +80,20 @@ describe('low-poly style (D41)', () => {
     styleScene(scene);
     expect((a.material as THREE.MeshStandardMaterial).flatShading).toBe(true);
     expect((b.material as THREE.MeshLambertMaterial[])[0]!.flatShading).toBe(true);
+  });
+});
+
+describe('semi-realistic style (D152)', () => {
+  afterEach(() => setLook({ style: 'lowpoly' }));
+
+  it('never flattens: smooth shading and the model’s own roughness are kept', () => {
+    setLook({ style: 'real' });
+    expect(realLook()).toBe(true);
+    expect(lowPoly()).toBe(false);
+    const m = new THREE.MeshStandardMaterial({ roughness: 0.4 });
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(), m);
+    styleScene(mesh);
+    expect(m.flatShading).toBe(false);
+    expect(m.roughness).toBe(0.4);
   });
 });

@@ -76,19 +76,19 @@ describe('prop colour grade', () => {
 });
 
 describe('PK 1.9.0 (D146 ខ៣): six buildings drawn from PK’s Meshy models', () => {
-  it('barracks, lumber camp, market, noble house, landing and storehouse have a model in the game', async () => {
+  it('the hall, the house (PK: the Herbalist Hut), barracks, lumber camp, market, noble house, landing and storehouse have a model', async () => {
     const { loadKingdom } = await import('@temples/shared');
     const k = loadKingdom();
     const b = k.props.buildings ?? {};
-    for (const id of ['townCentre', 'barracks', 'lumberCamp', 'market', 'nobleHouse', 'port', 'storehouse']) {
+    for (const id of ['townCentre', 'house', 'barracks', 'lumberCamp', 'market', 'nobleHouse', 'port', 'storehouse']) {
       const slot = b[id]!;
       expect(slot, id).toBeTruthy();
       expect(k.buildings[id], id).toBeTruthy();
       const json = await glbJson(slot.file);
       expect(json, slot.file).not.toBeNull();
-      // One mesh and the colour map only (the game lights it itself).
+      // One mesh; its PBR maps at most (colour, normal, roughness/metal: the semi-realistic look, D152).
       expect(json!.meshes).toHaveLength(1);
-      expect(json!.textures?.length ?? 0).toBeLessThanOrEqual(1);
+      expect(json!.textures?.length ?? 0).toBeLessThanOrEqual(3);
       expect(slot.tris).toBeLessThanOrEqual(15000);
       // PK's Meshy buildings are for the PC presets (D149); the royal hall shows on Low too.
       expect(!!slot.pc).toBe(id !== 'townCentre');

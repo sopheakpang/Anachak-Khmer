@@ -8,10 +8,14 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
  * costs one shadow pass and the normal scene render.
  */
 
-export type LookStyle = 'lowpoly' | 'film';
+export type LookStyle = 'lowpoly' | 'film' | 'real';
 
 export interface LookSettings {
-  /** lowpoly = faceted shapes and flat colours (D41); film = the soft animated-film look (D25). */
+  /**
+   * lowpoly = faceted shapes and flat colours (D41); film = the soft animated-film look (D25);
+   * real = PK's semi-realistic look (D152, PC presets): smooth shading, the models' own PBR
+   * materials, no cartoon rim light.
+   */
   style: LookStyle;
   /** Low-poly only: true = plain flat colours; false = keep painted detail on the facets. */
   flatColors: boolean;
@@ -35,13 +39,20 @@ let look: LookSettings = {
 /** Called once before scenes are built (settings come from config/quality.json). */
 export function setLook(settings: Partial<Omit<LookSettings, 'style'>> & { style?: string }): void {
   const style: LookStyle =
-    settings.style === 'film' ? 'film' : settings.style === 'lowpoly' ? 'lowpoly' : look.style;
+    settings.style === 'film' || settings.style === 'lowpoly' || settings.style === 'real'
+      ? settings.style
+      : look.style;
   look = { ...look, ...settings, style };
 }
 
 /** True when the low-poly style is on. */
 export function lowPoly(): boolean {
   return look.style === 'lowpoly';
+}
+
+/** True when PK's semi-realistic look is on (D152: the PC presets). */
+export function realLook(): boolean {
+  return look.style === 'real';
 }
 
 /**
@@ -326,7 +337,8 @@ export function addRim(
 ): THREE.MeshStandardMaterial {
   m.onBeforeCompile = (sh) => {
     sh.uniforms.rimColor = { value: new THREE.Color(0xffe6c0) };
-    sh.uniforms.rimStrength = { value: strength };
+    // The semi-realistic look has no cartoon edge glow (D152).
+    sh.uniforms.rimStrength = { value: realLook() ? 0 : strength };
     sh.uniforms.rimPower = { value: power };
     sh.fragmentShader = sh.fragmentShader
       .replace(
@@ -343,7 +355,7 @@ export function addRim(
       );
     extra?.(sh);
   };
-  const key = `rim-${strength}-${power}-${extra ? 'x' : ''}`;
+  const key = `rim-${strength}-${power}-${extra ? 'x' : ''}-${look.style}`;
   m.customProgramCacheKey = () => key;
   return m;
 }

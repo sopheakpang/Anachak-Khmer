@@ -1,0 +1,1587 @@
+{
+  "$comment": "PK 1.9.0 (D153): every game thing matched one by one to PK's 3D models (C:\\Users\\ASUS\\Downloads). The Blender pipeline (scripts/models/blender/gamify.py) reads this list and writes game-ready GLBs to models/<out>. kind: person | animal | building | boat | prop | plant | rock | bird | water. size: ['h', m] height or ['l', m] longest side. tris: target triangles (near model). stand: true = a stand-in until PK's own model exists. status: confident | pk (PK chose, 2026-10-19).",
+  "root": "C:\\Users\\ASUS\\Downloads",
+  "lib": "3D model\\Anachak-Khmer",
+  "items": [
+    {
+      "game": "court.king",
+      "src": "01-royal-court/king-879/king-879.glb",
+      "out": "people/king.glb",
+      "kind": "person",
+      "size": ["h", 1.72],
+      "tris": 6000,
+      "status": "confident"
+    },
+    {
+      "game": "court.queen",
+      "src": "01-royal-court/queen/queen.glb",
+      "out": "people/queen.glb",
+      "kind": "person",
+      "size": ["h", 1.6],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "court.brahmin",
+      "src": "01-royal-court/brahmin/brahmin.glb",
+      "out": "people/brahmin.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "court.parasol",
+      "src": "01-royal-court/parasol-bearer/parasol-bearer.glb",
+      "out": "people/parasol-bearer.glb",
+      "kind": "person",
+      "size": ["h", 2.6],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "court.attendant",
+      "src": "01-royal-court/royal-attendant/royal-attendant.glb",
+      "out": "people/royal-attendant.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "court.guard",
+      "src": "01-royal-court/royal-guard/royal-guard.glb",
+      "out": "people/royal-guard.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "court.torchBearer",
+      "src": "01-royal-court/royal-attendant/royal-attendant.glb",
+      "out": "people/torch-bearer.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "stand": true,
+      "status": "pk"
+    },
+    {
+      "game": "villager.idle.man",
+      "src": "02-villagers/farmer-man/farmer-man.glb",
+      "out": "people/farmer-man.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "villager.idle.woman",
+      "src": "02-villagers/farmer-woman/farmer-woman.glb",
+      "out": "people/farmer-woman.glb",
+      "kind": "person",
+      "size": ["h", 1.55],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "villager.farmer",
+      "src": "02-villagers/farmer-man/farmer-man.glb",
+      "out": "people/farmer-man.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "villager.builder",
+      "src": "02-villagers/builder/builder.glb",
+      "out": "people/builder.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "villager.fisher",
+      "src": "02-villagers/fisher/fisher.glb",
+      "out": "people/fisher.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "villager.woodcutter",
+      "src": "02-villagers/farmer-man/farmer-man.glb",
+      "out": "people/woodcutter.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "stand": true,
+      "status": "pk"
+    },
+    {
+      "game": "villager.quarryman",
+      "src": "02-villagers/quarryman/quarryman.glb",
+      "out": "people/quarryman.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "villager.goldworker",
+      "src": "02-villagers/blacksmith/blacksmith.glb",
+      "out": "people/blacksmith.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "villager.hunter",
+      "src": "02-villagers/hunter/hunter.glb",
+      "out": "people/hunter.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "villager.forager",
+      "src": "02-villagers/farmer-woman/farmer-woman.glb",
+      "out": "people/farmer-woman.glb",
+      "kind": "person",
+      "size": ["h", 1.55],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "villager.porter",
+      "src": "02-villagers/stone-hauler/stone-hauler.glb",
+      "out": "people/porter.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "stand": true,
+      "status": "pk"
+    },
+    {
+      "game": "people.stoneCarver",
+      "src": "02-villagers/stone-carver/stone-carver.glb",
+      "out": "people/stone-carver.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "people.stoneHauler",
+      "src": "02-villagers/stone-hauler/stone-hauler.glb",
+      "out": "people/stone-hauler.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "people.healer",
+      "src": "02-villagers/healer/healer.glb",
+      "out": "people/healer.glb",
+      "kind": "person",
+      "size": ["h", 1.55],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "people.marketSeller",
+      "src": "02-villagers/market-seller/market-seller.glb",
+      "out": "people/market-seller.glb",
+      "kind": "person",
+      "size": ["h", 1.55],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "people.musician",
+      "src": "02-villagers/musician/musician.glb",
+      "out": "people/musician.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "people.apsara",
+      "src": "02-villagers/apsara-dancer/apsara-dancer.glb",
+      "out": "people/apsara-dancer.glb",
+      "kind": "person",
+      "size": ["h", 1.6],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "people.boatman",
+      "src": "02-villagers/boatman-trader/boatman-trader.glb",
+      "out": "people/boatman-trader.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "people.mahout",
+      "src": "02-villagers/mahout/mahout.glb",
+      "out": "people/mahout.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "people.oxcartDriver",
+      "src": "02-villagers/oxcart-driver/oxcart-driver.glb",
+      "out": "people/oxcart-driver.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "people.child",
+      "src": "02-villagers/child/child.glb",
+      "out": "people/child.glb",
+      "kind": "person",
+      "size": ["h", 1.15],
+      "tris": 3500,
+      "status": "confident"
+    },
+    {
+      "game": "people.elder",
+      "src": "02-villagers/elder/elder.glb",
+      "out": "people/elder.glb",
+      "kind": "person",
+      "size": ["h", 1.55],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "unit.spearman",
+      "src": "03-soldiers/spearman/spearman.glb",
+      "out": "people/spearman.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "unit.swordsman",
+      "src": "03-soldiers/swordsman/swordsman.glb",
+      "out": "people/swordsman.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "unit.archer",
+      "src": "03-soldiers/archer/archer.glb",
+      "out": "people/archer.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "unit.commander",
+      "src": "03-soldiers/commander/commander.glb",
+      "out": "people/commander.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "unit.watchman",
+      "src": "02-villagers/hunter/hunter.glb",
+      "out": "people/hunter.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "unit.horseman",
+      "src": "03-soldiers/spearman/spearman.glb",
+      "out": "people/horseman.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 5000,
+      "stand": true,
+      "mount": "animal.horse",
+      "status": "pk"
+    },
+    {
+      "game": "unit.buffaloRider",
+      "src": "02-villagers/farmer-man/farmer-man.glb",
+      "out": "people/farmer-man.glb",
+      "kind": "person",
+      "size": ["h", 1.68],
+      "tris": 4000,
+      "mount": "animal.buffalo",
+      "status": "confident"
+    },
+    {
+      "game": "unit.warElephant",
+      "src": "04-animals/elephant-war/elephant-war.glb",
+      "out": "animals/elephant-war.glb",
+      "kind": "animal",
+      "size": ["h", 3.1],
+      "tris": 9000,
+      "rider": "people.mahout",
+      "status": "confident"
+    },
+    {
+      "game": "unit.oxCart",
+      "src": "05-boats-transport/oxcart/oxcart.glb",
+      "out": "boats/oxcart.glb",
+      "kind": "boat",
+      "size": ["l", 3.8],
+      "tris": 3000,
+      "pull": "animal.ox",
+      "rider": "people.oxcartDriver",
+      "status": "confident"
+    },
+    {
+      "game": "animal.deer",
+      "src": "04-animals/deer/deer.glb",
+      "out": "animals/deer.glb",
+      "kind": "animal",
+      "size": ["h", 1.25],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.boar",
+      "src": "04-animals/boar/boar.glb",
+      "out": "animals/boar.glb",
+      "kind": "animal",
+      "size": ["h", 0.85],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.banteng",
+      "src": "04-animals/kouprey/kouprey.glb",
+      "out": "animals/banteng.glb",
+      "kind": "animal",
+      "size": ["h", 1.65],
+      "tris": 4000,
+      "stand": true,
+      "status": "pk"
+    },
+    {
+      "game": "animal.junglefowl",
+      "src": "09-birds/chicken/chicken.glb",
+      "out": "birds/chicken.glb",
+      "kind": "bird",
+      "size": ["h", 0.45],
+      "tris": 1200,
+      "status": "confident"
+    },
+    {
+      "game": "animal.peafowl",
+      "src": "09-birds/peafowl/peafowl.glb",
+      "out": "birds/peafowl.glb",
+      "kind": "bird",
+      "size": ["l", 2],
+      "tris": 2000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.tiger",
+      "src": "04-animals/tiger/tiger.glb",
+      "out": "animals/tiger.glb",
+      "kind": "animal",
+      "size": ["l", 2.8],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.elephant",
+      "src": "04-animals/elephant-work/elephant-work.glb",
+      "out": "animals/elephant.glb",
+      "kind": "animal",
+      "size": ["h", 2.7],
+      "tris": 6000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.gaur",
+      "src": "04-animals/gaur/gaur.glb",
+      "out": "animals/gaur.glb",
+      "kind": "animal",
+      "size": ["h", 1.85],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.kouprey",
+      "src": "04-animals/kouprey/kouprey.glb",
+      "out": "animals/kouprey.glb",
+      "kind": "animal",
+      "size": ["h", 1.8],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.serow",
+      "src": "04-animals/muntjac/muntjac.glb",
+      "out": "animals/serow.glb",
+      "kind": "animal",
+      "size": ["h", 0.95],
+      "tris": 8000,
+      "stand": true,
+      "status": "pk"
+    },
+    {
+      "game": "animal.leopard",
+      "src": "04-animals/leopard/leopard.glb",
+      "out": "animals/leopard.glb",
+      "kind": "animal",
+      "size": ["l", 2],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.cloudedLeopard",
+      "src": "04-animals/leopard/leopard.glb",
+      "out": "animals/leopard.glb",
+      "kind": "animal",
+      "size": ["l", 1.7],
+      "tris": 4000,
+      "stand": true,
+      "status": "pk"
+    },
+    {
+      "game": "animal.sunBear",
+      "src": "04-animals/bear/bear.glb",
+      "out": "animals/bear.glb",
+      "kind": "animal",
+      "size": ["h", 1],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.moonBear",
+      "src": "04-animals/bear/bear.glb",
+      "out": "animals/bear.glb",
+      "kind": "animal",
+      "size": ["h", 1.1],
+      "tris": 4000,
+      "stand": true,
+      "status": "pk"
+    },
+    {
+      "game": "animal.dhole",
+      "src": "04-animals/dhole/dhole.glb",
+      "out": "animals/dhole.glb",
+      "kind": "animal",
+      "size": ["h", 0.55],
+      "tris": 3000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.binturong",
+      "src": null,
+      "kind": "animal",
+      "status": "pk",
+      "keep": "built-in figure until a model exists"
+    },
+    {
+      "game": "animal.gibbon",
+      "src": null,
+      "kind": "animal",
+      "status": "pk",
+      "keep": "built-in figure until a model exists"
+    },
+    {
+      "game": "animal.langur",
+      "src": null,
+      "kind": "animal",
+      "status": "pk",
+      "keep": "built-in figure until a model exists"
+    },
+    {
+      "game": "animal.douc",
+      "src": null,
+      "kind": "animal",
+      "status": "pk",
+      "keep": "built-in figure until a model exists"
+    },
+    {
+      "game": "animal.slowLoris",
+      "src": null,
+      "kind": "animal",
+      "status": "pk",
+      "keep": "built-in figure until a model exists"
+    },
+    {
+      "game": "animal.macaque",
+      "src": null,
+      "kind": "animal",
+      "status": "pk",
+      "keep": "built-in figure until a model exists"
+    },
+    {
+      "game": "animal.giantIbis",
+      "src": "09-birds/giant-ibis/giant-ibis.glb",
+      "out": "birds/giant-ibis.glb",
+      "kind": "bird",
+      "size": ["h", 1],
+      "tris": 1500,
+      "status": "confident"
+    },
+    {
+      "game": "animal.hornbill",
+      "src": "09-birds/hornbill/hornbill.glb",
+      "out": "birds/hornbill.glb",
+      "kind": "bird",
+      "size": ["l", 1],
+      "tris": 1500,
+      "status": "confident"
+    },
+    {
+      "game": "animal.crocodile",
+      "src": "04-animals/crocodile/crocodile.glb",
+      "out": "animals/crocodile.glb",
+      "kind": "animal",
+      "size": ["l", 4],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.kingCobra",
+      "src": "11-reptiles/king-cobra/king-cobra.glb",
+      "out": "animals/king-cobra.glb",
+      "kind": "animal",
+      "size": ["l", 3],
+      "tris": 1500,
+      "status": "confident"
+    },
+    {
+      "game": "animal.python",
+      "src": "11-reptiles/python/python.glb",
+      "out": "animals/python.glb",
+      "kind": "animal",
+      "size": ["l", 4],
+      "tris": 1500,
+      "status": "confident"
+    },
+    {
+      "game": "animal.horse",
+      "src": "04-animals/horse/horse.glb",
+      "out": "animals/horse.glb",
+      "kind": "animal",
+      "size": ["h", 1.55],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.buffalo",
+      "src": "04-animals/buffalo/buffalo.glb",
+      "out": "animals/buffalo.glb",
+      "kind": "animal",
+      "size": ["h", 1.55],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.ox",
+      "src": "04-animals/ox/ox.glb",
+      "out": "animals/ox.glb",
+      "kind": "animal",
+      "size": ["h", 1.45],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.muntjac",
+      "src": "04-animals/muntjac/muntjac.glb",
+      "out": "animals/muntjac.glb",
+      "kind": "animal",
+      "size": ["h", 0.6],
+      "tris": 8000,
+      "status": "confident"
+    },
+    {
+      "game": "animal.flyingFox",
+      "src": "04-animals/flying-fox/flying-fox.glb",
+      "out": "animals/flying-fox.glb",
+      "kind": "animal",
+      "size": ["l", 1.3],
+      "tris": 1000,
+      "status": "confident"
+    },
+    {
+      "game": "livestock.chicken",
+      "src": "09-birds/chicken/chicken.glb",
+      "out": "birds/chicken.glb",
+      "kind": "bird",
+      "size": ["h", 0.45],
+      "tris": 1200,
+      "status": "confident"
+    },
+    {
+      "game": "livestock.pig",
+      "src": "04-animals/pig/pig.glb",
+      "out": "animals/pig.glb",
+      "kind": "animal",
+      "size": ["h", 0.7],
+      "tris": 3000,
+      "status": "confident"
+    },
+    {
+      "game": "livestock.cow",
+      "src": "04-animals/ox/ox.glb",
+      "out": "animals/ox.glb",
+      "kind": "animal",
+      "size": ["h", 1.45],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "livestock.dog",
+      "src": "04-animals/dog/dog.glb",
+      "out": "animals/dog.glb",
+      "kind": "animal",
+      "size": ["h", 0.6],
+      "tris": 3000,
+      "status": "confident"
+    },
+    {
+      "game": "livestock.buffalo",
+      "src": "04-animals/buffalo/buffalo.glb",
+      "out": "animals/buffalo.glb",
+      "kind": "animal",
+      "size": ["h", 1.55],
+      "tris": 5000,
+      "status": "confident"
+    },
+    {
+      "game": "bird.egret",
+      "src": "09-birds/egret/egret.glb",
+      "out": "birds/egret.glb",
+      "kind": "bird",
+      "size": ["h", 0.9],
+      "tris": 1000,
+      "status": "confident"
+    },
+    {
+      "game": "bird.duck",
+      "src": "09-birds/duck/duck.glb",
+      "out": "birds/duck.glb",
+      "kind": "bird",
+      "size": ["h", 0.4],
+      "tris": 1000,
+      "status": "confident"
+    },
+    {
+      "game": "bird.sarusCrane",
+      "src": "09-birds/sarus-crane/sarus-crane.glb",
+      "out": "birds/sarus-crane.glb",
+      "kind": "bird",
+      "size": ["h", 1.6],
+      "tris": 1500,
+      "status": "confident"
+    },
+    {
+      "game": "bird.hen",
+      "src": "3D model/Meshy_AI_Golden_Hen_Against_Bl_1003151943_texture.glb",
+      "out": "birds/hen.glb",
+      "kind": "bird",
+      "size": ["h", 0.4],
+      "tris": 6000,
+      "status": "pk"
+    },
+    {
+      "game": "water.giantCatfish",
+      "src": "10-water-life/giant-catfish/giant-catfish.glb",
+      "out": "water/giant-catfish.glb",
+      "kind": "water",
+      "size": ["l", 2.4],
+      "tris": 1500,
+      "status": "confident"
+    },
+    {
+      "game": "water.snakehead",
+      "src": "10-water-life/snakehead/snakehead.glb",
+      "out": "water/snakehead.glb",
+      "kind": "water",
+      "size": ["l", 0.8],
+      "tris": 800,
+      "status": "confident"
+    },
+    {
+      "game": "water.dolphin",
+      "src": "10-water-life/dolphin/dolphin.glb",
+      "out": "water/dolphin.glb",
+      "kind": "water",
+      "size": ["l", 2.3],
+      "tris": 1500,
+      "status": "confident"
+    },
+    {
+      "game": "building.townCentre",
+      "src": "3D model/3D done/Royal_hall.glb",
+      "out": "buildings/royal-hall.glb",
+      "kind": "building",
+      "size": ["l", 20],
+      "tris": 9700,
+      "status": "confident"
+    },
+    {
+      "game": "building.house",
+      "src": "06-buildings/healer-hut/healer-hut.glb",
+      "out": "buildings/house.glb",
+      "kind": "building",
+      "size": ["l", 7],
+      "tris": 5000,
+      "cutBase": true,
+      "status": "pk"
+    },
+    {
+      "game": "building.nobleHouse",
+      "src": "06-buildings/noble-house/noble-house.glb",
+      "out": "buildings/noble-house.glb",
+      "kind": "building",
+      "size": ["l", 12],
+      "tris": 9000,
+      "cutBase": true,
+      "trimFinials": true,
+      "status": "pk"
+    },
+    {
+      "game": "building.storehouse",
+      "src": "06-buildings/storehouse/storehouse.glb",
+      "out": "buildings/storehouse.glb",
+      "kind": "building",
+      "size": ["l", 10],
+      "tris": 7000,
+      "cutBase": true,
+      "status": "confident"
+    },
+    {
+      "game": "building.lumberCamp",
+      "src": "06-buildings/lumber-camp/lumber-camp.glb",
+      "out": "buildings/lumber-camp.glb",
+      "kind": "building",
+      "size": ["l", 12],
+      "tris": 6000,
+      "cutBase": true,
+      "status": "confident"
+    },
+    {
+      "game": "building.barracks",
+      "src": "06-buildings/barracks/barracks.glb",
+      "out": "buildings/barracks.glb",
+      "kind": "building",
+      "size": ["l", 16],
+      "tris": 9000,
+      "cutBase": true,
+      "status": "confident"
+    },
+    {
+      "game": "building.port",
+      "src": "06-buildings/port/port.glb",
+      "out": "buildings/port.glb",
+      "kind": "building",
+      "size": ["l", 14],
+      "tris": 7000,
+      "cutBase": false,
+      "status": "confident"
+    },
+    {
+      "game": "building.market",
+      "src": "06-buildings/market/market.glb",
+      "out": "buildings/market.glb",
+      "kind": "building",
+      "size": ["l", 14],
+      "tris": 7000,
+      "cutBase": true,
+      "status": "confident"
+    },
+    {
+      "game": "building.monument.preahKo",
+      "src": "Preah_Ko Temple.glb",
+      "out": "buildings/preah-ko.glb",
+      "kind": "building",
+      "size": ["l", 34],
+      "tris": 30000,
+      "texture": "bake:brick-stucco-sandstone",
+      "status": "pk"
+    },
+    {
+      "game": "building.forge",
+      "src": "06-buildings/forge/forge.glb",
+      "out": "buildings/forge.glb",
+      "kind": "building",
+      "size": ["l", 8],
+      "tris": 5000,
+      "cutBase": true,
+      "status": "confident"
+    },
+    {
+      "game": "building.healerHut",
+      "src": "06-buildings/healer-hut/healer-hut.glb",
+      "out": "buildings/healer-hut.glb",
+      "kind": "building",
+      "size": ["l", 7],
+      "tris": 5000,
+      "cutBase": true,
+      "status": "confident"
+    },
+    {
+      "game": "building.arogyasala",
+      "src": "06-buildings/hospital/hospital.glb",
+      "out": "buildings/arogyasala.glb",
+      "kind": "building",
+      "size": ["l", 18],
+      "tris": 9000,
+      "cutBase": true,
+      "fromEra": "jayavarman7",
+      "status": "confident"
+    },
+    {
+      "game": "building.quarry",
+      "src": "06-buildings/quarry/quarry.glb",
+      "out": "buildings/quarry.glb",
+      "kind": "building",
+      "size": ["l", 14],
+      "tris": 6000,
+      "cutBase": false,
+      "status": "confident"
+    },
+    {
+      "game": "building.trainingGround",
+      "src": "06-buildings/training-ground/training-ground.glb",
+      "out": "buildings/training-ground.glb",
+      "kind": "building",
+      "size": ["l", 16],
+      "tris": 6000,
+      "cutBase": false,
+      "status": "confident"
+    },
+    {
+      "game": "boat.dugout",
+      "src": "05-boats-transport/dugout-boat/dugout-boat.glb",
+      "out": "boats/dugout.glb",
+      "kind": "boat",
+      "size": ["l", 7],
+      "tris": 2000,
+      "status": "confident"
+    },
+    {
+      "game": "boat.bambooRaft",
+      "src": "05-boats-transport/bamboo-raft/bamboo-raft.glb",
+      "out": "boats/bamboo-raft.glb",
+      "kind": "boat",
+      "size": ["l", 6],
+      "tris": 2000,
+      "status": "confident"
+    },
+    {
+      "game": "boat.stoneRaft",
+      "src": "05-boats-transport/stone-raft/stone-raft.glb",
+      "out": "boats/stone-raft.glb",
+      "kind": "boat",
+      "size": ["l", 7],
+      "tris": 3000,
+      "status": "confident"
+    },
+    {
+      "game": "boat.trader",
+      "src": "05-boats-transport/trader-boat/trader-boat.glb",
+      "out": "boats/trader-boat.glb",
+      "kind": "boat",
+      "size": ["l", 12],
+      "tris": 3800,
+      "replaces": "junk (junk only from its era)",
+      "status": "pk"
+    },
+    {
+      "game": "boat.stoneSledge",
+      "src": "05-boats-transport/stone-sledge/stone-sledge.glb",
+      "out": "boats/stone-sledge.glb",
+      "kind": "boat",
+      "size": ["l", 3],
+      "tris": 3000,
+      "status": "confident"
+    },
+    {
+      "game": "boat.timberHauler",
+      "src": "Meshy_AI_Timber_Hauler_1015154348_texture.glb",
+      "out": "boats/timber-cart.glb",
+      "kind": "boat",
+      "size": ["l", 4],
+      "tris": 3800,
+      "status": "confident"
+    },
+    {
+      "game": "prop.cookingFire",
+      "src": "07-props/cooking-fire/cooking-fire.glb",
+      "out": "props/cooking-fire.glb",
+      "kind": "prop",
+      "size": ["l", 1],
+      "tris": 800,
+      "status": "confident"
+    },
+    {
+      "game": "prop.marketBasket",
+      "src": "07-props/market-basket/market-basket.glb",
+      "out": "props/market-basket.glb",
+      "kind": "prop",
+      "size": ["h", 0.5],
+      "tris": 800,
+      "status": "confident"
+    },
+    {
+      "game": "prop.practiceDummy",
+      "src": "07-props/practice-dummy/practice-dummy.glb",
+      "out": "props/practice-dummy.glb",
+      "kind": "prop",
+      "size": ["h", 1.8],
+      "tris": 760,
+      "status": "confident"
+    },
+    {
+      "game": "prop.sandstoneBlock",
+      "src": "07-props/sandstone-block/sandstone-block.glb",
+      "out": "props/sandstone-block.glb",
+      "kind": "prop",
+      "size": ["l", 1.2],
+      "tris": 500,
+      "status": "confident"
+    },
+    {
+      "game": "prop.carvedStone",
+      "src": "Meshy_AI_Ancient_Carved_Stone__1015154218_texture.glb",
+      "out": "props/carved-stone.glb",
+      "kind": "prop",
+      "size": ["l", 1.4],
+      "tris": 505,
+      "status": "confident"
+    },
+    {
+      "game": "prop.shield",
+      "src": "07-props/shield/shield.glb",
+      "out": "props/shield.glb",
+      "kind": "prop",
+      "size": ["h", 0.9],
+      "tris": 400,
+      "status": "confident"
+    },
+    {
+      "game": "prop.spear",
+      "src": "07-props/spear/spear.glb",
+      "out": "props/spear.glb",
+      "kind": "prop",
+      "size": ["l", 2.4],
+      "tris": 460,
+      "status": "confident"
+    },
+    {
+      "game": "prop.fenceA",
+      "src": "3D model/Meshy_AI_Weathered_Fence_1002210114_texture.glb",
+      "out": "props/fence-a.glb",
+      "kind": "prop",
+      "size": ["l", 3],
+      "tris": 1500,
+      "status": "pk"
+    },
+    {
+      "game": "prop.fenceB",
+      "src": "3D model/Meshy_AI_Weathered_Fence_1003151319_texture.glb",
+      "out": "props/fence-b.glb",
+      "kind": "prop",
+      "size": ["l", 3],
+      "tris": 1500,
+      "status": "pk"
+    },
+    {
+      "game": "prop.wagon",
+      "src": "3D model/Meshy_AI_Weathered_Wagon_1002195600_texture.glb",
+      "out": "props/wagon.glb",
+      "kind": "prop",
+      "size": ["l", 3.5],
+      "tris": 3000,
+      "status": "pk"
+    },
+    {
+      "game": "prop.slateSlab",
+      "src": "3D model/Meshy_AI_Ancient_Slate_Slab_1002153750_texture.glb",
+      "out": "props/slate-slab.glb",
+      "kind": "rock",
+      "size": ["l", 2],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.bamboo",
+      "src": "08-plants/bamboo-clump/bamboo-clump.glb",
+      "out": "plants/bamboo.glb",
+      "kind": "plant",
+      "size": ["h", 9],
+      "tris": 2000,
+      "status": "confident"
+    },
+    {
+      "game": "plant.lotus",
+      "src": "08-plants/lotus/lotus.glb",
+      "out": "plants/lotus.glb",
+      "kind": "plant",
+      "size": ["l", 3],
+      "tris": 950,
+      "status": "confident"
+    },
+    {
+      "game": "plant.lilyPads",
+      "src": "3D model/Meshy_AI_Lotus_Whispers_1003152821_texture.glb",
+      "out": "plants/lily-pads.glb",
+      "kind": "plant",
+      "size": ["l", 2.5],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.bush",
+      "src": "08-plants/understorey-bush/understorey-bush.glb",
+      "out": "plants/bush.glb",
+      "kind": "plant",
+      "size": ["h", 1.5],
+      "tris": 990,
+      "status": "confident"
+    },
+    {
+      "game": "plant.glossyShrub",
+      "src": "Meshy_AI_Glossy_Green_Shrub_1015153952_texture.glb",
+      "out": "plants/glossy-shrub.glb",
+      "kind": "plant",
+      "size": ["h", 1.4],
+      "tris": 990,
+      "status": "confident"
+    },
+    {
+      "game": "plant.banyan",
+      "src": "08-plants/vine-tree/vine-tree.glb",
+      "out": "plants/banyan.glb",
+      "kind": "plant",
+      "size": ["h", 14],
+      "tris": 4500,
+      "status": "confident"
+    },
+    {
+      "game": "plant.riceTuft",
+      "src": "3D model/Meshy_AI_Golden_Rice_Paddy_1003155109_texture.glb",
+      "out": "plants/rice-paddy.glb",
+      "kind": "plant",
+      "size": ["l", 4],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.riceYoung",
+      "src": "3D model/Meshy_AI_Low_poly_rice_paddy_p_1003155834_texture.glb",
+      "out": "plants/rice-young.glb",
+      "kind": "plant",
+      "size": ["h", 0.8],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.grassTuft",
+      "src": "3D model/Meshy_AI_Grass_1003154025_texture.glb",
+      "out": "plants/grass-tuft.glb",
+      "kind": "plant",
+      "size": ["h", 0.5],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.forestGrass",
+      "src": "3D model/Meshy_AI_forest_green_grass__1003154725_texture.glb",
+      "out": "plants/forest-grass.glb",
+      "kind": "plant",
+      "size": ["h", 0.6],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.reeds",
+      "src": "3D model/Meshy_AI_Sunlit_Pathway_Throug_1002223337_texture.glb",
+      "out": "plants/reeds.glb",
+      "kind": "plant",
+      "size": ["h", 1.4],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.denseShrub",
+      "src": "3D model/Meshy_AI_A_dense_forest_shrub__1003151907_texture.glb",
+      "out": "plants/dense-shrub.glb",
+      "kind": "plant",
+      "size": ["h", 1.6],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.flowerBush",
+      "src": "3D model/Meshy_AI_Blooming_Garden_Bush_1002205923_texture.glb",
+      "out": "plants/flower-bush.glb",
+      "kind": "plant",
+      "size": ["h", 1.2],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.wildflowers",
+      "src": "3D model/Meshy_AI_Spring_Blossoms_gar_1003155147_texture.glb",
+      "out": "plants/wildflowers.glb",
+      "kind": "plant",
+      "size": ["h", 0.6],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.botanical",
+      "src": "3D model/Meshy_AI_Botanical_Harmony_1003155203_texture.glb",
+      "out": "plants/botanical.glb",
+      "kind": "plant",
+      "size": ["h", 0.8],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.redLily",
+      "src": "3D model/Meshy_AI_Carnal_flower_1003155138_texture.glb",
+      "out": "plants/red-lily.glb",
+      "kind": "plant",
+      "size": ["h", 0.6],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.sunflower",
+      "src": "3D model/Meshy_AI_Sunlit_Sunflower_Fiel_1003155029_texture.glb",
+      "out": "plants/sunflower.glb",
+      "kind": "plant",
+      "size": ["h", 1.8],
+      "tris": 1200,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "plant.amberMushrooms",
+      "src": "3D model/Meshy_AI_Amber_Glow_Mushrooms_1003154637_texture.glb",
+      "out": "plants/mushrooms-amber.glb",
+      "kind": "plant",
+      "size": ["h", 0.5],
+      "tris": 1200,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "plant.mushroomCluster",
+      "src": "3D model/Meshy_AI_Cluster_of_Mushrooms_1003154603_texture.glb",
+      "out": "plants/mushrooms.glb",
+      "kind": "plant",
+      "size": ["h", 0.35],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.redMushrooms",
+      "src": "3D model/Meshy_AI_Enchanted_Mushrooms_1003154733_texture.glb",
+      "out": "plants/mushrooms-red.glb",
+      "kind": "plant",
+      "size": ["h", 0.5],
+      "tris": 1200,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "plant.glowcap",
+      "src": "3D model/Meshy_AI_Glowcap_Grove_1003154555_texture.glb",
+      "out": "plants/glowcap.glb",
+      "kind": "plant",
+      "size": ["h", 0.9],
+      "tris": 1200,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "plant.crystalTree",
+      "src": "3D model/Meshy_AI_Luminous_Crystalline__1003151735_texture.glb",
+      "out": "plants/crystal-tree.glb",
+      "kind": "plant",
+      "size": ["h", 3],
+      "tris": 3000,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "plant.nebulaBloom",
+      "src": "3D model/Meshy_AI_Nebula_Bloom_1003152559_texture.glb",
+      "out": "plants/nebula-bloom.glb",
+      "kind": "plant",
+      "size": ["h", 0.8],
+      "tris": 1200,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "plant.wisteria",
+      "src": "3D model/Meshy_AI_Enchanted_Wisteria_Tr_1003152006_texture.glb",
+      "out": "plants/wisteria.glb",
+      "kind": "plant",
+      "size": ["h", 6],
+      "tris": 4000,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "plant.purpleBush",
+      "src": "3D model/Meshy_AI_A_sprawling_forest_bu_1003154626_texture.glb",
+      "out": "plants/purple-bush.glb",
+      "kind": "plant",
+      "size": ["h", 2.5],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.grassBloom",
+      "src": "3D model/Meshy_AI_A_vibrant_forest_shru_1003154600_texture.glb",
+      "out": "plants/grass-bloom.glb",
+      "kind": "plant",
+      "size": ["h", 1.2],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "plant.bonsaiRock",
+      "src": "3D model/Meshy_AI_Resilient_Harmony_1003152408_texture.glb",
+      "out": "plants/bonsai-rock.glb",
+      "kind": "plant",
+      "size": ["h", 2],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "tree.dead",
+      "src": "3D model/Meshy_AI_Dead_tree_1002205909_texture.glb",
+      "out": "plants/dead-tree.glb",
+      "kind": "plant",
+      "size": ["h", 7],
+      "tris": 3000,
+      "status": "pk"
+    },
+    {
+      "game": "tree.bare",
+      "src": "3D model/Meshy_AI_Bare_Sentinel_1003152352_texture.glb",
+      "out": "plants/bare-tree.glb",
+      "kind": "plant",
+      "size": ["h", 6],
+      "tris": 2113,
+      "status": "pk"
+    },
+    {
+      "game": "tree.oldStump",
+      "src": "3D model/Meshy_AI_old_tree_1003152249_texture.glb",
+      "out": "plants/old-stump.glb",
+      "kind": "plant",
+      "size": ["h", 4],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "tree.lone",
+      "src": "3D model/Meshy_AI_Lone_Tree_1002205915_texture.glb",
+      "out": "plants/lone-tree.glb",
+      "kind": "plant",
+      "size": ["h", 6],
+      "tris": 3000,
+      "status": "pk"
+    },
+    {
+      "game": "tree.emerald",
+      "src": "3D model/Meshy_AI_Emerald_Canopy_1003152337_texture.glb",
+      "out": "plants/emerald-tree.glb",
+      "kind": "plant",
+      "size": ["h", 8],
+      "tris": 4000,
+      "status": "pk"
+    },
+    {
+      "game": "tree.oak",
+      "src": "3D model/Meshy_AI__X_Oak_Tree_1003045542_texture.glb",
+      "out": "plants/oak.glb",
+      "kind": "plant",
+      "size": ["h", 9],
+      "tris": 4000,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "tree.pine",
+      "src": "3D model/Meshy_AI_Pine_Tree_1002205831_texture.glb",
+      "out": "plants/pine.glb",
+      "kind": "plant",
+      "size": ["h", 12],
+      "tris": 3000,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "tree.temperate",
+      "src": "3D model/Meshy_AI_Thick_temperate_fores_1003154631_texture.glb",
+      "out": "plants/temperate-bush.glb",
+      "kind": "plant",
+      "size": ["h", 2],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "tree.broadleafA",
+      "src": "3D model/Meshy_AI_Tree_1002161632_texture.glb",
+      "out": "plants/broadleaf-a.glb",
+      "kind": "plant",
+      "size": ["h", 8],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "tree.broadleafB",
+      "src": "3D model/Meshy_AI_a_tree_1002205859_texture.glb",
+      "out": "plants/broadleaf-b.glb",
+      "kind": "plant",
+      "size": ["h", 10],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "tree.broadleafC",
+      "src": "3D model/Meshy_AI_tree_1002205912_texture.glb",
+      "out": "plants/broadleaf-c.glb",
+      "kind": "plant",
+      "size": ["h", 8],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "tree.scaleTree",
+      "src": "3D model/Meshy_AI_tree_1003153128_texture.glb",
+      "out": "plants/scale-tree.glb",
+      "kind": "plant",
+      "size": ["h", 4],
+      "tris": 3000,
+      "rare": true,
+      "status": "pk"
+    },
+    {
+      "game": "tree.palmA",
+      "src": "3D model/Meshy_AI_Palm_Tree_1003153523_texture.glb",
+      "out": "plants/palm-a.glb",
+      "kind": "plant",
+      "size": ["h", 10],
+      "tris": 3000,
+      "status": "pk"
+    },
+    {
+      "game": "tree.palmB",
+      "src": "3D model/Meshy_AI_palm_tree_1003131942_texture.glb",
+      "out": "plants/palm-b.glb",
+      "kind": "plant",
+      "size": ["h", 12],
+      "tris": 3000,
+      "status": "pk"
+    },
+    {
+      "game": "tree.palmC",
+      "src": "3D model/Meshy_AI_palm_tree_1003153541_texture.glb",
+      "out": "plants/palm-c.glb",
+      "kind": "plant",
+      "size": ["h", 11],
+      "tris": 3000,
+      "status": "pk"
+    },
+    {
+      "game": "tree.fanPalm",
+      "src": "Meshy_AI_Fan_Palm_Tree_1009150354_texture.glb",
+      "out": "plants/fan-palm.glb",
+      "kind": "plant",
+      "size": ["h", 6],
+      "tris": 4000,
+      "status": "confident"
+    },
+    {
+      "game": "rock.graniteA",
+      "src": "3D model/Meshy_AI_Cracked_Granite_Bould_1002190044_texture.glb",
+      "out": "rocks/granite-a.glb",
+      "kind": "rock",
+      "size": ["l", 2.5],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.graniteB",
+      "src": "3D model/Meshy_AI_Cracked_Granite_Bould_1003151924_texture.glb",
+      "out": "rocks/granite-b.glb",
+      "kind": "rock",
+      "size": ["l", 2.2],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.grayStack",
+      "src": "3D model/Meshy_AI_Cracked_Gray_Rock_Sta_1003151858_texture.glb",
+      "out": "rocks/gray-stack.glb",
+      "kind": "rock",
+      "size": ["l", 2.5],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.monolith",
+      "src": "3D model/Meshy_AI_Monolithic_Fragment_1002154156_texture.glb",
+      "out": "rocks/monolith.glb",
+      "kind": "rock",
+      "size": ["h", 4],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.hill",
+      "src": "3D model/Meshy_AI_Mountain_1003152808_texture.glb",
+      "out": "rocks/hill.glb",
+      "kind": "rock",
+      "size": ["l", 30],
+      "tris": 3000,
+      "status": "pk"
+    },
+    {
+      "game": "rock.formationA",
+      "src": "3D model/Meshy_AI_Rock_Formation_1003130442_texture.glb",
+      "out": "rocks/formation-a.glb",
+      "kind": "rock",
+      "size": ["l", 4],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.formationB",
+      "src": "3D model/Meshy_AI_Rock_Formation_1003132238_texture.glb",
+      "out": "rocks/formation-b.glb",
+      "kind": "rock",
+      "size": ["l", 4],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.formationC",
+      "src": "3D model/Meshy_AI_Rock_Formation_1003140340_texture.glb",
+      "out": "rocks/formation-c.glb",
+      "kind": "rock",
+      "size": ["l", 3],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.pileA",
+      "src": "3D model/Meshy_AI_Rock_Pile_1002152546_texture.glb",
+      "out": "rocks/pile-a.glb",
+      "kind": "rock",
+      "size": ["l", 1.5],
+      "tris": 1000,
+      "status": "pk"
+    },
+    {
+      "game": "rock.pileB",
+      "src": "3D model/Meshy_AI_Rock_Pile_1003114445_texture.glb",
+      "out": "rocks/pile-b.glb",
+      "kind": "rock",
+      "size": ["l", 2],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.rusty",
+      "src": "3D model/Meshy_AI_Rusty_Rock_Pile_1003152728_texture.glb",
+      "out": "rocks/laterite-pile.glb",
+      "kind": "rock",
+      "size": ["l", 1.5],
+      "tris": 618,
+      "status": "pk"
+    },
+    {
+      "game": "rock.stoneFormation",
+      "src": "3D model/Meshy_AI_Stone_Formation_1003140058_texture.glb",
+      "out": "rocks/stone-formation.glb",
+      "kind": "rock",
+      "size": ["l", 3],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.plateau",
+      "src": "3D model/Meshy_AI_Stone_Plateau_1003074930_texture.glb",
+      "out": "rocks/plateau.glb",
+      "kind": "rock",
+      "size": ["l", 3],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.crags",
+      "src": "3D model/Meshy_AI_low_poly_beautiful_mo_1003140009_texture.glb",
+      "out": "rocks/crags.glb",
+      "kind": "rock",
+      "size": ["h", 6],
+      "tris": 1200,
+      "status": "pk"
+    },
+    {
+      "game": "rock.cliffWall",
+      "src": "3D model/Meshy_AI_mine_rock_wall_massiv_1003140050_image-to-3d-texture.glb",
+      "out": "rocks/cliff-wall.glb",
+      "kind": "rock",
+      "size": ["l", 10],
+      "tris": 3000,
+      "status": "pk"
+    },
+    {
+      "game": "unused.kingOld",
+      "src": "3D model/king.glb",
+      "kind": "person",
+      "status": "pk",
+      "keep": "earlier king model (in the game folder as models/king.glb); the Meshy king of 879 replaces it"
+    },
+    {
+      "game": "unused.piglet",
+      "src": "3D model/Meshy_AI_Piglet_Charm_1003151200_texture.glb",
+      "out": "animals/piglet.glb",
+      "kind": "animal",
+      "size": ["h", 0.4],
+      "tris": 1500,
+      "status": "pk"
+    },
+    {
+      "game": "unused.brickTemple",
+      "src": "Meshy_AI_Ancient_Brick_Temple__1015032450_generate.glb",
+      "kind": "building",
+      "status": "pk",
+      "keep": "untextured, 2.3 million triangles: Preah_Ko Temple.glb is used for Preah Ko (PK)"
+    }
+  ]
+}

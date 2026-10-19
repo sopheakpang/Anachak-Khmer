@@ -48,6 +48,12 @@ export interface KingdomGfx {
   seeThrough?: boolean;
   /** PK 1.9.0 (D149): PK's Meshy buildings (props.json buildings marked `pc`) — PC presets only. */
   meshyModels?: boolean;
+  /**
+   * PK 1.9.0 (D152, D153): the semi-realistic look on the PC presets — no toon units or ink
+   * outlines, the wide lens, screen-space ambient occlusion, 4× antialiasing on the post chain,
+   * a neutral grade without the miniature blur; the models keep their own PBR materials.
+   */
+  real?: boolean;
 }
 
 export const NO_GFX: KingdomGfx = {
@@ -70,7 +76,7 @@ export function postChain(g: KingdomGfx): Array<'ao' | 'bloom' | 'output' | 'gra
   const out: Array<'ao' | 'bloom' | 'output' | 'grade'> = [];
   // The diorama look (PK 1.7.0) has no screen-space AO (noisy, realistic): its block shadows
   // are painted into the terrain instead.
-  if (g.ao && !g.diorama) out.push('ao');
+  if (g.ao && (!g.diorama || g.real)) out.push('ao');
   if (g.bloom) out.push('bloom');
   if (!out.length && !g.grade && !g.tiltShift && !g.diorama) return [];
   out.push('output');
@@ -187,7 +193,13 @@ export class KingdomPost {
 
   private build(w: number, h: number): void {
     this.free();
-    const c = new EffectComposer(this.renderer);
+    // The semi-realistic look antialiases the chain (D152: thin carvings and thatch would shimmer).
+    const c = this.gfx.real
+      ? new EffectComposer(
+          this.renderer,
+          new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: 4 }),
+        )
+      : new EffectComposer(this.renderer);
     c.setPixelRatio(1);
     c.setSize(w, h);
     this.view = new CountedRenderPass(this.scene, this.camera);
@@ -205,7 +217,7 @@ export class KingdomPost {
         this.grade = new ShaderPass(GRADE_SHADER);
         this.grade.uniforms.uGrade!.value = this.gfx.grade ? 1 : 0;
         this.grade.uniforms.uRes!.value = new THREE.Vector2(w, h);
-        const D = this.gfx.diorama ? this.diorama : undefined;
+        const D = this.gfx.diorama && !this.gfx.real ? this.diorama : undefined;
         if (D) {
           const u = this.grade.uniforms;
           u.uDiorama!.value = 1;
@@ -245,7 +257,7 @@ export class KingdomPost {
     this.renderer.getSize(this.size);
     if (!this.composer || !this.size.equals(this.built)) this.build(this.size.x, this.size.y);
     if (this.grade) {
-      const D = this.gfx.diorama ? this.diorama : undefined;
+      const D = this.gfx.diorama && !this.gfx.real ? this.diorama : undefined;
       // The diorama blurs at every zoom (a model village always looks small); more up close.
       this.grade.uniforms.uBlur!.value = D
         ? D.blur + (D.blurClose - D.blur) * close

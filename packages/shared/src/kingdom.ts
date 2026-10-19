@@ -1115,8 +1115,55 @@ export const PropSlotSchema = z.object({
 export type PropSlot = z.infer<typeof PropSlotSchema>;
 export const PROP_SLOTS = ['tree.palm', 'dikePalm', 'rock.stone', 'rock.gold', 'fruit'] as const;
 export type PropSlotId = (typeof PROP_SLOTS)[number];
+/**
+ * PK 1.9.0 (D153): PK's plants, rocks, flowers and small life scattered over the land in
+ * natural patterns (clumps, edges, shores) on the PC presets — one instanced mesh a kind,
+ * only the nearest `maxVisible` drawn.
+ */
+export const SCATTER_HABITATS = ['forest', 'forestEdge', 'grass', 'shore', 'pond', 'hill', 'ruin', 'village'] as const;
+export const ScatterKindSchema = z.object({
+  id: z.string().min(1),
+  en: z.string(),
+  file: z.string().min(1),
+  habitat: z.enum(SCATTER_HABITATS),
+  /** Clumps per 1000 tiles of the habitat. */
+  per1k: z.number().nonnegative(),
+  /** Plants in a clump, and how far they spread from its centre (m). */
+  clump: z.tuple([z.number().int().positive(), z.number().int().positive()]),
+  spread: z.number().nonnegative(),
+  /** Size range (× the model's size). */
+  scale: z.tuple([z.number().positive(), z.number().positive()]),
+  /** How far into the ground (share of its height). */
+  sink: z.number().nonnegative().default(0),
+  /** The nearest this many are drawn. */
+  maxVisible: z.number().int().positive(),
+  /** True = a rare find (PK's fantasy plants): never more than `clump`'s max on the whole map. */
+  rare: z.boolean().default(false),
+});
+export type ScatterKind = z.infer<typeof ScatterKindSchema>;
+
 export const PropsSchema = z.object({
   slots: z.record(z.enum(PROP_SLOTS), PropSlotSchema),
+  /** PK 1.9.0 (D153): boats from PK's models on the PC presets; the trader boat stands in for the junk. */
+  boats: z
+    .object({
+      dugout: PropSlotSchema.pick({ file: true, fit: true, sink: true }).extend({ en: z.string() }),
+      bambooRaft: PropSlotSchema.pick({ file: true, fit: true, sink: true }).extend({ en: z.string() }),
+      trader: PropSlotSchema.pick({ file: true, fit: true, sink: true }).extend({ en: z.string() }),
+    })
+    .optional(),
+  /** PK 1.9.0 (D153): scattered plants, rocks and small life (PC presets). */
+  scatter: z
+    .object({
+      /** Drawn within this radius of the view's centre (m); re-picked every `everySec`. */
+      radius: z.number().positive(),
+      everySec: z.number().positive(),
+      /** Clear ground round the royal hall (tiles) and round every building (m). */
+      clearHall: z.number().nonnegative(),
+      clearBuilding: z.number().nonnegative(),
+      kinds: z.array(ScatterKindSchema),
+    })
+    .optional(),
   /**
    * PK 1.8.0: a building drawn from PK's own model instead of the built-in shape, by building
    * type (buildings.json id), e.g. townCentre = the royal hall. Its front faces +z (the door
