@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { PLAYER, type KingdomSim } from '../sim/sim';
+import { hasRoofBar } from './roofBars';
 
 /**
  * Light alerts in the world (PK): a soft blue light over work in progress (a building going
@@ -45,7 +46,9 @@ export function beacons(sim: KingdomSim, t: number, flashes: Flash[]): Beacon[] 
     if (b.team !== PLAYER || b.type === 'riceField') continue;
     const [x, z] = sim.center(b);
     const r = (Math.max(b.w, b.d) * T) / 2 + 0.6;
-    const busy = b.progress < 1 || b.queue.length > 0;
+    // D160: work in progress is a bar over the roof now (view/roofBars.ts), not a blue light;
+    // only a busy building without a bar (the monument, a rice field) keeps the light.
+    const busy = (b.progress < 1 || b.queue.length > 0) && !hasRoofBar(b);
     if (busy) out.push({ kind: 'progress', x, z, r, glow: 0.55 + 0.35 * Math.sin(t * 2.2 + b.id) });
     if (b.type === 'lumberCamp' && (b.stock ?? 0) >= A.campFull)
       out.push({ kind: 'full', x, z, r, glow: 0.6 + 0.4 * Math.abs(Math.sin(t * 4)) });

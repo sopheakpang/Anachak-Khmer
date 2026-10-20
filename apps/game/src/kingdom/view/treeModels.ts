@@ -148,6 +148,24 @@ function inside(lots: readonly Lot[], x: number, z: number, margin: number): boo
  * least `minHouses` gets a coconut palm and a banana plant in its yard, behind or beside the
  * house (houses face east, +x), never inside a building or where `ok` says no (water).
  */
+/**
+ * D160 (PK: "in front of the royal hall better not mess up with trees"): the open court before
+ * each royal hall (it faces +z): `halfWidth` m either side of its centre, from its centre out to
+ * `depth` m. No yard tree, wayside palm, scattered plant or forest tree stands there.
+ */
+export function inHallFront(
+  lots: ReadonlyArray<{ type: string; x: number; z: number }>,
+  x: number,
+  z: number,
+  F: { halfWidth: number; depth: number } | undefined,
+): boolean {
+  if (!F) return false;
+  for (const b of lots)
+    if (b.type === 'townCentre' && Math.abs(x - b.x) <= F.halfWidth && z - b.z >= 0 && z - b.z <= F.depth)
+      return true;
+  return false;
+}
+
 export function villageTrees(
   lots: readonly Lot[],
   V: TreePlacement['village'],
@@ -166,6 +184,8 @@ export function villageTrees(
   houses.forEach((h, i) => {
     if ((size.get(find(i)) ?? 0) < V.minHouses) return;
     const r = (k: number) => hash(Math.round(h.x * 10), Math.round(h.z * 10), k);
+    // D160 (PK: "decrease the trees in villages"): only `share` of the houses have yard trees.
+    if (r(99) >= (V.share ?? 1)) return;
     const back = h.w / 2 + 1.6;
     const side = h.d / 2 + 1.4;
     // Coconut behind the house, banana to one side (or the other ones if those are taken).
@@ -185,7 +205,7 @@ export function villageTrees(
       for (const [x, z] of spots) {
         const jx = x + (r(k) - 0.5) * 0.8;
         const jz = z + (r(k + 1) - 0.5) * 0.8;
-        if (inside(lots, jx, jz, 0.4) || !ok(jx, jz)) continue;
+        if (inside(lots, jx, jz, 0.4) || !ok(jx, jz) || inHallFront(lots, jx, jz, V.hallFront)) continue;
         if (out.some((t) => Math.hypot(t.x - jx, t.z - jz) < 1.4)) continue;
         out.push({
           id,

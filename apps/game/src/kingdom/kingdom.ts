@@ -19,6 +19,7 @@ export const KING_ID = -1;
 import { KingdomScene, TEAM_COLOR, buildingGeometry, teamUnitGeometry, type HoverTarget } from './view/scene';
 import { IconAtlas } from './view/icons';
 import { landmarkGeometry } from './view/temples';
+import { roofBars, type RoofBar } from './view/roofBars';
 import { manuscriptGeometry } from './view/art';
 import { basketReady, collectBasket } from './sim/market';
 import { templeShortfall } from './sim/decree';
@@ -141,6 +142,12 @@ export class Kingdom {
   private popMilestone = -1;
   /** The order board is open (Hay Day-style, PK). */
   private ordersOpen = false;
+  /** PK 2026-10-20 (D160): the ព្រះរាជបញ្ជា inbox is open. */
+  private inboxOpen = false;
+  /** PK 2026-10-20 (D160): the ⚙ board (what is shown on screen) is open. */
+  private boardOpen = false;
+  /** D160: when the war drum last beat (ms). */
+  private drumAt = 0;
   /** The player's keys (PK 1.8.0, config/kingdom/controls.json + the browser's copy). */
   readonly keymap: Keymap;
   /** The keyboard panel (year bar 🎮): open, its tab, the slot waiting for a key. */
@@ -469,6 +476,7 @@ export class Kingdom {
             `${w.khmer ? '🏯' : '🌏'} ${w.circa ? 'c. ' : ''}${km(w.year)} · ${this.esc(w.km)} · ${this.esc(w.en)}`,
             now,
             8,
+            'world',
           );
       this.yearSeen.year = y;
     }
@@ -491,24 +499,52 @@ export class Kingdom {
       },
       keys: this.opts.mobile ? undefined : this.keysOpen,
       gfx: this.opts.mobile ? undefined : this.gfxOpen,
+      inbox: { ...this.hud.inboxBadge(), open: this.inboxOpen },
+      board: this.boardOpen,
     });
+  }
+
+  /** Open or close the ព្រះរាជបញ្ជា inbox (D160); the order board makes way for it. */
+  private toggleInbox(): void {
+    this.inboxOpen = !this.inboxOpen;
+    if (this.inboxOpen) this.ordersOpen = false;
+  }
+
+  /**
+   * A card the game shows by itself (a chapter begins, a temple is finished): kept in the
+   * ព្រះរាជបញ្ជា inbox (D160), or shown at once when `rules.inbox.popups`.
+   */
+  private postCard(
+    title: string,
+    card: { html: string; until: number; side?: boolean; sec?: number },
+    now = performance.now(),
+  ): void {
+    if (this.hud.popups) {
+      this.card = card;
+      return;
+    }
+    this.hud.inbox.push('card', title, now, card.html);
   }
 
   private showChapterIntro(): void {
     const i = this.sim.chapter;
     const n = this.data.campaign.chapters.length;
-    this.card = {
-      html:
-        this.chapterHtml(
-          i,
-          `ជំពូក ${km(i + 1)}/${km(n)} · Chapter ${i + 1} of ${n} — សាងប្រាសាទនេះ · Build this temple`,
-        ) +
-        `<button class="k-btn" data-act="card-close" data-ui><span class="k-btn-km">ចាប់ផ្ដើម · Begin</span></button>` +
-        `<p class="k-card-dev">${this.esc(CREDITS.developer.km)} · ${this.esc(CREDITS.developer.en)}: <span class="k-credit-km">${this.esc(CREDITS.developer.nameKm)}</span></p>`,
-      // The clock starts when the card is first on screen (the tab may open later).
-      until: Infinity,
-      sec: 45,
-    };
+    const t = this.templeName(this.data.campaign.chapters[i]!.temple);
+    this.postCard(
+      `ជំពូក ${km(i + 1)}/${km(n)} · Chapter ${i + 1}: <b>${this.esc(t.km)}</b> · ${this.esc(t.en)}`,
+      {
+        html:
+          this.chapterHtml(
+            i,
+            `ជំពូក ${km(i + 1)}/${km(n)} · Chapter ${i + 1} of ${n} — សាងប្រាសាទនេះ · Build this temple`,
+          ) +
+          `<button class="k-btn" data-act="card-close" data-ui><span class="k-btn-km">ចាប់ផ្ដើម · Begin</span></button>` +
+          `<p class="k-card-dev">${this.esc(CREDITS.developer.km)} · ${this.esc(CREDITS.developer.en)}: <span class="k-credit-km">${this.esc(CREDITS.developer.nameKm)}</span></p>`,
+        // The clock starts when the card is first on screen (the tab may open later).
+        until: Infinity,
+        sec: 45,
+      },
+    );
   }
 
   /** The timeline of every temple: finished ones can be visited, later ones are locked. */
@@ -837,6 +873,9 @@ export class Kingdom {
         this.findScarce();
       } else if (a === 'orders') {
         this.ordersOpen = !this.ordersOpen;
+        if (this.ordersOpen) this.inboxOpen = false;
+      } else if (a === 'inbox') {
+        this.toggleInbox();
       } else if (a === 'centre') {
         e.preventDefault();
         this.centreOnSelection();
@@ -1024,7 +1063,11 @@ export class Kingdom {
       const [, g, action, slot] = a.split(':');
       const group: KeyGroup = g === 'hero' ? 'hero' : 'map';
       const w = { group, id: action ?? '', slot: Number(slot) || 0 };
-      const same = this.keysWait && this.keysWait.id === w.id && this.keysWait.group === group && this.keysWait.slot === w.slot;
+      const same =
+        this.keysWait &&
+        this.keysWait.id === w.id &&
+        this.keysWait.group === group &&
+        this.keysWait.slot === w.slot;
       this.keysWait = same ? null : w;
       return;
     }
@@ -1067,6 +1110,29 @@ export class Kingdom {
     }
     if (kind === 'orders') {
       this.ordersOpen = !this.ordersOpen;
+      if (this.ordersOpen) this.inboxOpen = false;
+      return;
+    }
+    if (kind === 'inbox') {
+      this.toggleInbox();
+      return;
+    }
+    if (kind === 'board') {
+      this.boardOpen = !this.boardOpen;
+      return;
+    }
+    if (kind === 'board-toggle') {
+      this.hud.board.toggle(id ?? '');
+      return;
+    }
+    if (kind === 'board-reset') {
+      this.hud.board.reset();
+      return;
+    }
+    if (kind === 'inbox-card') {
+      // A chapter card kept in the inbox, shown in full.
+      const it = this.hud.inbox.get(Number(id));
+      if (it?.card) this.card = { html: it.card, until: Infinity, sec: 120 };
       return;
     }
     if (kind === 'order-deliver') {
@@ -1177,6 +1243,24 @@ export class Kingdom {
       if (inView(q)) out.push({ ...q, html: `${this.esc(n.km)} · ${this.esc(n.en)}`, cls: 'neighbour' });
     }
     return out;
+  }
+
+  /**
+   * D160: the roof bars of the buildings at work that are on screen, the nearest to the view's
+   * centre first (at most rules.alerts `roofBars`), and none when the camera is far out.
+   */
+  private roofBarsOnScreen(): Array<RoofBar & { sx: number; sy: number }> {
+    const A = this.data.rules.alerts;
+    if (this.cam.dist > A.roofBarDist) return [];
+    const out: Array<RoofBar & { sx: number; sy: number; d: number }> = [];
+    for (const b of roofBars(this.sim, (t) => this.view.roofY(t))) {
+      const d = Math.hypot(b.x - this.cam.x, b.z - this.cam.z);
+      if (d > this.cam.dist * 1.6) continue;
+      const q = this.view.project(b.x, b.y, b.z);
+      if (q.x < 80 || q.x > KSIZE.width - 80 || q.y < 140 || q.y > KSIZE.height - PANEL_H) continue;
+      out.push({ ...b, sx: q.x, sy: q.y, d });
+    }
+    return out.sort((a, b) => a.d - b.d).slice(0, A.roofBars);
   }
 
   /** Pick what is under the pointer (throttled), mark it and write its hint. */
@@ -1365,7 +1449,13 @@ export class Kingdom {
     const name = sfxForEvent(e as unknown as { kind: string });
     if (!name) return;
     const at =
-      e.kind === 'hit' || e.kind === 'found' || e.kind === 'hunted' || e.kind === 'delivered'
+      e.kind === 'hit' ||
+      e.kind === 'found' ||
+      e.kind === 'hunted' ||
+      e.kind === 'delivered' ||
+      e.kind === 'block' ||
+      e.kind === 'stolen' ||
+      e.kind === 'recovered'
         ? e.at
         : e.kind === 'shot'
           ? e.from
@@ -1407,6 +1497,14 @@ export class Kingdom {
     }
     if (this.card) {
       this.card = null;
+      return true;
+    }
+    if (this.inboxOpen) {
+      this.inboxOpen = false;
+      return true;
+    }
+    if (this.boardOpen) {
+      this.boardOpen = false;
       return true;
     }
     if (this.historyOpen) {
@@ -2132,7 +2230,8 @@ export class Kingdom {
         km: d.km,
         en: d.en,
         cost,
-        disabled: why === 'era' || why === 'requires' || why === 'limit' || why === 'unknown' || why === 'barracks',
+        disabled:
+          why === 'era' || why === 'requires' || why === 'limit' || why === 'unknown' || why === 'barracks',
         icon: this.icon('unit', c.type),
         tip: this.buttonTip(d, `${L.note.en} Each recruit costs this soldier’s price.`, cost, needs),
       });
@@ -2538,6 +2637,16 @@ export class Kingdom {
       this.panTo(this.cam.x + dx * dt * this.cam.dist * 0.9, this.cam.z + dz * dt * this.cam.dist * 0.9);
     }
     if (!paused) this.sim.update(dt * this.speed);
+    // D160: the war drum beats while a raid is being met near the view.
+    if (!paused && this.sim.battles.size && now - this.drumAt > 2400) {
+      const near = [...this.sim.battles.values()].some(
+        (b) => Math.hypot(b.line[0] - this.cam.x, b.line[1] - this.cam.z) < Math.max(80, this.cam.dist * 2),
+      );
+      if (near) {
+        this.drumAt = now;
+        this.sound.play('drum', { gain: 0.7 });
+      }
+    }
     // Events → messages.
     const ev = this.sim.events;
     for (let i = this.seenEvents; i < ev.length; i++) {
@@ -2549,6 +2658,22 @@ export class Kingdom {
           now,
           7,
         );
+      // D160: the raid on the village — the line, the store, the cheer.
+      if (e.kind === 'muster' && e.n > 0)
+        this.hud.toast(`🥁 <b>តម្រៀបជួរ!</b> · ${km(e.n)} soldiers form the line before the village`, now, 5);
+      if (e.kind === 'stolen' || e.kind === 'recovered') {
+        const what = Object.entries(e.loot)
+          .map(([k, n]) => `${km(n ?? 0)} ${RES_LABEL[k as keyof typeof RES_LABEL].km}`)
+          .join(' ');
+        this.hud.toast(
+          e.kind === 'stolen'
+            ? `💰 <b>ចោរលួចពីឃ្លាំង!</b> · A raider takes ${what} from the storehouse — stop him!`
+            : `✊ <b>ដណ្ដើមបានវិញ</b> · Won back: ${what}`,
+          now,
+          5,
+        );
+      }
+      if (e.kind === 'cheer') this.hud.toast(`🙌 <b>ជ័យជម្នះ!</b> · The raiders are beaten back`, now, 5);
       if (e.kind === 'researched')
         this.hud.toast(
           `បានរកឃើញ <b>${this.data.techs[e.tech]!.km}</b> · ${this.data.techs[e.tech]!.en}`,
@@ -2653,17 +2778,22 @@ export class Kingdom {
         if (e.next) {
           const i = this.sim.chapter;
           const n = this.data.campaign.chapters.length;
-          this.card = {
-            html:
-              `<h3>✓ ${this.esc(done.km)} · ${this.esc(done.en)} សាងរួច · complete</h3>` +
-              this.chapterHtml(
-                i,
-                `ជំពូក ${km(i + 1)}/${km(n)} · Chapter ${i + 1} of ${n} — ប្រាសាទបន្ទាប់ · Next temple`,
-              ) +
-              `<button class="k-btn" data-act="card-close" data-ui><span class="k-btn-km">បន្ត · Continue</span></button>`,
-            until: Infinity,
-            sec: 30,
-          };
+          const next = this.templeName(e.next);
+          this.postCard(
+            `✓ ${this.esc(done.km)} · ${this.esc(done.en)} — ជំពូក ${km(i + 1)}/${km(n)}: <b>${this.esc(next.km)}</b> · ${this.esc(next.en)}`,
+            {
+              html:
+                `<h3>✓ ${this.esc(done.km)} · ${this.esc(done.en)} សាងរួច · complete</h3>` +
+                this.chapterHtml(
+                  i,
+                  `ជំពូក ${km(i + 1)}/${km(n)} · Chapter ${i + 1} of ${n} — ប្រាសាទបន្ទាប់ · Next temple`,
+                ) +
+                `<button class="k-btn" data-act="card-close" data-ui><span class="k-btn-km">បន្ត · Continue</span></button>`,
+              until: Infinity,
+              sec: 30,
+            },
+            now,
+          );
           const [x, z] = this.siteCentre(i);
           this.flyTo(x, z + 20, 110, now);
         }
@@ -2790,7 +2920,13 @@ export class Kingdom {
       this.post?.post.dispose();
       this.post = {
         scene: this.view.scene,
-        post: new KingdomPost(r, this.view.scene, this.view.camera, this.opts.gfx ?? NO_GFX, this.data.diorama.post),
+        post: new KingdomPost(
+          r,
+          this.view.scene,
+          this.view.camera,
+          this.opts.gfx ?? NO_GFX,
+          this.data.diorama.post,
+        ),
       };
     }
     if (this.hero?.active) this.heroSplit = this.hero.draw(r);
@@ -2904,7 +3040,10 @@ export class Kingdom {
     );
     this.hud.renderLabels(this.labels());
     this.hud.renderOrders(this.ordersOpen && !this.historyOpen ? this.ordersHtml() : null);
+    this.hud.renderInbox(this.inboxOpen && !this.historyOpen, now);
+    this.hud.renderBoard(this.boardOpen && !this.historyOpen);
     this.hud.renderBubbles(this.bubbles());
+    this.hud.renderRoofBars(this.roofBarsOnScreen());
     this.floats = this.floats.filter((f) => now - f.at < 2200);
     this.hud.renderFloats(
       this.floats.map((f) => {

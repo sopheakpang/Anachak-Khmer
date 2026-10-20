@@ -211,7 +211,14 @@ export function restore(data: KingdomData, raw: unknown): KingdomSim {
     sim.traded = f.exchange.traded;
   }
   // A unit played by hand when the game was saved goes back to the AI.
-  for (const u of sim.units.values()) u.manual = undefined;
+  for (const u of sim.units.values()) {
+    u.manual = undefined;
+    // D160: a line of battle is not kept in a save: its soldiers stand easy, its raiders raid on.
+    u.battle = undefined;
+    u.jam = undefined;
+    u.detourUntil = undefined;
+  }
+  sim.battles.clear();
   sim.updateFog();
   return sim;
 }

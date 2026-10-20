@@ -384,15 +384,88 @@ export const KingdomRulesSchema = z.object({
       })
       .default({ everySec: 90, food: 12, autoSec: 45, types: ['house', 'nobleHouse', 'townCentre'] }),
   }),
+  /**
+   * PK 2026-10-20 (D160): nothing pops up over the kingdom: news, world history, chapter cards and
+   * the council vote go into the ព្រះរាជបញ្ជា inbox (`popups` true brings the old pop-ups back).
+   */
+  /** PK 2026-10-20 (D160): the raid on the village (line of battle, the store, blocks, the cheer). */
+  battle: z
+    .object({
+      store: z.boolean(),
+      steal: z.object({
+        food: z.number().int().min(0).optional(),
+        wood: z.number().int().min(0).optional(),
+        stone: z.number().int().min(0).optional(),
+        gold: z.number().int().min(0).optional(),
+      }),
+      stealReach: z.number().positive(),
+      homeReach: z.number().positive(),
+      musterRadius: z.number().positive(),
+      musterDist: z.number().positive(),
+      spacing: z.number().positive(),
+      rowGap: z.number().positive(),
+      archerBack: z.number().positive(),
+      engage: z.number().positive(),
+      shields: z.array(z.string()),
+      blockChance: z.number().min(0).max(1),
+      blockFactor: z.number().min(0).max(1),
+      push: z.number().min(0),
+      axeEvery: z.number().int().min(0),
+      cheerSec: z.number().positive(),
+      kneelBelow: z.number().min(0).max(1),
+      restHeal: z.number().min(0),
+      restClear: z.number().positive(),
+    })
+    .default({
+      store: true,
+      steal: { gold: 20, food: 40 },
+      stealReach: 3,
+      homeReach: 8,
+      musterRadius: 160,
+      musterDist: 16,
+      spacing: 1.6,
+      rowGap: 1.8,
+      archerBack: 7,
+      engage: 14,
+      shields: ['swordsman', 'commander'],
+      blockChance: 0.35,
+      blockFactor: 0.25,
+      push: 0.35,
+      axeEvery: 3,
+      cheerSec: 4,
+      kneelBelow: 0.45,
+      restHeal: 2,
+      restClear: 15,
+    }),
+  /** PK 2026-10-20 (D160): walkers stuck in traffic plan round the crowd. */
+  traffic: z
+    .object({
+      checkSec: z.number().positive().default(1.2),
+      minMove: z.number().min(0).max(1).default(0.25),
+      radius: z.number().int().positive().default(6),
+      detourSec: z.number().positive().default(6),
+    })
+    .default({ checkSec: 1.2, minMove: 0.25, radius: 6, detourSec: 6 }),
+  /** PK 2026-10-20 (D160): the ⚙ board: which screen items are off at the start. */
+  board: z.object({ off: z.array(z.string()).default([]) }).default({ off: [] }),
+  inbox: z
+    .object({
+      popups: z.boolean().default(false),
+      max: z.number().int().positive().default(60),
+    })
+    .default({ popups: false, max: 60 }),
   /** PK: light alerts (work in progress, finished, running out, store full, still needed). */
   alerts: z
     .object({
+      /** D160: bars over the roofs at most, and only with the camera nearer than this (m). */
+      roofBars: z.number().int().min(0).default(12),
+      roofBarDist: z.number().positive().default(140),
       lowRes: z.number().nonnegative().default(50),
       campFull: z.number().positive().default(180),
       flashSec: z.number().positive().default(2.5),
       needSec: z.number().positive().default(1.8),
     })
-    .default({ lowRes: 50, campFull: 180, flashSec: 2.5, needSec: 1.8 }),
+    .default({ roofBars: 12, roofBarDist: 140, lowRes: 50, campFull: 180, flashSec: 2.5, needSec: 1.8 }),
   /** PK: people cross water on boats or bamboo rafts (path cost and speed on water). */
   rafts: z
     .object({
@@ -1195,6 +1268,37 @@ export const PropsSchema = z.object({
       }),
     })
     .optional(),
+  /** PK 2026-10-20 (D160, D155 step 3): PK's animals near the view (PC presets). */
+  animals: z
+    .object({
+      max: z.number().int().min(0),
+      radius: z.number().positive(),
+      maxDist: z.number().positive(),
+      walkSpeed: z.number().positive(),
+      hero: z.object({ max: z.number().int().min(0), radius: z.number().positive() }).optional(),
+      byKind: z.record(
+        z.string(),
+        z.object({ file: z.string(), fit: z.enum(['height', 'length']), size: z.number().positive() }),
+      ),
+    })
+    .optional(),
+  /** PK 2026-10-20 (D160): the fish of the schools, made in Blender (PC presets). */
+  fish: z
+    .object({
+      length: z.number().positive(),
+      kinds: z
+        .array(
+          z.object({
+            id: z.string(),
+            km: z.string(),
+            en: z.string(),
+            file: z.string(),
+            weight: z.number().positive(),
+          }),
+        )
+        .min(1),
+    })
+    .optional(),
   /** PK 1.9.0 (D153): scattered plants, rocks and small life (PC presets). */
   scatter: z
     .object({
@@ -1235,6 +1339,8 @@ export const PropsSchema = z.object({
       max: z.number().int().min(0).max(64),
       radius: z.number().positive(),
       maxDist: z.number().positive(),
+      /** D160: the 3D hero mode's own max and radius (more of the people round the hero). */
+      hero: z.object({ max: z.number().int().min(0), radius: z.number().positive() }).optional(),
       /** The hip height (m) the models are scaled to. */
       hips: z.number().positive(),
       byType: z.record(z.string(), z.array(z.string()).min(1)),
@@ -1290,6 +1396,10 @@ export const PropsSchema = z.object({
         linkM: z.number().positive(),
         coconut: z.string(),
         banana: z.array(z.string()).min(1),
+        /** D160: share of the houses that have yard trees (PK: fewer trees in the villages). */
+        share: z.number().min(0).max(1).optional(),
+        /** D160: the royal hall's open court, kept clear of trees (m: either side, out in front). */
+        hallFront: z.object({ halfWidth: z.number().positive(), depth: z.number().positive() }).optional(),
       }),
       wayside: z.object({
         near: z.string(),
@@ -1542,6 +1652,20 @@ export const DioramaSchema = z.object({
     radius: z.number().positive(),
     /** Share of the cover taken away in the middle of the window (0..1; 1 = a hole). */
     amount: z.number().min(0).max(1),
+    /**
+     * D160: cover nearer the camera than near[0] m is gone, back by near[1] m: the RTS view
+     * (the 18–21 m canopy under a close camera) and the 3D hero mode (a trunk behind him).
+     */
+    near: z
+      .object({
+        rts: z.tuple([z.number().min(0), z.number().min(0)]),
+        hero: z.tuple([z.number().min(0), z.number().min(0)]),
+      })
+      .default({ rts: [12, 22], hero: [1.2, 3] }),
+    /** D160: the 3D hero mode: a window round the hero (m across, share taken away). */
+    hero: z
+      .object({ radius: z.number().positive(), amount: z.number().min(0).max(1) })
+      .default({ radius: 1.8, amount: 0.9 }),
   }),
   detail: z.object({
     tufts: z.number().int().min(0),

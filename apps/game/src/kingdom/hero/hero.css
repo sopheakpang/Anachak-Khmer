@@ -568,7 +568,9 @@
   bottom: 24px;
   width: auto;
   height: auto;
-  transform: translateX(-50%);
+  /* PK 2026-10-20 (D160): the bar at half size, labels and all (his choice over the 26 px rule). */
+  transform: translateX(-50%) scale(var(--hb-scale, 0.5));
+  transform-origin: 50% 100%;
   display: flex;
   gap: 12px;
   padding: 12px 16px;
@@ -642,7 +644,7 @@
 /* The help line sits above the bar on the PC. */
 .k-hero-acts.k-hero-hotbar ~ .k-hero-help {
   left: 50%;
-  bottom: 200px;
+  bottom: 118px;
   transform: translateX(-50%);
   max-width: 1500px;
   text-align: center;

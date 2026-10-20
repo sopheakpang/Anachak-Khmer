@@ -88,3 +88,55 @@ describe('moving buildings (PK 1.6.0)', () => {
     }
   });
 });
+
+describe('PK 2026-10-20 (D160): stuck in traffic, find a new route', () => {
+  it('a walker held up by people standing in the lane plans round them and gets there', () => {
+    const s = calm();
+    const T = data.rules.traffic;
+    const hall = [...s.buildings.values()].find((b) => b.type === 'townCentre' && b.team === PLAYER)!;
+    // An open run of 14 tiles with open rows either side.
+    const [x0, z0] = spotNear(hall.tx + 6, hall.tz + 6, (x, z) => {
+      for (let i = 0; i < 14; i++)
+        for (let dz = -2; dz <= 2; dz++) if (!s.grid.ok(x + i, z + dz)) return false;
+      return true;
+    });
+    const at = (x: number, z: number): [number, number] => [
+      (x + 0.5) * s.map.tile - (s.map.size * s.map.tile) / 2,
+      (z + 0.5) * s.map.tile - (s.map.size * s.map.tile) / 2,
+    ];
+    const walker = s.spawnNear(hall, 'villager');
+    [walker.x, walker.z] = at(x0, z0);
+    const goal = at(x0 + 13, z0);
+    // A knot of people standing still across the lane at its middle.
+    for (const dz of [0, 0, 0, 0]) {
+      const p = s.spawnNear(hall, 'villager');
+      [p.x, p.z] = at(x0 + 6, z0 + dz);
+      p.task = { kind: 'idle' };
+    }
+    walker.task = { kind: 'move', to: goal };
+    let detoured = false;
+    for (let i = 0; i < 600; i++) {
+      s.update(0.05);
+      if ((walker.detourUntil ?? -1) > s.time) detoured = true;
+      // The knot stands its ground (as people at work would).
+      for (const u of s.units.values()) if (u !== walker && u.task.kind === 'idle') u.anim = 'idle';
+      if (Math.hypot(walker.x - goal[0], walker.z - goal[1]) < 1.5) break;
+    }
+    expect(Math.hypot(walker.x - goal[0], walker.z - goal[1])).toBeLessThan(1.5);
+    expect(T.checkSec).toBeGreaterThan(0);
+    expect(detoured).toBe(true);
+  });
+
+  it('the walls are only for planning: the grid is open again afterwards', () => {
+    const s = calm();
+    const before = Uint8Array.from(s.grid.open);
+    const hall = [...s.buildings.values()].find((b) => b.type === 'townCentre' && b.team === PLAYER)!;
+    for (let i = 0; i < 6; i++) s.spawnNear(hall, 'villager');
+    const w = s.spawnNear(hall, 'villager');
+    w.detourUntil = 1e9;
+    w.task = { kind: 'move', to: [w.x + 20, w.z + 4] };
+    for (let i = 0; i < 40; i++) s.update(0.05);
+    // Buildings may not change in 2 s of a calm game; every tile is as it was.
+    expect(s.grid.open.every((v, i) => v === before[i])).toBe(true);
+  });
+});

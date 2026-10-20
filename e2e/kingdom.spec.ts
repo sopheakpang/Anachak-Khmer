@@ -176,9 +176,20 @@ test('KG-01: the Kingdom tab: select, build, gather, train, LIVE support, counci
       k.council.nextAt = 0;
       k.council.openUntil = 0;
     });
-    await expect(page.locator('#k-council')).toBeVisible({ timeout: 30_000 });
+    // PK 2026-10-20 (D160): the vote no longer pops up; it is in the ព្រះរាជបញ្ជា inbox, whose
+    // year-bar button glows while it is open.
+    await expect(page.locator('.k-yb-inbox.k-yb-live')).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator('#k-council')).toBeHidden();
+    await page.locator('.k-yb-inbox').dispatchEvent('pointerdown');
+    await expect(page.locator('#k-inbox .k-ib-vote')).toBeVisible({ timeout: 30_000 });
     h.send(event({ type: 'comment', text: '!2' }, 'voter9'));
-    await expect(page.locator('#k-council li').nth(1)).toContainText('១', { timeout: 30_000 });
+    await expect(page.locator('#k-inbox .k-ib-vote li').nth(1)).toContainText('១', { timeout: 30_000 });
+    // The gift above is in the inbox as news, not a pop-up.
+    await expect(page.locator('#k-inbox .k-ib-list')).toContainText('giver1', { timeout: 30_000 });
+    await expect(page.locator('#k-toasts li')).toHaveCount(0);
+    await page.screenshot({ path: 'docs/screens/k-inbox.png' });
+    await page.locator('#k-inbox h3 button').dispatchEvent('pointerdown');
+    await expect(page.locator('#k-inbox')).toBeHidden();
 
     // Save from the host panel, change the world, load it back.
     h.send({ kind: 'control', action: 'kingdom', op: 'save' });
@@ -296,7 +307,14 @@ test('KG-03: the campaign: finishing a temple ends its era, unlocks the next tem
     s.update(s.data.rules.victory.monumentHoldSec + 1);
     return [x, z];
   });
+  // PK 2026-10-20 (D160): the next chapter's card waits in the ព្រះរាជបញ្ជា inbox; open it there.
+  await expect(page.locator('.k-yb-inbox')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('#k-card')).toBeHidden();
+  await page.locator('.k-yb-inbox').dispatchEvent('pointerdown');
+  await expect(page.locator('#k-inbox .k-ib-card').first()).toContainText('Bakong', { timeout: 30_000 });
+  await page.locator('#k-inbox .k-ib-card button').first().dispatchEvent('pointerdown');
   await expect(page.locator('#k-card')).toContainText('Bakong', { timeout: 30_000 });
+  await page.locator('.k-yb-inbox').dispatchEvent('pointerdown');
   await expect(page.locator('.k-year-en')).toContainText('881 CE');
   await expect(page.locator('.k-objective')).toContainText('Bakong');
   const next = await page.evaluate(() => window.__temples.kingdom!.sim.monumentSpot());
@@ -903,7 +921,10 @@ test('KG-09: PK 1.8.0: the keyboard panel: pick a key for an action, it works, R
   await page.locator('.k-yearbar [data-act="keys"]').dispatchEvent('pointerdown');
   await expect(page.locator('#k-keys')).toBeVisible();
   await expect(page.locator('#k-keys h3')).toContainText('ក្តារចុច');
-  const size = await page.locator('#k-keys .k-keyname').first().evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
+  const size = await page
+    .locator('#k-keys .k-keyname')
+    .first()
+    .evaluate((e) => parseFloat(getComputedStyle(e).fontSize));
   expect(size).toBeGreaterThanOrEqual(26);
   // "The royal hall" gets G: click its first key, press G.
   await page.locator('#k-keys [data-act="keys-set:map:hall:0"]').dispatchEvent('pointerdown');
@@ -930,7 +951,9 @@ test('KG-09: PK 1.8.0: the keyboard panel: pick a key for an action, it works, R
   expect(await hallBy('h')).toBe(true);
 });
 
-test('KG-10: 1.8.0 optimisation: New Game frees the old world (graphics memory stays level)', async ({ page }) => {
+test('KG-10: 1.8.0 optimisation: New Game frees the old world (graphics memory stays level)', async ({
+  page,
+}) => {
   await page.goto('/?mode=kingdom&offline=1');
   await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.kingdom, null, {
     timeout: 180_000,
@@ -940,7 +963,9 @@ test('KG-10: 1.8.0 optimisation: New Game frees the old world (graphics memory s
     await page.locator('#k-card .k-card-x').dispatchEvent('pointerdown');
   const memory = () =>
     page.evaluate(() => {
-      const k = window.__temples.kingdom! as unknown as { renderer: { info: { memory: { geometries: number; textures: number } } } };
+      const k = window.__temples.kingdom! as unknown as {
+        renderer: { info: { memory: { geometries: number; textures: number } } };
+      };
       return { ...k.renderer.info.memory };
     });
   const fresh = async () => {
@@ -948,7 +973,9 @@ test('KG-10: 1.8.0 optimisation: New Game frees the old world (graphics memory s
     // Measure once the new world's models and pictures are in (they load in the background).
     await page.waitForFunction(
       () => {
-        const v = window.__temples.kingdom!.view as unknown as { models: { loaded: number; kinds: Map<string, unknown> } | null };
+        const v = window.__temples.kingdom!.view as unknown as {
+          models: { loaded: number; kinds: Map<string, unknown> } | null;
+        };
         return !v.models || v.models.loaded >= v.models.kinds.size;
       },
       null,
@@ -967,7 +994,9 @@ test('KG-10: 1.8.0 optimisation: New Game frees the old world (graphics memory s
   }
 });
 
-test('KG-11: PK 1.9.0 (D147): Preah Ko built in play shows whole the moment it is finished', async ({ page }) => {
+test('KG-11: PK 1.9.0 (D147): Preah Ko built in play shows whole the moment it is finished', async ({
+  page,
+}) => {
   await page.goto('/?mode=kingdom&offline=1&preset=lite');
   await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.kingdom, null, {
     timeout: 180_000,
@@ -990,7 +1019,8 @@ test('KG-11: PK 1.9.0 (D147): Preah Ko built in play shows whole the moment it i
   // The build rises a little at a time, as in play.
   for (const p of [0.21, 0.22, 0.5, 0.51, 0.99]) {
     await page.evaluate((p) => {
-      for (const b of window.__temples.kingdom!.sim.buildings.values()) if (b.type === 'monument') b.progress = p;
+      for (const b of window.__temples.kingdom!.sim.buildings.values())
+        if (b.type === 'monument') b.progress = p;
     }, p);
     await page.waitForTimeout(400);
   }
@@ -998,7 +1028,8 @@ test('KG-11: PK 1.9.0 (D147): Preah Ko built in play shows whole the moment it i
   expect(mid.visible).toBe(true);
   expect(mid.filled).toBeGreaterThan(mid.total * 0.9);
   await page.evaluate(() => {
-    for (const b of window.__temples.kingdom!.sim.buildings.values()) if (b.type === 'monument') b.progress = 1;
+    for (const b of window.__temples.kingdom!.sim.buildings.values())
+      if (b.type === 'monument') b.progress = 1;
   });
   await page.waitForFunction(
     () => {
@@ -1066,7 +1097,10 @@ test('KG-12: PK 1.9.0 Sprint 1: danger rings and the edge arrow, the 🤖 auto h
     const k = window.__temples.anachak!;
     for (const a of [...k.sim.animals.values()]) if (k.sim.dangerous(a)) k.sim.animals.delete(a.id);
   });
-  const at = await page.evaluate(() => [window.__temples.anachak!.hero!.core!.x, window.__temples.anachak!.hero!.core!.z]);
+  const at = await page.evaluate(() => [
+    window.__temples.anachak!.hero!.core!.x,
+    window.__temples.anachak!.hero!.core!.z,
+  ]);
   await page.keyboard.press('t');
   await expect(ui.locator('.k-hb-auto.on')).toBeVisible({ timeout: 10_000 });
   await page.waitForFunction(
@@ -1086,11 +1120,15 @@ test('KG-12: PK 1.9.0 Sprint 1: danger rings and the edge arrow, the 🤖 auto h
   await expect(ui.locator('.k-hero')).toBeHidden({ timeout: 60_000 });
   // 🎮 → Hero → MOBA: arrows walk, Q is the skill.
   await page.evaluate(() => {
-    const k = window.__temples.anachak! as unknown as { keymap: { applyScheme(id: string): boolean; scheme: string } };
+    const k = window.__temples.anachak! as unknown as {
+      keymap: { applyScheme(id: string): boolean; scheme: string };
+    };
     k.keymap.applyScheme('moba');
   });
   expect(
-    await page.evaluate(() => (window.__temples.anachak! as unknown as { keymap: { scheme: string } }).keymap.scheme),
+    await page.evaluate(
+      () => (window.__temples.anachak! as unknown as { keymap: { scheme: string } }).keymap.scheme,
+    ),
   ).toBe('moba');
   await page.evaluate(() => {
     const k = window.__temples.anachak! as unknown as { keymap: { reset(): void } };
@@ -1121,7 +1159,8 @@ test('KG-13: PK 1.9.0 (D146 ខ១ ខ៣, D149): PC 1660 preset — Meshy build
   );
   await page.evaluate(() => {
     const k = window.__temples.kingdom!;
-    const b = [...k.sim.buildings.values()].find((x) => x.type === 'storehouse' || x.type === 'barracks') ??
+    const b =
+      [...k.sim.buildings.values()].find((x) => x.type === 'storehouse' || x.type === 'barracks') ??
       [...k.sim.buildings.values()].find((x) => x.type === 'townCentre')!;
     const [cx, cz] = k.sim.center(b);
     k.panTo(cx, cz);
@@ -1136,7 +1175,9 @@ test('KG-13: PK 1.9.0 (D146 ខ១ ខ៣, D149): PC 1660 preset — Meshy build
   await page.screenshot({ path: 'docs/screens/k-gfx-panel.png' });
 });
 
-test('KG-14: PK 1.9.0 (D146 ខ៥, D150): the king’s four skills, the great one under a yantra canopy', async ({ page }) => {
+test('KG-14: PK 1.9.0 (D146 ខ៥, D150): the king’s four skills, the great one under a yantra canopy', async ({
+  page,
+}) => {
   await page.goto('/?mode=anachak&offline=1&preset=lite');
   await page.waitForFunction(() => window.__temples?.fontsReady && window.__temples.anachak, null, {
     timeout: 180_000,
@@ -1148,7 +1189,8 @@ test('KG-14: PK 1.9.0 (D146 ខ៥, D150): the king’s four skills, the great o
   await page.evaluate(() => window.__temples.anachak!.act('hero:king'));
   await expect(ui.locator('.k-hero-card')).toContainText('King', { timeout: 60_000 });
   // Four skill buttons: the first, two more, the great one.
-  for (const b of ['skill', 'skill2', 'skill3', 'skill4']) await expect(ui.locator(`.k-hb-${b}`)).toBeVisible();
+  for (const b of ['skill', 'skill2', 'skill3', 'skill4'])
+    await expect(ui.locator(`.k-hb-${b}`)).toBeVisible();
   // PK 2026-10-20 (D156): on the PC they are one bar along the bottom, each with its key.
   await expect(ui.locator('.k-hero-hotbar')).toBeVisible();
   for (const b of ['attack', 'skill', 'skill2', 'skill3', 'skill4', 'dash', 'jump', 'work', 'auto'])
@@ -1156,13 +1198,18 @@ test('KG-14: PK 1.9.0 (D146 ខ៥, D150): the king’s four skills, the great o
   const bar = (await ui.locator('.k-hero-hotbar').boundingBox())!;
   const stage = (await ui.boundingBox())!;
   expect(bar.y + bar.height).toBeGreaterThan(stage.y + stage.height * 0.9);
+  // PK 2026-10-20 (D160): half the size it was (≈ 1 300 px wide at full size).
+  expect(bar.width).toBeLessThan(stage.width * 0.4);
+  expect(bar.height).toBeLessThan(stage.height * 0.1);
   await page.evaluate(() => {
     const c = window.__temples.anachak!.hero!.core!;
     c.camYaw = c.heading + 0.6;
     c.camDist = 7;
   });
   await page.keyboard.press('Digit3');
-  await page.waitForFunction(() => window.__temples.anachak!.hero!.core!.skillSlot === 3, null, { timeout: 10_000 });
+  await page.waitForFunction(() => window.__temples.anachak!.hero!.core!.skillSlot === 3, null, {
+    timeout: 10_000,
+  });
   await page.waitForTimeout(450);
   await page.screenshot({ path: 'docs/screens/k-hero-ultimate.png' });
   await expect(ui.locator('.k-hb-skill4 .k-hb-cd')).toBeVisible({ timeout: 5_000 });
@@ -1199,7 +1246,9 @@ test('KG-15: PK 1.9.0 (D151): every hero’s great skill plays its yantra effect
     });
     await page.waitForTimeout(400);
     await page.keyboard.press('Digit3');
-    await page.waitForFunction(() => (window.__temples.anachak!.hero!.skillFx?.count ?? 0) > 0, null, { timeout: 10_000 });
+    await page.waitForFunction(() => (window.__temples.anachak!.hero!.skillFx?.count ?? 0) > 0, null, {
+      timeout: 10_000,
+    });
     await page.waitForTimeout(type === 'archer' || type === 'watchman' ? 550 : 420);
     await page.screenshot({ path: `docs/screens/k-vfx-${type}.png` });
     await page.keyboard.press('Escape');
@@ -1242,7 +1291,10 @@ test('KG-16: PK 1.9.0 (D152, D153): the semi-realistic PC look — PK’s models
   });
   await page.waitForFunction(
     () => {
-      const v = window.__temples.anachak!.view as unknown as { propsOn: number; scatter: { shown: number } | null };
+      const v = window.__temples.anachak!.view as unknown as {
+        propsOn: number;
+        scatter: { shown: number } | null;
+      };
       // D154: heavy scans show fewer copies (each kind ≤ 10k triangles), so fewer than before.
       return v.propsOn >= 4 && (v.scatter?.shown ?? 0) > 30;
     },
@@ -1258,7 +1310,9 @@ test('KG-16: PK 1.9.0 (D152, D153): the semi-realistic PC look — PK’s models
   });
   // D155: the people nearest the middle of the view are PK's Meshy people with their own clips.
   await page.waitForFunction(
-    () => ((window.__temples.anachak!.view as unknown as { people: { shown: number } | null }).people?.shown ?? 0) > 0,
+    () =>
+      ((window.__temples.anachak!.view as unknown as { people: { shown: number } | null }).people?.shown ??
+        0) > 0,
     null,
     { timeout: 240_000, polling: 1000 },
   );

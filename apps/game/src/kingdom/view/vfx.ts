@@ -8,7 +8,17 @@ import * as THREE from 'three';
  */
 
 export type BurstKind =
-  'chips' | 'dust' | 'sparks' | 'splash' | 'smoke' | 'hit' | 'leaves' | 'gold' | 'droplets' | 'spray';
+  | 'chips'
+  | 'dust'
+  | 'sparks'
+  | 'splash'
+  | 'smoke'
+  | 'hit'
+  | 'leaves'
+  | 'gold'
+  | 'droplets'
+  | 'spray'
+  | 'flash';
 
 export const BURST_KINDS: readonly BurstKind[] = [
   'chips',
@@ -21,6 +31,7 @@ export const BURST_KINDS: readonly BurstKind[] = [
   'gold',
   'droplets',
   'spray',
+  'flash',
 ];
 
 interface Recipe {
@@ -49,6 +60,20 @@ interface Recipe {
 }
 
 const RECIPES: Record<BurstKind, Recipe> = {
+  /** PK 2026-10-20 (D160, his choice): a small red flash where a blow lands — no blood. */
+  flash: {
+    n: 6,
+    colors: [0xff3a2a, 0xff6a4a, 0xffb08a],
+    up: [0.3, 0.9],
+    out: [0.6, 1.4],
+    spread: 0.08,
+    gravity: 0,
+    drag: 4,
+    life: [0.14, 0.24],
+    size: [0.55, 0.15],
+    alpha: 0.9,
+    shape: 2,
+  },
   chips: {
     n: 10,
     colors: [0x8a5a2b, 0xa8733d, 0xc9955a, 0x6e4a2c],

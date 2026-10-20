@@ -124,12 +124,12 @@
       "pc": true
     },
     "storehouse": {
-      "en": "Storehouse (PK's Meshy model, ground square cut)",
+      "en": "Storehouse (made in Blender: an open thatched pavilion full of goods; PK 2026-10-20 D160)",
       "scale": 1.3,
       "file": "models/real/buildings/storehouse.glb",
-      "source": "Meshy \"Stilted Thatch Granary\" (06-buildings\\storehouse)",
-      "tris": 7000,
-      "tex": 1024,
+      "source": "scripts/models/blender/make_storehouse.py (the Meshy granary read as a villager's house)",
+      "tris": 4000,
+      "tex": 512,
       "fit": "width",
       "sink": 0,
       "pc": true
@@ -301,7 +301,7 @@
     }
   ],
   "treePlacement": {
-    "$comment": "PK 1.8.0: where PK's trees grow. forest = the kinds of the map's trees (wood to cut) and how often each grows (weight; 'bamboo' would keep the built-in bamboo clump: left out, its low-poly shape did not sit with PK's trees). village = every house (houseTypes) in a group of at least minHouses (houses within linkM m of each other count as one group) has a coconut palm and a banana plant in its yard (PK: houses of three or more always have them). wayside = now and then (share of the tiles) a palm or a coconut beside the worn paths (wear above worn, the tree's own tile below clear) within radius m of a storehouse (PK: along the working way to the ឃ្លាំង). Each tree is scaled to its `height` (m) unless its crown would then be wider than `width` (m): the map's forests stand a tree a tile (2 m), so the crowns are kept to the size of the built-in trees they replace. nearTris = how many triangles the detailed models may take at once (the RTS view, the 3D hero mode): the nearest trees get PK's model itself (`hi` triangles, scripts/models/trees.mjs); every other tree is drawn as crossed picture cards of the same model (`cards`: 6 side views and 2 from above, baked by scripts/models/grassCards.mjs ... turn 0 top; `card` = the picture's size when the tree is 1 tall), 8 triangles a tree, so a whole forest keeps its detail and the frame budget. confidence: GAMEPLAY_ABSTRACTION (coconut and banana in Khmer house yards are an everyday sight; the exact rule is the game's).",
+    "$comment": "PK 1.8.0: where PK's trees grow. forest = the kinds of the map's trees (wood to cut) and how often each grows (weight; 'bamboo' would keep the built-in bamboo clump: left out, its low-poly shape did not sit with PK's trees). village = every house (houseTypes) in a group of at least minHouses (houses within linkM m of each other count as one group) has a coconut palm and a banana plant in its yard (PK: houses of three or more always have them). wayside = now and then (share of the tiles) a palm or a coconut beside the worn paths (wear above worn, the tree's own tile below clear) within radius m of a storehouse (PK: along the working way to the ឃ្លាំង). Each tree is scaled to its `height` (m) unless its crown would then be wider than `width` (m): the map's forests stand a tree a tile (2 m), so the crowns are kept to the size of the built-in trees they replace. nearTris = how many triangles the detailed models may take at once (the RTS view, the 3D hero mode): the nearest trees get PK's model itself (`hi` triangles, scripts/models/trees.mjs); every other tree is drawn as crossed picture cards of the same model (`cards`: 6 side views and 2 from above, baked by scripts/models/grassCards.mjs ... turn 0 top; `card` = the picture's size when the tree is 1 tall), 8 triangles a tree, so a whole forest keeps its detail and the frame budget. confidence: GAMEPLAY_ABSTRACTION (coconut and banana in Khmer house yards are an everyday sight; the exact rule is the game's). PK 2026-10-20 (D160): fewer trees in the villages — only village.share of the houses have yard trees, wayside share halved; nothing grows in the royal hall's open court (village.hallFront: halfWidth m either side of the hall's centre, out to depth m in front).",
     "forest": [
       {
         "id": "e",
@@ -341,14 +341,19 @@
       "minHouses": 3,
       "linkM": 16,
       "coconut": "coconut",
-      "banana": ["banana", "banana2"]
+      "banana": ["banana", "banana2"],
+      "share": 0.5,
+      "hallFront": {
+        "halfWidth": 14,
+        "depth": 26
+      }
     },
     "wayside": {
       "near": "storehouse",
       "radius": 50,
       "worn": 0.4,
       "clear": 0.15,
-      "share": 0.08,
+      "share": 0.04,
       "kinds": [
         {
           "id": "palm",
@@ -380,7 +385,7 @@
     "dustAmount": 0.5
   },
   "people": {
-    "$comment": "PK 1.9.0 (D155, 'reality logic human gesture behavior'): the villagers and soldiers nearest the middle of the view, zoomed in to maxDist or closer, are PK's Meshy people (PC look only): they stand, walk and run with their own clips and work and fight with the crowd's motions on their arms (hammer, chop, plant, reap, cast the net, thrust, cut, draw the bow, guard). byType wins over byJob; a list is shared out by unit id. Mounted units, elephants and the cart keep the built-in figures. PK 2026-10-20 (D158): gear = the 3D hero's weapons and gear made in Blender after the Angkor reliefs (straight sword, the gold Preah Khan, leaf-bladed spear and lance with red tassels, axe, goad, staff, long bow, round bossed shield, quiver), in place of the built-in shapes on the PC look. court = the royal court before each hall (king, queens, Brahmins, parasol bearers) as PK's Meshy people too: standing with their idle clips, the king gesturing his orders with his right hand and raising his arms in blessing (with the Brahmins).",
+    "$comment": "PK 1.9.0 (D155, 'reality logic human gesture behavior'): the villagers and soldiers nearest the middle of the view, zoomed in to maxDist or closer, are PK's Meshy people (PC look only): they stand, walk and run with their own clips and work and fight with the crowd's motions on their arms (hammer, chop, plant, reap, cast the net, thrust, cut, draw the bow, guard). byType wins over byJob; a list is shared out by unit id. Mounted units, elephants and the cart keep the built-in figures. PK 2026-10-20 (D158): gear = the 3D hero's weapons and gear made in Blender after the Angkor reliefs (straight sword, the gold Preah Khan, leaf-bladed spear and lance with red tassels, axe, goad, staff, long bow, round bossed shield, quiver), in place of the built-in shapes on the PC look. court = the royal court before each hall (king, queens, Brahmins, parasol bearers) as PK's Meshy people too: standing with their idle clips, the king gesturing his orders with his right hand and raising his arms in blessing (with the Brahmins). PK 2026-10-20 (D160): in the 3D hero mode more of the people round the hero are PK's models (hero.max within hero.radius m).",
     "dir": "models/real/people/",
     "max": 16,
     "radius": 40,
@@ -422,6 +427,123 @@
       "queen": "queen",
       "brahmin": "brahmin",
       "parasol": "parasol-bearer"
+    },
+    "hero": {
+      "max": 28,
+      "radius": 60
+    }
+  },
+  "animals": {
+    "$comment": "PK 2026-10-20 (D160, D155 step 3): the wild animals nearest the middle of the view (round the hero in the 3D mode) are PK's Meshy animals, sized to their real height or length (byKind: file, fit height|length, size m; from scripts/models/library.json). Those with a walk clip walk it (walkSpeed = the pace in m/s the clip was made for) and stand when they stop. max within radius m, only with the camera nearer than maxDist m; hero = the 3D hero mode's own max and radius. Kinds not listed (the primates) keep their figures until they have models.",
+    "max": 12,
+    "radius": 45,
+    "maxDist": 70,
+    "walkSpeed": 1.4,
+    "hero": {
+      "max": 16,
+      "radius": 60
+    },
+    "byKind": {
+      "deer": {
+        "file": "models/real/animals/deer.glb",
+        "fit": "height",
+        "size": 1.25
+      },
+      "boar": {
+        "file": "models/real/animals/boar.glb",
+        "fit": "height",
+        "size": 0.85
+      },
+      "banteng": {
+        "file": "models/real/animals/banteng.glb",
+        "fit": "height",
+        "size": 1.65
+      },
+      "junglefowl": {
+        "file": "models/real/birds/chicken.glb",
+        "fit": "height",
+        "size": 0.45
+      },
+      "peafowl": {
+        "file": "models/real/birds/peafowl.glb",
+        "fit": "length",
+        "size": 2
+      },
+      "tiger": {
+        "file": "models/real/animals/tiger.glb",
+        "fit": "length",
+        "size": 2.8
+      },
+      "elephant": {
+        "file": "models/real/animals/elephant.glb",
+        "fit": "height",
+        "size": 2.7
+      },
+      "gaur": {
+        "file": "models/real/animals/gaur.glb",
+        "fit": "height",
+        "size": 1.85
+      },
+      "kouprey": {
+        "file": "models/real/animals/kouprey.glb",
+        "fit": "height",
+        "size": 1.8
+      },
+      "serow": {
+        "file": "models/real/animals/serow.glb",
+        "fit": "height",
+        "size": 0.95
+      },
+      "leopard": {
+        "file": "models/real/animals/leopard.glb",
+        "fit": "length",
+        "size": 2
+      },
+      "cloudedLeopard": {
+        "file": "models/real/animals/leopard.glb",
+        "fit": "length",
+        "size": 1.7
+      },
+      "sunBear": {
+        "file": "models/real/animals/bear.glb",
+        "fit": "height",
+        "size": 1
+      },
+      "moonBear": {
+        "file": "models/real/animals/bear.glb",
+        "fit": "height",
+        "size": 1.1
+      },
+      "dhole": {
+        "file": "models/real/animals/dhole.glb",
+        "fit": "height",
+        "size": 0.55
+      },
+      "giantIbis": {
+        "file": "models/real/birds/giant-ibis.glb",
+        "fit": "height",
+        "size": 1
+      },
+      "hornbill": {
+        "file": "models/real/birds/hornbill.glb",
+        "fit": "length",
+        "size": 1
+      },
+      "crocodile": {
+        "file": "models/real/animals/crocodile.glb",
+        "fit": "length",
+        "size": 4
+      },
+      "kingCobra": {
+        "file": "models/real/animals/king-cobra.glb",
+        "fit": "length",
+        "size": 3
+      },
+      "python": {
+        "file": "models/real/animals/python.glb",
+        "fit": "length",
+        "size": 4
+      }
     }
   },
   "scatter": {
@@ -618,7 +740,7 @@
         "en": "Fan palm",
         "file": "models/real/plants/fan-palm.glb",
         "habitat": "village",
-        "per1k": 20,
+        "per1k": 10,
         "clump": [1, 3],
         "spread": 3,
         "scale": [1.1, 1.6],
@@ -659,7 +781,7 @@
         "en": "Palm",
         "file": "models/real/plants/palm-c.glb",
         "habitat": "village",
-        "per1k": 10,
+        "per1k": 5,
         "clump": [1, 2],
         "spread": 4,
         "scale": [1.1, 1.6],
@@ -1300,5 +1422,32 @@
       "fit": "width",
       "sink": 0.35
     }
+  },
+  "fish": {
+    "$comment": "PK 2026-10-20 (D160): ត្រី — the fish swimming round the fishing spots, made in Blender (scripts/models/blender/make_fish.py) on the PC presets: ត្រីរៀល trey riel (the small silver carp of prahok, most of a school), ត្រីរ៉ស់ trey ros (striped snakehead), ត្រីប្រា trey pra (Pangasius catfish). weight = how often each swims in a school; length = the drawn fish (m) before the school's size (kept large enough to read from the RTS camera).",
+    "length": 0.5,
+    "kinds": [
+      {
+        "id": "treyRiel",
+        "km": "ត្រីរៀល",
+        "en": "Trey riel (silver carp)",
+        "file": "models/real/fish/trey-riel.glb",
+        "weight": 5
+      },
+      {
+        "id": "treyRos",
+        "km": "ត្រីរ៉ស់",
+        "en": "Striped snakehead",
+        "file": "models/real/fish/trey-ros.glb",
+        "weight": 2
+      },
+      {
+        "id": "treyPra",
+        "km": "ត្រីប្រា",
+        "en": "Pangasius catfish",
+        "file": "models/real/fish/trey-pra.glb",
+        "weight": 2
+      }
+    ]
   }
 }

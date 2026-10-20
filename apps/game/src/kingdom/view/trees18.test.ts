@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { loadKingdom } from '@temples/shared';
+import { KingdomSim } from '../sim/sim';
 import {
   FAR,
   MID,
   NEAR,
   fitTree,
+  inHallFront,
   nearCutout,
   nearOrFar,
   pickWeighted,
@@ -146,7 +148,7 @@ describe("PK 1.8.0: PK's trees", () => {
     expect(pickWeighted(list, 0.999).id).toBe('y');
   });
 
-  it('every house of a hamlet of three or more has a coconut and a banana, never inside a building', () => {
+  it('a hamlet of three or more houses has yard trees, never inside a building', () => {
     const house = (x: number, z: number): Lot => ({ type: 'house', x, z, w: 4, d: 4 });
     const lots: Lot[] = [
       house(0, 0),
@@ -156,7 +158,8 @@ describe("PK 1.8.0: PK's trees", () => {
       house(88, 0),
       { type: 'storehouse', x: 6, z: -8, w: 6, d: 6 },
     ];
-    const trees = villageTrees(lots, L.village, () => true);
+    const all = { ...L.village, share: 1 };
+    const trees = villageTrees(lots, all, () => true);
     const near = (h: Lot, id: string) =>
       trees.some((t) => t.id === id && Math.hypot(t.x - h.x, t.z - h.z) < 6);
     for (const h of lots.slice(0, 3)) {
@@ -170,7 +173,44 @@ describe("PK 1.8.0: PK's trees", () => {
       for (const b of lots)
         expect(Math.abs(t.x - b.x) < b.w / 2 && Math.abs(t.z - b.z) < b.d / 2).toBe(false);
     // Same houses, same trees.
-    expect(villageTrees(lots, L.village, () => true)).toEqual(trees);
+    expect(villageTrees(lots, all, () => true)).toEqual(trees);
+  });
+
+  it('D160: fewer trees in the villages — only a share of the houses have yard trees', () => {
+    expect(L.village.share).toBeGreaterThan(0);
+    expect(L.village.share).toBeLessThan(1);
+    const lots: Lot[] = [];
+    for (let i = 0; i < 40; i++)
+      lots.push({ type: 'house', x: (i % 8) * 9, z: Math.floor(i / 8) * 9, w: 4, d: 4 });
+    const every = villageTrees(lots, { ...L.village, share: 1 }, () => true).length;
+    const some = villageTrees(lots, L.village, () => true).length;
+    expect(some).toBeLessThan(every * 0.75);
+    expect(some).toBeGreaterThan(0);
+  });
+
+  it('D160: nothing grows in the royal hall’s open court', () => {
+    const F = L.village.hallFront!;
+    const hall = { type: 'townCentre', x: 0, z: 0 };
+    expect(inHallFront([hall], 0, F.depth / 2, F)).toBe(true);
+    expect(inHallFront([hall], F.halfWidth + 1, 5, F)).toBe(false);
+    expect(inHallFront([hall], 0, -3, F)).toBe(false); // behind the hall
+    expect(inHallFront([{ ...hall, type: 'house' }], 0, 5, F)).toBe(false);
+    // Houses round the court: none of their yard trees lands in it.
+    const lots: Lot[] = [
+      { type: 'townCentre', x: 0, z: 0, w: 12, d: 12 },
+      ...[-8, 0, 8].map((x) => ({ type: 'house', x, z: 14, w: 4, d: 4 })),
+    ];
+    for (const t of villageTrees(lots, { ...L.village, share: 1 }, () => true))
+      expect(inHallFront(lots, t.x, t.z, F)).toBe(false);
+    // In the game itself: no forest tree stands before the first hall.
+    const s = new KingdomSim(loadKingdom(), 'easy');
+    const h = [...s.buildings.values()].find((b) => b.type === 'townCentre')!;
+    const [cx, cz] = s.center(h);
+    for (const n of s.nodes.values()) {
+      if (n.kind !== 'tree') continue;
+      const [x, z] = s.nodePos(n);
+      expect(Math.abs(x - cx) <= F.halfWidth && z - cz >= 0 && z - cz <= F.depth).toBe(false);
+    }
   });
 
   it('palms and coconuts stand now and then beside the worn paths near a storehouse, not on them', () => {

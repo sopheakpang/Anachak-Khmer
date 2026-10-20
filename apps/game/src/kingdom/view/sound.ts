@@ -31,7 +31,12 @@ export type SfxName =
   | 'deny'
   | 'animal'
   | 'dog'
-  | 'thunder';
+  | 'thunder'
+  /** D160: the raid — the war drum (skor), a shield's block, an axe's heavy blow, the cheer. */
+  | 'drum'
+  | 'block'
+  | 'axe'
+  | 'cheer';
 
 export const SFX_NAMES: readonly SfxName[] = [
   'chop',
@@ -54,6 +59,10 @@ export const SFX_NAMES: readonly SfxName[] = [
   'animal',
   'dog',
   'thunder',
+  'drum',
+  'block',
+  'axe',
+  'cheer',
 ];
 
 /** Tuning: how many of one effect may start per window, the voice cap, levels. */
@@ -100,6 +109,10 @@ export const SFX_DURATION: Record<SfxName, number> = {
   animal: 0.3,
   dog: 0.15,
   thunder: 2.2,
+  drum: 0.9,
+  block: 0.2,
+  axe: 0.35,
+  cheer: 1.6,
 };
 
 /**
@@ -147,8 +160,19 @@ export function sfxForEvent(e: { kind: string; [k: string]: unknown }): SfxName 
     case 'shot':
       return 'arrow';
     case 'felled':
-    case 'hit':
       return 'hit';
+    case 'hit':
+      return e.heavy ? 'axe' : 'hit';
+    case 'muster':
+      return 'drum'; // the war drum calls the line (D160)
+    case 'block':
+      return 'block';
+    case 'stolen':
+      return 'deny';
+    case 'recovered':
+      return 'discover';
+    case 'cheer':
+      return 'cheer';
     case 'death':
       return 'death';
     case 'destroyed':
@@ -712,6 +736,40 @@ const SYNTH: Record<SfxName, (v: Voice, t: number) => void> = {
     // Buffalo-horn war trumpet, low and long.
     v.horn(98, t, 1.5, 0.35, 900);
     v.horn(147, t + 0.05, 1.45, 0.12, 800);
+  },
+  drum(v, t) {
+    // Skor thom, the big war drum: two deep strokes, the skin's thump and its ring.
+    for (const [dt, a] of [
+      [0, 0.75],
+      [0.32, 0.55],
+    ] as const) {
+      v.tone('sine', 92, 48, t + dt, 0.42, a, 0.003);
+      v.tone('triangle', 140, 90, t + dt, 0.18, a * 0.25, 0.002);
+      v.noise('lowpass', 600, 180, t + dt, 0.12, a * 0.35, 0.002);
+    }
+  },
+  block(v, t) {
+    // A blow on a wooden shield: a dull thock with a little bronze tick from the boss.
+    v.tone('sine', 230, 120, t, 0.11, 0.6, 0.002);
+    v.noise('bandpass', 900, 500, t, 0.06, 0.4, 0.001, 1.5);
+    v.tone('sine', 2400, 2350, t, 0.12, 0.08, 0.001);
+  },
+  axe(v, t) {
+    // An axe's heavy blow: the swing's whoosh, then a deep thud.
+    v.noise('bandpass', 500, 1500, t, 0.12, 0.2, 0.04, 2);
+    v.tone('sine', 110, 45, t + 0.1, 0.22, 0.75, 0.002);
+    v.noise('lowpass', 420, 150, t + 0.1, 0.14, 0.45, 0.002);
+  },
+  cheer(v, t) {
+    // The soldiers cheer: a swell of many voices (vowel-shaped noise) and a few rising shouts.
+    v.noise('bandpass', 700, 900, t, 1.3, 0.35, 0.25, 3);
+    v.noise('bandpass', 1300, 1500, t + 0.05, 1.2, 0.2, 0.25, 4);
+    for (const [dt, f] of [
+      [0.05, 260],
+      [0.2, 300],
+      [0.4, 240],
+    ] as const)
+      v.tone('sawtooth', f, f * 1.35, t + dt, 0.5, 0.06, 0.05, 1400);
   },
   discover(v, t) {
     PENTA.slice(0, 5).forEach((f, i) => {

@@ -66,6 +66,8 @@ export class NearPeople {
   /** People built so far (each file keeps its own pool; never more than twice `max`). */
   private created = 0;
   private readonly spec: (file: string) => ModelSpec;
+  /** D160: how many may be drawn now (the 3D hero mode allows more); `cfg.max` when unset. */
+  limit: number | undefined;
 
   constructor(
     readonly cfg: PeopleCfg,
@@ -108,7 +110,18 @@ export class NearPeople {
     holder.rotation.set(p.lean ?? 0, p.heading, 0, 'YXZ');
     // The figure's joints: at rest, then the act (the crowd's motion for this person).
     const j = fig.j;
-    for (const g of [j.spine, j.head, j.shoulderL, j.shoulderR, j.elbowL, j.elbowR, j.hipL, j.hipR, j.kneeL, j.kneeR])
+    for (const g of [
+      j.spine,
+      j.head,
+      j.shoulderL,
+      j.shoulderR,
+      j.elbowL,
+      j.elbowR,
+      j.hipL,
+      j.hipR,
+      j.kneeL,
+      j.kneeR,
+    ])
       g.rotation.set(0, 0, 0);
     const walking = p.act === ACT.crowd || p.act === ACT.carry || p.act === ACT.torch;
     const speed = walking ? p.speed : 0;
@@ -117,7 +130,13 @@ export class NearPeople {
     } else {
       const pose = actPose(p.act, t, id);
       applyActPose(j, pose);
-      rig.drive({ state: 'work', speed, t, mounted: false, own: { arms: true, body: pose.legs || pose.body } });
+      rig.drive({
+        state: 'work',
+        speed,
+        t,
+        mounted: false,
+        own: { arms: true, body: pose.legs || pose.body },
+      });
     }
     return true;
   }
@@ -138,7 +157,8 @@ export class NearPeople {
   private take(file: string): Person | null {
     const pool = this.free.get(file);
     if (pool?.length) return pool.pop()!;
-    if (this.active.size >= this.cfg.max || this.created >= this.cfg.max * 2) return null;
+    const max = Math.max(this.cfg.max, this.limit ?? this.cfg.max);
+    if (this.active.size >= (this.limit ?? this.cfg.max) || this.created >= max * 2) return null;
     const source = modelNow(this.url(file));
     if (!source) {
       void loadModel(this.url(file));

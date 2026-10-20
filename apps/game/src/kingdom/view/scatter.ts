@@ -66,7 +66,12 @@ export function inHabitat(map: Map, tx: number, tz: number, habitat: ScatterKind
 }
 
 /** Every spot on the map, kind by kind (same seed → same land). */
-export function scatterPlan(map: Map, kinds: readonly ScatterKind[], seed: number, clearHall: number): Spot[] {
+export function scatterPlan(
+  map: Map,
+  kinds: readonly ScatterKind[],
+  seed: number,
+  clearHall: number,
+): Spot[] {
   const out: Spot[] = [];
   const N = map.size;
   const T = map.tile;
@@ -101,7 +106,13 @@ export function scatterPlan(map: Map, kinds: readonly ScatterKind[], seed: numbe
         const ttx = Math.floor((x + half) / T);
         const ttz = Math.floor((z + half) / T);
         if (!inHabitat(map, ttx, ttz, k.habitat) || !dryOk(k, ttz * N + ttx)) continue;
-        out.push({ kind: ki, x, z, rot: r() * Math.PI * 2, scale: k.scale[0] + r() * (k.scale[1] - k.scale[0]) });
+        out.push({
+          kind: ki,
+          x,
+          z,
+          rot: r() * Math.PI * 2,
+          scale: k.scale[0] + r() * (k.scale[1] - k.scale[0]),
+        });
       }
     }
   });
@@ -126,7 +137,8 @@ export function nearestSpots(
   for (const s of spots) {
     const d2 = (s.x - x) ** 2 + (s.z - z) ** 2;
     if (d2 > r2) continue;
-    if (buildings.some(([bx, bz, h]) => Math.abs(s.x - bx) < h + clear && Math.abs(s.z - bz) < h + clear)) continue;
+    if (buildings.some(([bx, bz, h]) => Math.abs(s.x - bx) < h + clear && Math.abs(s.z - bz) < h + clear))
+      continue;
     pick.push([d2, s]);
   }
   pick.sort((a, b) => a[0] - b[0]);
@@ -181,13 +193,19 @@ export class ScatterView {
         geo.computeBoundingBox();
         const bb = geo.boundingBox!;
         // Base on the ground, centred on its trunk; sunk by `sink` of its height.
-        geo.translate(-(bb.min.x + bb.max.x) / 2, -bb.min.y - k.sink * (bb.max.y - bb.min.y), -(bb.min.z + bb.max.z) / 2);
+        geo.translate(
+          -(bb.min.x + bb.max.x) / 2,
+          -bb.min.y - k.sink * (bb.max.y - bb.min.y),
+          -(bb.min.z + bb.max.z) / 2,
+        );
         const mesh = new THREE.InstancedMesh(geo, realMaterial(src.material as THREE.Material), k.maxVisible);
         mesh.count = 0;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         mesh.frustumCulled = false;
         mesh.name = `scatter:${k.id}`;
+        // D160: PK's models are cover too: they open round the people (view/seeThrough.ts).
+        mesh.userData.seeThrough = true;
         this.meshes[i] = mesh;
         this.group.add(mesh);
         this.last = -1e9;
@@ -213,7 +231,15 @@ export class ScatterView {
     this.kinds.forEach((k, i) => {
       const mesh = this.meshes[i];
       if (!mesh) return;
-      const near = nearestSpots(this.byKind[i]!, cx, cz, this.cfg.radius, k.maxVisible, buildings, this.cfg.clearBuilding);
+      const near = nearestSpots(
+        this.byKind[i]!,
+        cx,
+        cz,
+        this.cfg.radius,
+        k.maxVisible,
+        buildings,
+        this.cfg.clearBuilding,
+      );
       near.forEach((s, j) => {
         this.q.setFromAxisAngle(this.v.set(0, 1, 0), s.rot);
         this.sv.setScalar(s.scale);

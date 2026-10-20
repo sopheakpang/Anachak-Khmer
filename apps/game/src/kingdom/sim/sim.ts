@@ -31,6 +31,7 @@ import { rahatSpot, riceStage } from './rice';
 import { runDecree } from './decree';
 import { ceremonyBuff, updateCeremonies } from './ceremony';
 import { updateRoads } from './anachak';
+import { dropLoot, muster, raidTarget, restHurt, updateBattles, wieldsAxe, type Battle } from './battle';
 import { updateExchange } from './exchange';
 
 /**
@@ -86,6 +87,22 @@ export interface Unit {
   waypoints?: XZ[];
   /** The current path is one leg of a long walk (recompute when it ends). */
   leg?: boolean;
+  /** D160: a soldier in a raid's line of battle: which wave, his place in the line. */
+  battle?: { wave: number; slot: XZ };
+  /** D160: a raider of a wave, and what he carries away from the store. */
+  raid?: { wave: number; loot?: Partial<Record<Resource, number>> };
+  /** D160: cheering until then (the raid is beaten). */
+  cheerUntil?: number;
+  /** D160: hurt after a fight, kneeling to rest. */
+  resting?: boolean;
+  /** D160: stood in a raid's line of battle (rests when hurt, until strong again). */
+  fought?: boolean;
+  /** D160: last blocked a blow with his shield at this time. */
+  blockAt?: number;
+  /** PK 2026-10-20 (D160): where and when the walker last checked its progress (traffic). */
+  jam?: { x: number; z: number; t: number };
+  /** Until then the walker plans round the crowd it was stuck in. */
+  detourUntil?: number;
   /** When the unit last had nothing to do (for idle workers finding jobs). */
   idleSince?: number;
   /** A commander's name (rules.json commanders, by era). */
@@ -158,7 +175,13 @@ export interface Building {
 
 export type SimEvent =
   | { kind: 'shot'; from: XZ; to: XZ; t: number; team: Team }
-  | { kind: 'hit'; at: XZ; t: number }
+  | { kind: 'hit'; at: XZ; t: number; heavy?: boolean }
+  /** D160: a raid's line of battle, a shield's block, goods stolen or won back, the cheer. */
+  | { kind: 'muster'; at: XZ; n: number; t: number }
+  | { kind: 'block'; at: XZ; t: number }
+  | { kind: 'stolen'; loot: Partial<Record<Resource, number>>; at: XZ; t: number }
+  | { kind: 'recovered'; loot: Partial<Record<Resource, number>>; at: XZ; t: number }
+  | { kind: 'cheer'; at: XZ; n: number; t: number }
   | { kind: 'death'; unit: Unit; t: number }
   | { kind: 'destroyed'; building: Building; t: number }
   | { kind: 'built'; building: Building; t: number }
@@ -265,6 +288,8 @@ export class KingdomSim {
   monumentDoneAt = -1;
   nextId = 1;
   ai = { wave: 0, nextRaid: 0, state: 'ECONOMIC' as string };
+  /** D160: the raids being met now, by wave (the line of battle). */
+  readonly battles = new Map<number, Battle>();
   /** Campaign (D53): the chapter being played and the temples already finished. */
   chapter = 0;
   readonly completed: string[] = [];
@@ -670,7 +695,24 @@ export class KingdomSim {
     this.buildings.set(b.id, b);
     // Rice fields can be walked on; everything else blocks.
     if (type !== 'riceField') this.grid.setRect(tx, tz, b.w, b.d, false);
+    if (type === 'townCentre') this.clearHallFront(b);
     return b;
+  }
+
+  /**
+   * D160 (PK: "in front of the royal hall better not mess up with trees"): the trees standing in
+   * a royal hall's open court (props.json treePlacement.village.hallFront) are cleared when the
+   * hall is set down; the court stays open for the king's audience.
+   */
+  private clearHallFront(b: Building): void {
+    const F = this.data.props.treePlacement?.village.hallFront;
+    if (!F) return;
+    const [cx, cz] = this.center(b);
+    for (const n of [...this.nodes.values()]) {
+      if (n.kind !== 'tree') continue;
+      const [x, z] = this.nodePos(n);
+      if (Math.abs(x - cx) <= F.halfWidth && z - cz >= 0 && z - cz <= F.depth) this.removeNode(n);
+    }
   }
 
   spawnNear(b: Building, type: string, team: Team = b.team): Unit {
@@ -1126,6 +1168,9 @@ export class KingdomSim {
         if (u.team === PLAYER && u.anim !== 'attack') u.hp = Math.min(this.def(u.type).hp, u.hp + regen * dt);
     this.separate(dt);
     this.updateAi();
+    // D160: the raid's line of battle, the store's goods, the hurt resting.
+    if (this.battles.size) updateBattles(this, this.battles, this.rivalCamp());
+    restHurt(this, dt);
     if (this.time >= this.fogAt) {
       this.fogAt = this.time + this.data.rules.fog.updateSec;
       this.updateFog();
@@ -1321,7 +1366,11 @@ export class KingdomSim {
         }
       }
       const rafts = this.data.rules.rafts.enabled;
-      const p = findPath(this.grid, from, g, far ? 60000 : 20000, pad, rafts);
+      // Stuck in a crowd (D160): plan round the people standing in the way, if there is a way.
+      const p =
+        (u.detourUntil !== undefined && this.time < u.detourUntil
+          ? this.aroundCrowd(u, from, g, () => findPath(this.grid, from, g, far ? 60000 : 20000, pad, rafts))
+          : null) ?? findPath(this.grid, from, g, far ? 60000 : 20000, pad, rafts);
       u.leg = far && !!p;
       u.path = p ? p.map(([x, z]) => tileToWorld(this.map, x, z)) : [];
       if (goal.point && p && !far) u.path.push(goal.point);
@@ -1373,6 +1422,7 @@ export class KingdomSim {
       if (s >= d) u.path.shift();
     }
     u.anim = 'walk';
+    this.checkJam(u, speed); // after the step: a stuck walker plans again next tick (D160)
     return false;
   }
 
@@ -1395,7 +1445,8 @@ export class KingdomSim {
       this.boats = [false, false];
       const from = this.data.rules.water.boatsFrom;
       for (const b of this.buildings.values())
-        if (b.progress >= 1 && from.includes(b.type) && (b.team === 0 || b.team === 1)) this.boats[b.team] = true;
+        if (b.progress >= 1 && from.includes(b.type) && (b.team === 0 || b.team === 1))
+          this.boats[b.team] = true;
     }
     return this.boats[team] ?? false;
   }
@@ -1592,7 +1643,8 @@ export class KingdomSim {
       u.heading = Math.atan2(nx - u.x, nz - u.z);
       if (node.amount <= 0 && node.kind !== 'fish') {
         // PK 1.7.0: the last cut brings the tree down, away from the woodcutter.
-        if (node.kind === 'tree') this.events.push({ kind: 'felled', at: [nx, nz], dir: u.heading, t: this.time });
+        if (node.kind === 'tree')
+          this.events.push({ kind: 'felled', at: [nx, nz], dir: u.heading, t: this.time });
         this.removeNode(node); // fish come back
       }
     } else if (field) {
@@ -1663,15 +1715,36 @@ export class KingdomSim {
 
   damageUnit(target: Unit, attack: number, by: Unit): void {
     const td = this.def(target.type);
+    const B = this.data.rules.battle;
     const aura =
       td.role !== 'worker' && this.nearCommander(target) ? this.data.rules.army.commander.armor : 0;
-    const dmg = Math.max(1, attack - td.armor - aura);
+    let dmg = Math.max(1, attack - td.armor - aura);
+    // D160: a shield-bearer turns some blows aside (close blows only, not arrows).
+    const close = this.def(by.type).role !== 'ranged';
+    if (close && B.shields.includes(target.type) && this.rand() < B.blockChance) {
+      dmg = Math.max(1, dmg * B.blockFactor);
+      target.blockAt = this.time;
+      this.events.push({ kind: 'block', at: [target.x, target.z], t: this.time });
+    }
     target.hp -= dmg;
-    this.events.push({ kind: 'hit', at: [target.x, target.z], t: this.time });
+    const heavy = by.team === RIVAL && wieldsAxe(by, B);
+    this.events.push({ kind: 'hit', at: [target.x, target.z], t: this.time, ...(heavy ? { heavy } : {}) });
     if (target.hp <= 0) {
       this.units.delete(target.id);
+      dropLoot(this, target);
       this.events.push({ kind: 'death', unit: target, t: this.time });
       return;
+    }
+    // D160: the blow pushes him back a little (never into a wall or the water).
+    if (close && B.push > 0) {
+      const d = Math.hypot(target.x - by.x, target.z - by.z) || 1;
+      const nx = target.x + ((target.x - by.x) / d) * B.push * (heavy ? 1.8 : 1);
+      const nz = target.z + ((target.z - by.z) / d) * B.push * (heavy ? 1.8 : 1);
+      const [tx, tz] = worldToTile(this.map, nx, nz);
+      if (this.grid.ok(tx, tz)) {
+        target.x = nx;
+        target.z = nz;
+      }
     }
     // Hit back: idle or working soldiers answer; villagers answer only when idle.
     const role = td.role;
@@ -1702,6 +1775,68 @@ export class KingdomSim {
   removeNode(n: ResourceNode): void {
     this.nodes.delete(n.id);
     if (blocksTile(n.kind)) this.grid.setRect(n.tx, n.tz, 1, 1, true);
+  }
+
+  /**
+   * PK 2026-10-20 (D160): "people when stuck walking in traffic escape to find a new route".
+   * Every `rules.traffic.checkSec` a walker looks at how far it got: under `minMove` of what its
+   * pace would carry it, it is stuck (pushed about in a crowd, a cart in the lane), and plans
+   * again round the people in its way (detourSec).
+   */
+  private checkJam(u: Unit, speed: number): void {
+    const T = this.data.rules.traffic;
+    if (!u.path?.length || u.manual) {
+      u.jam = undefined;
+      return;
+    }
+    const j = (u.jam ??= { x: u.x, z: u.z, t: this.time });
+    if (this.time - j.t < T.checkSec) return;
+    const moved = Math.hypot(u.x - j.x, u.z - j.z);
+    u.jam = { x: u.x, z: u.z, t: this.time };
+    if (moved >= speed * T.checkSec * T.minMove) return;
+    u.detourUntil = this.time + T.detourSec;
+    u.path = null;
+    u.leg = false;
+    u.repathAt = 0;
+  }
+
+  /**
+   * Plan with the crowd round a stuck walker as walls: the tiles within `rules.traffic.radius` of
+   * it where someone stands still (or two or more people are), except its own tile and the goal.
+   */
+  private aroundCrowd<T>(u: Unit, from: readonly [number, number], g: Goal, plan: () => T): T | null {
+    const R = this.data.rules.traffic.radius;
+    const count = new Map<number, number>();
+    const still = new Set<number>();
+    const N = this.grid.size;
+    for (const o of this.units.values()) {
+      if (o === u) continue;
+      const [tx, tz] = worldToTile(this.map, o.x, o.z);
+      if (Math.abs(tx - from[0]) > R || Math.abs(tz - from[1]) > R) continue;
+      const k = tz * N + tx;
+      count.set(k, (count.get(k) ?? 0) + 1);
+      if (o.anim !== 'walk' || (o.detourUntil ?? -1) > this.time) still.add(k);
+    }
+    const shut: number[] = [];
+    for (const [k, n] of count) {
+      if (n < 2 && !still.has(k)) continue;
+      const x = k % N;
+      const z = (k - x) / N;
+      if (
+        (x === from[0] && z === from[1]) ||
+        (x >= g.x0 - 1 && x <= g.x1 + 1 && z >= g.z0 - 1 && z <= g.z1 + 1)
+      )
+        continue;
+      if (this.grid.open[k] !== 1) continue;
+      this.grid.open[k] = 0;
+      shut.push(k);
+    }
+    if (!shut.length) return null;
+    try {
+      return plan();
+    } finally {
+      for (const k of shut) this.grid.open[k] = 1;
+    }
   }
 
   /** Gentle push so units don't stand inside each other. */
@@ -1760,11 +1895,14 @@ export class KingdomSim {
       const [ccx, ccz] = this.center(camp);
       halls.sort((a, b) => this.distTo(a, ccx, ccz) - this.distTo(b, ccx, ccz));
       const aim = site && site.progress < 1 ? site : halls[0];
-      const target = aim ? this.center(aim) : ([0, 0] as XZ);
+      // D160: PK — the raiders go for the storehouse (to carry goods away), else as before.
+      const target = raidTarget(this, camp, aim ? this.center(aim) : ([0, 0] as XZ));
       const raiders = this.opponent.raiders;
+      this.battles.set(this.ai.wave, muster(this, this.ai.wave, target, [ccx, ccz]));
       for (let i = 0; i < size; i++) {
         const u = this.spawnNear(camp, raiders[i % raiders.length]!, RIVAL);
         u.wave = this.ai.wave;
+        u.raid = { wave: this.ai.wave };
         u.task = {
           kind: 'move',
           to: [target[0] + (this.rand() - 0.5) * 6, target[1] + (this.rand() - 0.5) * 6],
@@ -1799,6 +1937,8 @@ export class KingdomSim {
           u.task = { kind: 'move', to: [home[0] + (this.rand() - 0.5) * 8, home[1] + 8 + this.rand() * 4] };
           u.path = null;
           u.wave = undefined;
+          // D160: they run with what they took; the line has won the day.
+          u.raid = undefined;
         }
         this.setAi('RETREATING', `wave ${wave} falls back to the camp`);
       }
@@ -1807,6 +1947,24 @@ export class KingdomSim {
       this.setAi('RECOVERING', 'raiders gone; rebuilding strength');
     else if (!waves.size && this.ai.state === 'RETREATING')
       this.setAi('RECOVERING', 'regrouping at the camp');
+  }
+
+  /** The rival's camp, if it stands. */
+  rivalCamp(): Building | null {
+    return [...this.buildings.values()].find((b) => b.type === RIVAL_CAMP) ?? null;
+  }
+
+  /**
+   * D160 (PK: a Royal Order "Defeat raiders" can start a raid): the next wave comes now, unless
+   * one is already out or there is no camp. True when one was called.
+   */
+  startRaid(): boolean {
+    if (!this.rivalCamp() || this.battles.size) return false;
+    for (const u of this.units.values()) if (u.team === RIVAL && u.raid) return false;
+    const RR = this.data.rules.raids;
+    if (RR.requireBarracks && !this.hasBuilt('barracks')) return false;
+    this.ai.nextRaid = this.time;
+    return true;
   }
 
   private setAi(state: string, why: string): void {
@@ -2329,6 +2487,8 @@ export class KingdomSim {
       const role = this.def(u.type).role;
       if (u.team !== PLAYER || role === 'worker' || role === 'support' || role === 'scout') continue;
       if (u.task.kind !== 'idle' || u.manual) continue;
+      // D160: a soldier in the line of battle holds it until the line meets the raiders.
+      if (u.battle && !this.battles.get(u.battle.wave)?.engaged) continue;
       let best: Unit | null = null;
       let bd = Infinity;
       for (const t of threats) {

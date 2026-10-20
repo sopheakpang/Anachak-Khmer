@@ -10,6 +10,9 @@ import { PLAYER, type KingdomSim } from '../sim/sim';
 import type { DangerZone } from '../sim/danger';
 import { TEAM_COLOR } from './scene';
 import { LANDSCAPE_SIZE as KSIZE } from '../../stage';
+import { Inbox, inboxHtml, type InboxKind } from './inbox';
+import type { RoofBar } from './roofBars';
+import { Board, boardHtml } from './board';
 import './hud.css';
 
 /**
@@ -99,6 +102,15 @@ export class KingdomHud {
     this.el[id]!.innerHTML = html;
   }
   private toastList: Array<{ html: string; until: number }> = [];
+  /** PK 2026-10-20 (D160): what used to pop up goes into the ព្រះរាជបញ្ជា inbox instead. */
+  readonly inbox: Inbox;
+  /** Do messages and the council vote still pop up over the kingdom (rules.json `inbox`)? */
+  readonly popups: boolean;
+  /** PK 2026-10-20 (D160): the ⚙ board's switches (what is shown on screen). */
+  readonly board: Board;
+  private boardCss = -1;
+  /** The council vote now (shown in the inbox), or null between votes. */
+  private councilNow: string | null = null;
   /** The command bar folded down to its title line (PK: minimise the bottom bar, D67). */
   panelMin = false;
   /**
@@ -119,6 +131,9 @@ export class KingdomHud {
     parent: HTMLElement,
     private readonly data: KingdomData,
   ) {
+    this.inbox = new Inbox(data.rules.inbox.max);
+    this.popups = data.rules.inbox.popups;
+    this.board = new Board(data.rules.board.off);
     this.root = document.createElement('div');
     this.root.className = 'k-ui';
     this.root.hidden = true;
@@ -140,7 +155,11 @@ export class KingdomHud {
       <div class="k-labels" id="k-labels"></div>
       <div class="k-floats" id="k-floats"></div>
       <div class="k-bubbles" id="k-bubbles"></div>
+      <div class="k-roofbars" id="k-roofbars"></div>
       <section class="k-orders k-glass" id="k-orders" hidden data-ui></section>
+      <section class="k-inbox k-glass" id="k-inbox" hidden data-ui></section>
+      <section class="k-board k-glass" id="k-board" hidden data-ui></section>
+      <style id="k-board-css"></style>
       <section class="k-keys k-glass" id="k-keys" hidden data-ui></section>
       <div class="k-radial" id="k-radial" hidden></div>
       <section class="k-outcome k-glass" id="k-outcome" hidden data-ui></section>
@@ -165,7 +184,10 @@ export class KingdomHud {
       'labels',
       'floats',
       'bubbles',
+      'roofbars',
       'orders',
+      'inbox',
+      'board',
       'keys',
       'radial',
       'tip',
@@ -208,9 +230,39 @@ export class KingdomHud {
     this.root.hidden = !on;
   }
 
-  toast(html: string, now: number, sec = 5): void {
+  /** A message: into the ព្រះរាជបញ្ជា inbox (D160), or popped up when `rules.inbox.popups`. */
+  toast(html: string, now: number, sec = 5, kind: InboxKind = 'news'): void {
+    if (!this.popups) {
+      this.inbox.push(kind, html, now);
+      return;
+    }
     this.toastList.push({ html, until: now + sec * 1000 });
     if (this.toastList.length > 4) this.toastList.shift();
+  }
+
+  /** The ព្រះរាជបញ្ជា inbox panel (open) or nothing; opening it marks everything read. */
+  renderInbox(open: boolean, now: number): void {
+    this.el.inbox!.hidden = !open;
+    if (!open) return;
+    this.inbox.readAll();
+    // Redrawn when a message comes, the vote counts change, or each minute ("2 min ago").
+    this.setHtml('inbox', inboxHtml(this.inbox.items, this.councilNow, now, km));
+  }
+
+  /** The ⚙ board (open) or nothing; the hiding CSS follows the switches either way. */
+  renderBoard(open: boolean): void {
+    if (this.boardCss !== this.board.version) {
+      this.boardCss = this.board.version;
+      const st = this.root.querySelector('#k-board-css');
+      if (st) st.textContent = this.board.css();
+    }
+    this.el.board!.hidden = !open;
+    if (open) this.setHtml('board', boardHtml(this.board.off));
+  }
+
+  /** What the year bar's 👑 button shows: unread messages, and whether a vote is open. */
+  inboxBadge(): { unread: number; live: boolean } {
+    return { unread: this.inbox.unread, live: !this.popups && !!this.councilNow };
   }
 
   /** Year, era and ruler of the chapter being played. */
@@ -243,6 +295,10 @@ export class KingdomHud {
     keys?: boolean;
     /** The 🖥 graphics panel is open (undefined: no button, the phone). */
     gfx?: boolean;
+    /** D160: the ព្រះរាជបញ្ជា inbox: unread messages, a vote open, the panel open. */
+    inbox?: { unread: number; live: boolean; open: boolean };
+    /** D160: the ⚙ board is open. */
+    board?: boolean;
   }): void {
     const [y0, y1] = YEARBAR_RANGE;
     const x = (y: number) => `${(((Math.max(y0, Math.min(y1, y)) - y0) / (y1 - y0)) * 100).toFixed(2)}%`;
@@ -269,6 +325,10 @@ export class KingdomHud {
         (b.orders
           ? `<button class="k-yb-speed k-yb-orders${b.orders.canFill ? ' k-yb-hot' : ''}" data-act="orders" data-tip="${esc('<b>ការបញ្ជាទិញ</b> · Orders: buyers want your goods and pay in gold (O)')}" data-ui>${b.orders.boat ? '⛵' : '📜'} ការបញ្ជាទិញ · Orders <b>${km(b.orders.ready)}</b></button>`
           : '') +
+        (b.inbox
+          ? `<button class="k-yb-speed k-yb-inbox${b.inbox.open ? ' k-yb-hot' : ''}${b.inbox.live ? ' k-yb-live' : b.inbox.unread ? ' k-yb-unread' : ''}" data-act="inbox" data-tip="${esc('<b>ព្រះរាជបញ្ជា</b> · Royal Orders: the news, the world’s history, chapter cards and the council vote (N)')}" data-ui>👑 ព្រះរាជបញ្ជា <b>${km(b.inbox.unread)}</b></button>`
+          : '') +
+        `<button class="k-yb-speed${b.board ? ' k-yb-hot' : ''}" data-act="board" data-tip="${esc('<b>ក្ដារបង្ហាញ</b> · Show on screen: switch the menu buttons and message boxes on or off')}" data-ui>⚙</button>` +
         (b.keys === undefined
           ? ''
           : `<button class="k-yb-speed${b.keys ? ' k-yb-hot' : ''}" data-act="keys" data-tip="${esc('<b>ក្តារចុច</b> · Keyboard: choose your own keys to play, for the kingdom and the hero')}" data-ui>🎮</button>`) +
@@ -370,8 +430,11 @@ export class KingdomHud {
   }
 
   renderCouncil(html: string | null): void {
-    this.el.council!.hidden = !html;
-    if (html) this.setHtml('council', html);
+    this.councilNow = html;
+    // D160: the vote lives in the inbox; it only pops up when `rules.inbox.popups`.
+    const show = this.popups && !!html;
+    this.el.council!.hidden = !show;
+    if (show) this.setHtml('council', html!);
   }
 
   renderOutcome(html: string | null): void {
@@ -545,6 +608,34 @@ export class KingdomHud {
     tip.style.bottom = 'auto';
     tip.style.left = `${Math.max(10, Math.min(KSIZE.width - 540, world!.x + 24))}px`;
     tip.style.top = `${Math.max(110, Math.min(KSIZE.height - 440, world!.y + 20))}px`;
+  }
+
+  /**
+   * D160: the bars over the roofs of buildings at work — how far the work is, what it is, and
+   * what waits after it (the queue), or how many builders are on a building going up.
+   */
+  renderRoofBars(list: Array<RoofBar & { sx: number; sy: number }>): void {
+    this.setHtml(
+      'roofbars',
+      list
+        .map((b) => {
+          const pct = Math.round(b.frac * 100);
+          const more =
+            b.builders !== undefined
+              ? `<span class="k-roof-p">🔨 ${km(b.builders)}</span>`
+              : b.pending
+                  .map((p) => `<span class="k-roof-p">${esc(p.km)}${p.n > 1 ? ` ×${km(p.n)}` : ''}</span>`)
+                  .join('');
+          return (
+            `<div class="k-roof" style="left:${b.sx.toFixed(0)}px;top:${b.sy.toFixed(0)}px" data-tip="${esc(`<b>${b.km}</b> · ${b.en} — ${pct}%${b.pending.length ? ` · next: ${b.pending.map((p) => `${p.en}${p.n > 1 ? ` ×${p.n}` : ''}`).join(', ')}` : ''}`)}">` +
+            `<span class="k-roof-t">${esc(b.km)} <b>${km(pct)}%</b></span>` +
+            `<span class="k-roof-bar"><i style="width:${pct}%"></i></span>` +
+            (more ? `<span class="k-roof-q">${more}</span>` : '') +
+            `</div>`
+          );
+        })
+        .join(''),
+    );
   }
 
   /** Names over the empire's towns and temples, and neighbouring kingdoms, where they are on screen. */

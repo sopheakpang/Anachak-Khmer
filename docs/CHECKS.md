@@ -759,3 +759,21 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | A leaf-card tree keeps its own normals; other trees get them worked out again | ✅ | `view/trees18.test.ts` |
 | Mango, rain and big tropical trees remade, each ≤ 4 984 triangles, scatter worst case still < 550k | ✅ | `view/scatter.test.ts` |
 | lint, typecheck, tests (94 files / 800 tests), game build | ✅ | |
+
+## 1.9.0-25 PK's notes of 2026-10-20 16:01 (D160)
+
+| Check | Result | How |
+| --- | --- | --- |
+| ព្រះរាជបញ្ជា inbox: newest first, at most 60, unread count, chapter cards kept whole, the vote at the top | ✅ | `view/inbox.test.ts` |
+| Roof bars: progress, what is in hand, the queue counted by kind, builders on a site; no blue light where a bar stands | ✅ | `view/roofBars.test.ts`, `view/alerts.test.ts` |
+| Stuck in traffic: a walker held up by people standing in the lane plans round them and arrives; the grid is untouched afterwards | ✅ | `sim/move.test.ts` |
+| ⚙ board: every top-menu and year-bar button and message box switches off by CSS, remembered, broken copies ignored | ✅ | `view/board.test.ts` |
+| See-through: near fade before the camera in both views, the hero's own window; scatter models are cover | ✅ | `view/night18.test.ts` |
+| Royal hall court clear of trees (sim and yard trees); half the houses have yard trees | ✅ | `view/trees18.test.ts` |
+| Storehouse made in Blender (3 952 triangles), not shared with a house | ✅ | `view/props.test.ts`, Blender renders |
+| Fish made in Blender: three kinds by weight, nose forward, files ship | ✅ | `view/fishSchool.test.ts`, Blender render |
+| PK's animals near the view: files for 20 kinds, real size, walk clip at their pace, pooled; primates keep figures | ✅ | `view/nearAnimals.test.ts` |
+| Raid: raiders go for the storehouse; the line forms (shields, spears, bows); pairs; theft, loot dropped back; cheer; blocks ≈ 35 %; push back; a Royal Order calls a raid; the hurt rest | ✅ | `sim/battle.test.ts` |
+| Battle sounds (drum, block, axe, cheer) mapped from events | ✅ | `view/sound.test.ts` |
+| `npm run verify` (99 test files / 836 tests, build) | ✅ | |
+| e2e KG-01 (inbox, vote), KG-03 (chapter card from the inbox), KG-14 (half-size hero bar) | ⏳ running | software renderer |

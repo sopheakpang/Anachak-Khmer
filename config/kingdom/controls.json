@@ -11,6 +11,7 @@
     { "id": "map", "km": "ផែនទីបុរាណ", "en": "The old map", "keys": ["KeyM"] },
     { "id": "history", "km": "ប្រវត្តិ", "en": "History", "keys": ["KeyY"] },
     { "id": "orders", "km": "ការបញ្ជាទិញ", "en": "Orders", "keys": ["KeyO"] },
+    { "id": "inbox", "km": "ព្រះរាជបញ្ជា", "en": "Royal Orders: news and votes", "keys": ["KeyN"] },
     { "id": "speedUp", "km": "លឿនជាងមុន", "en": "Faster", "keys": ["Equal", "NumpadAdd"] },
     { "id": "speedDown", "km": "យឺតជាងមុន", "en": "Slower", "keys": ["Minus", "NumpadSubtract"] },
     { "id": "cancel", "km": "បោះបង់", "en": "Cancel the job", "keys": ["Delete"] },
@@ -18,7 +19,12 @@
     { "id": "quickSave", "km": "រក្សាទុករហ័ស", "en": "Quick save", "keys": ["F5"] },
     { "id": "quickLoad", "km": "បើករហ័ស", "en": "Quick load", "keys": ["F9"] },
     { "id": "fullscreen", "km": "ពេញអេក្រង់", "en": "Full screen", "keys": ["F11"] },
-    { "id": "dangers", "km": "បង្ហាញ/លាក់កន្លែងគ្រោះថ្នាក់", "en": "Show / hide the danger rings", "keys": ["KeyX"] }
+    {
+      "id": "dangers",
+      "km": "បង្ហាញ/លាក់កន្លែងគ្រោះថ្នាក់",
+      "en": "Show / hide the danger rings",
+      "keys": ["KeyX"]
+    }
   ],
   "hero": [
     { "id": "forward", "km": "ទៅមុខ", "en": "Forward", "keys": ["KeyW"] },
@@ -38,7 +44,12 @@
     { "id": "camRight", "km": "បង្វិលកាមេរ៉ាស្តាំ", "en": "Turn the camera right", "keys": ["ArrowRight"] },
     { "id": "camUp", "km": "កាមេរ៉ាឡើង", "en": "Camera up", "keys": ["ArrowUp"] },
     { "id": "camDown", "km": "កាមេរ៉ាចុះ", "en": "Camera down", "keys": ["ArrowDown"] },
-    { "id": "dangers", "km": "បង្ហាញ/លាក់កន្លែងគ្រោះថ្នាក់", "en": "Show / hide the danger rings", "keys": ["KeyX"] },
+    {
+      "id": "dangers",
+      "km": "បង្ហាញ/លាក់កន្លែងគ្រោះថ្នាក់",
+      "en": "Show / hide the danger rings",
+      "keys": ["KeyX"]
+    },
     { "id": "auto", "km": "លេងស្វ័យប្រវត្តិ", "en": "Auto: plays by himself", "keys": ["KeyT"] },
     { "id": "exit", "km": "ត្រឡប់", "en": "Back to the kingdom", "keys": ["Escape"] }
   ],

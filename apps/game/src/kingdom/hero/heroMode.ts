@@ -1475,6 +1475,9 @@ export class HeroMode {
     const round = Math.floor(this.orderRound / 6);
     const need = dutyNeed(o, round, liveOrders().grow);
     this.order = { o, need, have: o.type === 'duty' && o.duty !== 'visit' ? this.stats[o.duty] : 0 };
+    // D160 (PK: a Royal Order can start a raid): "Defeat raiders" calls the next wave now.
+    if (o.type === 'duty' && o.duty === 'defeat' && sim.startRaid())
+      this.host.toast('⚔️ <b>ចោរព្រៃមកពីព្រៃ!</b> · Raiders from the forest!', 5);
   }
 
   /** Has the hero reached a finished building of this type (within a few metres of its walls)? */

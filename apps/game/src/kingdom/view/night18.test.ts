@@ -118,11 +118,42 @@ describe('elephant grass (PK 1.8.0)', () => {
     // Forbidden: near buildings (clear says no), soil, forest, none.
     expect(layElephantGrass(0, 0, 60, 2, 0, grassEverywhere, () => false, EG)).toHaveLength(0);
     for (const p of ['soil', 'forest', 'none', 'water'] as Patch[])
-      expect(layElephantGrass(0, 0, 60, 2, 0, () => p, () => true, EG)).toHaveLength(0);
+      expect(
+        layElephantGrass(
+          0,
+          0,
+          60,
+          2,
+          0,
+          () => p,
+          () => true,
+          EG,
+        ),
+      ).toHaveLength(0);
     // Never on the water; a fringe on the land along it.
-    expect(layElephantGrass(0, 0, 60, 2, 0, () => 'bank', () => true, EG)).toHaveLength(0);
+    expect(
+      layElephantGrass(
+        0,
+        0,
+        60,
+        2,
+        0,
+        () => 'bank',
+        () => true,
+        EG,
+      ),
+    ).toHaveLength(0);
     const shoreAt = (tx: number): Patch => (tx < 0 ? 'water' : 'grass');
-    const fringe = layElephantGrass(0, 0, 60, 2, 0, (tx) => shoreAt(tx), () => true, EG);
+    const fringe = layElephantGrass(
+      0,
+      0,
+      60,
+      2,
+      0,
+      (tx) => shoreAt(tx),
+      () => true,
+      EG,
+    );
     // Not on the first land tile (its bank slopes under the water), a fringe on the next.
     expect(fringe.every((c) => c.x >= 2)).toBe(true);
     expect(fringe.some((c) => c.x < 4)).toBe(true);
@@ -194,6 +225,20 @@ describe('see-through cover (PK 1.8.0)', () => {
     // Only cover in front of a person is cut, in a dither (an opaque draw).
     expect(SEE_FRAGMENT).toContain('s.z - 0.8');
     expect(SEE_FRAGMENT).toContain('discard');
+  });
+
+  it('D160: cover right in front of the camera fades away; the hero gets his own window', () => {
+    const U = seeUniforms();
+    expect(U.uSeeNear.value.toArray()).toEqual([0, 0]); // off until the scene sets it
+    expect(SEE_FRAGMENT).toContain('smoothstep(uSeeNear.x, uSeeNear.y, sDepth)');
+    // The near fade works with no person window open too.
+    expect(SEE_FRAGMENT.indexOf('uSeeNear')).toBeLessThan(SEE_FRAGMENT.indexOf('if (uSeeN > 0)'));
+    const [a, b] = C.near.rts;
+    expect(a).toBeLessThan(b);
+    // The 18–21 m canopy under the closest RTS camera fades, the ground (≥ 28 m away) never.
+    expect(b).toBeLessThan(28);
+    expect(C.near.hero[1]).toBeLessThan(6);
+    expect(C.hero.amount).toBeGreaterThan(0);
   });
 });
 

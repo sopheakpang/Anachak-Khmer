@@ -765,13 +765,12 @@
     },
     {
       "game": "building.storehouse",
-      "src": "06-buildings/storehouse/storehouse.glb",
+      "src": "scripts/models/blender/make_storehouse.py (made in Blender; PK 2026-10-20: the Meshy granary looked like a villager house)",
       "out": "buildings/storehouse.glb",
       "kind": "building",
       "size": ["l", 10],
-      "tris": 7000,
-      "cutBase": true,
-      "status": "confident"
+      "tris": 3952,
+      "status": "pk"
     },
     {
       "game": "building.lumberCamp",
@@ -1582,6 +1581,33 @@
       "kind": "building",
       "status": "pk",
       "keep": "untextured, 2.3 million triangles: Preah_Ko Temple.glb is used for Preah Ko (PK)"
+    },
+    {
+      "game": "fish.treyRiel",
+      "src": "scripts/models/blender/make_fish.py (made in Blender; PK 2026-10-20)",
+      "out": "fish/trey-riel.glb",
+      "kind": "fish",
+      "size": ["l", 1],
+      "tris": 343,
+      "status": "pk"
+    },
+    {
+      "game": "fish.treyRos",
+      "src": "scripts/models/blender/make_fish.py (made in Blender; PK 2026-10-20)",
+      "out": "fish/trey-ros.glb",
+      "kind": "fish",
+      "size": ["l", 1],
+      "tris": 347,
+      "status": "pk"
+    },
+    {
+      "game": "fish.treyPra",
+      "src": "scripts/models/blender/make_fish.py (made in Blender; PK 2026-10-20)",
+      "out": "fish/trey-pra.glb",
+      "kind": "fish",
+      "size": ["l", 1],
+      "tris": 345,
+      "status": "pk"
     }
   ]
 }

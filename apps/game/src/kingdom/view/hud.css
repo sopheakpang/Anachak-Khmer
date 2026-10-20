@@ -1512,3 +1512,194 @@
   font-size: 26px;
   opacity: 0.85;
 }
+
+/* PK 2026-10-20 (D160): ព្រះរាជបញ្ជា · Royal Orders — the inbox of what used to pop up. */
+.k-yb-unread b {
+  color: #ffe08a;
+}
+.k-yb-live {
+  animation: k-ib-live 1.2s ease-in-out infinite;
+}
+@keyframes k-ib-live {
+  50% {
+    box-shadow:
+      0 0 0 3px #ff9a5a,
+      0 0 22px #ff9a5a;
+  }
+}
+.k-inbox {
+  position: absolute;
+  right: 20px;
+  top: 190px;
+  width: 720px;
+  max-height: 640px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 16px 14px;
+  border-radius: 18px;
+  font-size: 26px;
+  pointer-events: auto;
+}
+.k-inbox h3 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.k-inbox h3 button,
+.k-ib-list button {
+  font: inherit;
+  font-size: 26px;
+  border-radius: 12px;
+  border: 2px solid rgb(160 110 40 / 0.8);
+  background: linear-gradient(#ffe9a8, #f0c860);
+  color: #3a2410;
+  padding: 2px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.k-ib-vote {
+  margin-bottom: 8px;
+  padding: 6px 12px;
+  border-radius: 14px;
+  background: rgb(255 170 90 / 0.18);
+  border: 2px solid rgb(255 154 90 / 0.6);
+}
+.k-ib-vote h3 {
+  font-size: 26px;
+}
+.k-ib-vote ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.k-ib-vote li {
+  display: flex;
+  justify-content: space-between;
+}
+.k-ib-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+}
+.k-ib-list li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 4px 10px;
+  align-items: center;
+  padding: 6px 0;
+  border-top: 1px solid rgb(120 80 30 / 0.25);
+}
+.k-ib-list li > span {
+  display: flex;
+  flex-direction: column;
+}
+.k-ib-list small {
+  font-size: 26px;
+  opacity: 0.6;
+}
+.k-ib-new > span {
+  font-weight: 700;
+}
+
+/* PK 2026-10-20 (D160): progress bars over the roofs, with what waits after the work in hand. */
+.k-roofbars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.k-roof {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 10px 6px;
+  border-radius: 12px;
+  background: rgb(20 12 4 / 0.55);
+  font-size: 26px;
+  line-height: 1.1;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+.k-roof-t b {
+  color: #ffe08a;
+}
+.k-roof-bar {
+  display: block;
+  width: 150px;
+  height: 12px;
+  border-radius: 6px;
+  background: rgb(255 255 255 / 0.25);
+  overflow: hidden;
+}
+.k-roof-bar i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #7fd06a, #ffe08a);
+}
+.k-roof-q {
+  display: flex;
+  gap: 6px;
+}
+.k-roof-p {
+  padding: 0 8px;
+  border-radius: 8px;
+  background: rgb(255 224 138 / 0.22);
+}
+
+/* PK 2026-10-20 (D160): the ⚙ board — what is shown on screen. */
+.k-board {
+  position: absolute;
+  right: 20px;
+  top: 190px;
+  width: 1100px;
+  max-height: 760px;
+  overflow-y: auto;
+  padding: 10px 16px 14px;
+  border-radius: 18px;
+  font-size: 26px;
+  pointer-events: auto;
+}
+.k-board h3 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  display: flex;
+  justify-content: space-between;
+}
+.k-board h4 {
+  margin: 10px 0 4px;
+  font-size: 26px;
+  opacity: 0.8;
+}
+.k-bd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+}
+.k-board button {
+  font: inherit;
+  font-size: 26px;
+  text-align: left;
+  border-radius: 12px;
+  border: 2px solid rgb(160 110 40 / 0.8);
+  background: linear-gradient(#ffe9a8, #f0c860);
+  color: #3a2410;
+  padding: 2px 12px;
+  cursor: pointer;
+}
+.k-board .k-bd-off {
+  background: rgb(60 40 40 / 0.6);
+  color: #d8c8b8;
+  border-color: rgb(120 90 80 / 0.6);
+}
+.k-bd-sw b {
+  display: inline-block;
+  min-width: 56px;
+}
+.k-bd-reset {
+  margin-top: 10px;
+}

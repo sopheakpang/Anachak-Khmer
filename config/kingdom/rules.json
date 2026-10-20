@@ -482,9 +482,49 @@
     "raftLoads": ["wood", "stone"],
     "wadeRoles": ["elephant", "cavalry"]
   },
+  "battle": {
+    "$comment": "PK 2026-10-20 (D160): the raid on the village, as PK chose it. store = raiders go for the player's storehouse nearest their camp; one who reaches it (stealReach m) takes up to steal of each good and runs home; struck down, he drops it back into the store; home (homeReach m of the camp) it is gone. The soldiers within musterRadius m form a line musterDist m out from the target toward the camp: shields (these unit types) in front, spearmen rowGap m behind, archers archerBack m behind, riders and elephants on the flanks, spacing m apart; when the raiders come within engage m of the line it breaks into one-to-one fights. A shield-bearer blocks blockChance of close blows (blockFactor of the harm); every close blow pushes the one hit push m back; one raider spearman in axeEvery wields an axe (heavy blows: pushed further, the camera shakes). Beaten, the soldiers cheer cheerSec s; the hurt (below kneelBelow of their strength) kneel and heal restHeal hp/s with no raider within restClear m.",
+    "store": true,
+    "steal": { "gold": 20, "food": 40 },
+    "stealReach": 3,
+    "homeReach": 8,
+    "musterRadius": 160,
+    "musterDist": 16,
+    "spacing": 1.6,
+    "rowGap": 1.8,
+    "archerBack": 7,
+    "engage": 14,
+    "shields": ["swordsman", "commander"],
+    "blockChance": 0.35,
+    "blockFactor": 0.25,
+    "push": 0.35,
+    "axeEvery": 3,
+    "cheerSec": 4,
+    "kneelBelow": 0.45,
+    "restHeal": 2,
+    "restClear": 15
+  },
+  "traffic": {
+    "$comment": "PK 2026-10-20 (D160): a walker that got less than minMove of its pace's way in checkSec s is stuck in traffic and plans a new route round the crowd within radius tiles (where people stand still, or two or more are on a tile) for detourSec s.",
+    "checkSec": 1.2,
+    "minMove": 0.25,
+    "radius": 6,
+    "detourSec": 6
+  },
+  "board": {
+    "$comment": "PK 2026-10-20 (D160): the ⚙ board on the year bar switches each top-menu button, year-bar button and message box on or off (remembered in the browser). off = what is off at the start (ids in apps/game/src/kingdom/view/board.ts).",
+    "off": []
+  },
+  "inbox": {
+    "$comment": "PK 2026-10-20 (D160): the events that popped up (news, gifts, world history, chapter cards, the council vote) go into the ព្រះរាជបញ្ជា · Royal Orders inbox on the year bar (key N). popups true brings the old pop-ups back; max = messages kept.",
+    "popups": false,
+    "max": 60
+  },
   "alerts": {
-    "$comment": "PK: light alerts. A soft blue light over work in progress (building, training, research), a gold flash when it is finished, a red pulse on a resource that is running out (below lowRes) and on what a build or order still needs, an amber light over a lumber camp holding campFull timber or more (waiting for a cart).",
+    "$comment": "PK: light alerts. A soft blue light over work in progress (building, training, research), a gold flash when it is finished, a red pulse on a resource that is running out (below lowRes) and on what a build or order still needs, an amber light over a lumber camp holding campFull timber or more (waiting for a cart). D160: work in progress is a bar over the roof instead of the blue light, with what waits after it; at most roofBars bars, only with the camera nearer than roofBarDist m.",
     "lowRes": 50,
+    "roofBars": 12,
+    "roofBarDist": 140,
     "campFull": 180,
     "flashSec": 2.5,
     "needSec": 1.8

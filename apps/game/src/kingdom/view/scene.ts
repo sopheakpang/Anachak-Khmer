@@ -1,5 +1,5 @@
 import { RoadView } from './roads';
-import { FishSchools, type FishSpot } from './fishSchool';
+import { FishSchools, fishModelGeometry, type FishSpot } from './fishSchool';
 import { marketGeometry } from './marketGeo';
 import { anachakHallGeometry } from './royalHall';
 import { fireGlow, nightness, restsActive } from '../sim/anachak';
@@ -47,6 +47,8 @@ import { DangerRings } from './dangerRings';
 import { ScatterView, scatterCentre, scatterPlan } from './scatter';
 import { makeRealWater } from './realWater';
 import { NearPeople, personFile, pickNear } from './nearPeople';
+import { NearAnimals, animalFile } from './nearAnimals';
+import { wieldsAxe } from '../sim/battle';
 import { dressOf, lookFor } from '../hero/heroModel';
 import { kitFor } from '../hero/heroCore';
 import { tileToWorld, worldToTile, type XZ } from '../sim/map';
@@ -111,6 +113,7 @@ import {
   waysideTrees,
   type Lot,
   type TreeSpot,
+  inHallFront,
 } from './treeModels';
 import { addSeeThrough, seeAmount, seeUniforms, setTargets, type SeeUniforms } from './seeThrough';
 import { TorchView, torchSpots, type TorchSite } from './torches';
@@ -395,6 +398,10 @@ export class KingdomScene {
   readonly people: NearPeople | null = null;
   /** PK 2026-10-20 (D158): the royal court as PK's Meshy people (PC look). */
   readonly courtPeople: NearPeople | null = null;
+  /** D160: PK's animals near the view (PC look). */
+  readonly animals: NearAnimals | null = null;
+  /** Where each animal was last frame (its pace, for the walk clip). */
+  private readonly animalWas = new Map<number, [number, number]>();
   private readonly ray = new THREE.Vector3();
   private readonly bars: { bg: THREE.InstancedMesh; fg: THREE.InstancedMesh };
   private readonly arrows: THREE.InstancedMesh;
@@ -673,7 +680,8 @@ export class KingdomScene {
     this.fishMesh.count = 0;
     this.fishMesh.frustumCulled = false;
     this.scene.add(this.fishMesh);
-    this.scene.add(this.schools.mesh);
+    this.scene.add(this.schools.group);
+    if (this.gfx.meshyModels) this.loadFish();
     this.meatMesh = new THREE.InstancedMesh(
       new THREE.BoxGeometry(0.9, 0.35, 0.6).translate(0, 0.18, 0),
       soft({ color: 0x7a3e2a, roughness: 1 }, 0.1),
@@ -768,6 +776,14 @@ export class KingdomScene {
         for (const f of Object.values(PC.court)) void loadModel(modelUrl(`${PC.dir}${f}.glb`));
         this.scene.add(this.courtPeople.group);
       }
+    }
+
+    // PK 2026-10-20 (D160, D155 step 3): the animals nearest the middle of the view are PK's.
+    const AC = sim.data.props.animals;
+    if (this.gfx.real && this.gfx.meshyModels && AC && AC.max > 0) {
+      this.animals = new NearAnimals(AC, modelUrl);
+      this.animals.preload();
+      this.scene.add(this.animals.group);
     }
 
     // Building sets per type, scaffolding, the monument (the real Preah Ko kit).
@@ -1144,7 +1160,9 @@ export class KingdomScene {
     }
     const dry = (x: number, z: number) => this.groundY(x, z) > WATER_Y + GRASS_DRY + 0.05;
     const open = (x: number, z: number) =>
-      dry(x, z) && !lots.some((b) => Math.abs(x - b.x) < b.w / 2 + 1 && Math.abs(z - b.z) < b.d / 2 + 1);
+      dry(x, z) &&
+      !lots.some((b) => Math.abs(x - b.x) < b.w / 2 + 1 && Math.abs(z - b.z) < b.d / 2 + 1) &&
+      !inHallFront(lots, x, z, place.village.hallFront);
     const village = villageTrees(lots, place.village, dry);
     const wear = this.wear;
     const way = wear
@@ -1379,6 +1397,7 @@ export class KingdomScene {
     this.fogTex.dispose();
     this.scatter?.dispose();
     this.people?.dispose();
+    this.animals?.dispose();
     this.courtPeople?.dispose();
     (this.water as { dispose?: () => void } | null)?.dispose?.();
     for (const o of [...this.scene.children]) disposeNode(o, { textures: true });
@@ -1400,6 +1419,27 @@ export class KingdomScene {
         if (m && applyProp(mesh, m, slot)) this.propsOn++;
       });
     }
+  }
+
+  /** PK 2026-10-20 (D160): the Blender fish for the schools (all or none: one kind missing keeps the built-in). */
+  private loadFish(): void {
+    const F = this.sim.data.props.fish;
+    if (!F) return;
+    void Promise.all(F.kinds.map((k) => loadProp(modelUrl(k.file)).then((m) => (m ? meshOf(m) : null)))).then(
+      (srcs) => {
+        if (this.disposed || srcs.some((x) => !x)) return;
+        this.schools.setKinds(
+          srcs.map((src, i) => {
+            const g = src!.geometry.clone();
+            g.applyMatrix4(src!.matrixWorld);
+            const out = fishModelGeometry(g, F.length);
+            g.dispose();
+            return { geometry: out, weight: F.kinds[i]!.weight };
+          }),
+        );
+        this.propsOn++;
+      },
+    );
   }
 
   /** PK 1.9.0 (D153): the dugouts, bamboo rafts and the trader boat from PK's models. */
@@ -1545,8 +1585,39 @@ export class KingdomScene {
     const dt = Math.min(0.25, Math.max(0, t - this.wildT));
     this.wildT = t;
     const groups = new Map<string, Agent[]>();
+    // D160: the nearest animals with a model are drawn as PK's animals (the crowd skips them).
+    const NA = this.animals;
+    const AC = NA?.cfg;
+    const pick = AC && this.heroView && AC.hero ? AC.hero : AC;
+    const nearIds =
+      NA && AC && pick && (this.heroView || this.view[2] <= AC.maxDist)
+        ? pickNear(
+            [...this.sim.animals.values()].filter(
+              (a) =>
+                this.sim.isVisible(a.x, a.z) && a.id !== this.hiddenAnimal && animalFile(AC, a.kind) !== null,
+            ),
+            this.view[0],
+            this.view[1],
+            pick,
+          )
+        : null;
+    NA?.begin();
     for (const a of this.sim.animals.values()) {
       if (!this.sim.isVisible(a.x, a.z) || a.id === this.hiddenAnimal) continue;
+      if (NA && nearIds?.has(a.id)) {
+        const was = this.animalWas.get(a.id);
+        const speed = was && dt > 0 ? Math.hypot(a.x - was[0], a.z - was[1]) / dt : 0;
+        this.animalWas.set(a.id, [a.x, a.z]);
+        if (
+          NA.place(
+            a.id,
+            a.kind,
+            { x: a.x, y: 0, z: a.z, heading: a.heading, speed: a.moving ? speed : 0 },
+            dt,
+          )
+        )
+          continue;
+      }
       const list = groups.get(a.kind) ?? [];
       const { x, z, heading, moving } = a;
       const perch = ANIMAL_LOOK[a.kind]?.perch;
@@ -1560,6 +1631,9 @@ export class KingdomScene {
       list.push({ place: () => ({ x, y, z, heading, act: moving ? ACT.crowd : ACT.stand }) });
       groups.set(a.kind, list);
     }
+    NA?.end();
+    if (this.animalWas.size > 2 * this.sim.animals.size + 64)
+      for (const id of this.animalWas.keys()) if (!this.sim.animals.has(id)) this.animalWas.delete(id);
     if (this.perchY.size > 2 * this.sim.animals.size + 64)
       for (const id of this.perchY.keys()) if (!this.sim.animals.has(id)) this.perchY.delete(id);
     for (const [kind, spec] of Object.entries(ANIMAL_LOOK)) {
@@ -2190,6 +2264,10 @@ export class KingdomScene {
 
   private act(u: Unit): Act {
     const role = this.sim.def(u.type).role;
+    const now = this.sim.time;
+    // D160: the raid — cheering with raised arms, the shield up on a block.
+    if ((u.cheerUntil ?? -1) > now && u.anim !== 'walk') return ACT.lift;
+    if ((u.blockAt ?? -1) > now - 0.45) return ACT.guard;
     if (u.anim === 'walk') return u.carry && u.carry.n > 0 && role === 'worker' ? ACT.carry : ACT.crowd;
     if (u.anim === 'gather') {
       const t = u.task;
@@ -2218,9 +2296,13 @@ export class KingdomScene {
       if (role === 'elephant' || u.type === 'buffaloRider') return ACT.crowd;
       if (u.type === 'horseman') return ACT.thrust;
       if (u.type === 'swordsman') return ACT.sword;
+      // D160: one raider spearman in a few wields an axe: a two-handed wind-up and chop.
+      if (u.team === RIVAL && wieldsAxe(u, this.sim.data.rules.battle)) return ACT.chop;
       return ACT.thrust; // spears, and villagers' hunting spears
     }
     if (u.type === 'swordsman' && u.task.kind === 'idle') return ACT.guard;
+    // D160: holding the line of battle — a ready stance, weapon up.
+    if (u.battle && u.task.kind === 'idle' && role !== 'ranged') return ACT.guard;
     return role === 'elephant' ? ACT.crowd : ACT.stand;
   }
 
@@ -2237,8 +2319,11 @@ export class KingdomScene {
     this.fallen.update(t);
     // D155: who is drawn as one of PK's people this frame (zoomed in, nearest the middle).
     const NP = this.people;
+    // D160: in the 3D hero mode more of the people round the hero are PK's models.
+    const pickCfg = NP && this.heroView && NP.cfg.hero ? NP.cfg.hero : NP?.cfg;
+    if (NP) NP.limit = pickCfg!.max;
     const nearIds =
-      NP && this.view[2] <= NP.cfg.maxDist
+      NP && (this.heroView || this.view[2] <= NP.cfg.maxDist)
         ? pickNear(
             [...s.units.values()].filter(
               (u) =>
@@ -2248,7 +2333,7 @@ export class KingdomScene {
             ),
             this.view[0],
             this.view[1],
-            NP.cfg,
+            pickCfg!,
           )
         : null;
     NP?.begin();
@@ -2284,6 +2369,12 @@ export class KingdomScene {
       // Crossing water (PK 1.8.0): wade below the chest; deeper, a dugout boat (paddled) or a
       // bamboo raft (poled, with wood or stone aboard) when the side has a landing; else swim.
       let lean = act === ACT.plant ? 0.42 : act === ACT.reap ? 0.35 : undefined; // farmers bend over the rice
+      // D160: the hurt kneel to rest after the fight (body lowered, leaning forward a little).
+      if (u.resting && u.anim !== 'walk') {
+        act = ACT.stand;
+        y -= 0.38;
+        lean = 0.22;
+      }
       const way = s.waterWay(u);
       if (way !== 'land') {
         const bob = Math.sin(t * 2 + u.id) * 0.03;
@@ -2467,12 +2558,24 @@ export class KingdomScene {
           t0: t,
         });
       if (e.kind === 'hunted') this.meatIds.add(e.node);
-      if (e.kind === 'hit') this.particles.burst('sparks', e.at[0], 1.1, e.at[1], 5);
+      if (e.kind === 'hit') {
+        this.particles.burst('sparks', e.at[0], 1.1, e.at[1], 5);
+        // D160: a small red flash where the blow lands; an axe's heavy blow shakes the camera.
+        this.particles.burst('flash', e.at[0], 1.15, e.at[1], e.heavy ? 6 : 3);
+        if (e.heavy) this.shake(e.at[0], e.at[1], t);
+      }
+      if (e.kind === 'block') this.particles.burst('sparks', e.at[0], 1.25, e.at[1], 12);
+      if (e.kind === 'stolen' || e.kind === 'recovered')
+        this.particles.burst('gold', e.at[0], 1.4, e.at[1], 10);
+      if (e.kind === 'cheer') this.particles.burst('gold', e.at[0], 2.2, e.at[1], 14);
       if (e.kind === 'felled') {
         this.fallen.fell(e.at[0], e.at[1], e.dir, t, 0.75 + (Math.abs(e.at[0] * 7 + e.at[1] * 13) % 10) / 20);
         this.particles.burst('dust', e.at[0], 0.6, e.at[1], 14);
       }
-      if (e.kind === 'death') this.particles.burst('hit', e.unit.x, 0.3, e.unit.z, 10);
+      if (e.kind === 'death') {
+        this.particles.burst('hit', e.unit.x, 0.3, e.unit.z, 10);
+        this.particles.burst('dust', e.unit.x, 0.4, e.unit.z, 8); // the fallen drop with dust (D160)
+      }
       if (e.kind === 'built') {
         const [bx, bz] = s.center(e.building);
         this.particles.burst('smoke', bx, 1.5, bz, 18);
@@ -2659,6 +2762,9 @@ export class KingdomScene {
       const [bx, bz] = this.sim.center(b);
       const sz = this.sim.data.buildings[b.type]?.size ?? [2, 2];
       blds.push([bx, bz, (Math.max(sz[0], sz[1]) * T) / 2]);
+      // D160: the royal hall's open court stays clear (a square out in front of it).
+      const F = this.sim.data.props.treePlacement?.village.hallFront;
+      if (F && b.type === 'townCentre') blds.push([bx, bz + F.depth / 2, Math.max(F.halfWidth, F.depth / 2)]);
     }
     this.scatter!.update(t, cx, cz, (x, z) => this.groundY(x, z), blds);
   }
@@ -2697,7 +2803,36 @@ export class KingdomScene {
   private treesFresh = -1e9;
   private landExplored = -1;
   private landFreshAt = -1e9;
+  /** D160: an axe's heavy blow near the view shakes the camera a moment. */
+  private shakeUntil = 0;
+  private shakeAmp = 0;
+  private readonly shakeOff = new THREE.Vector3();
+  private readonly shakeLeft = new THREE.Vector3(Infinity, 0, 0);
+
+  shake(x: number, z: number, t: number): void {
+    const [cx, cz, dist] = this.view;
+    const d = Math.hypot(x - cx, z - cz);
+    if (d > Math.max(25, dist * 0.6)) return;
+    this.shakeUntil = t + 0.35;
+    this.shakeAmp = (this.heroView ? 0.12 : Math.min(0.6, dist * 0.006)) * (1 - d / Math.max(25, dist * 0.6));
+  }
+
+  private applyShake(t: number): void {
+    const c = this.camera.position;
+    // Take last frame's shake off, unless the camera was set again since (it moved on).
+    if (c.equals(this.shakeLeft)) c.sub(this.shakeOff);
+    this.shakeOff.set(0, 0, 0);
+    if (t < this.shakeUntil) {
+      const k = this.shakeAmp * ((this.shakeUntil - t) / 0.35);
+      this.shakeOff.set(Math.sin(t * 97) * k, Math.sin(t * 131 + 1) * k * 0.6, Math.cos(t * 89) * k);
+      c.add(this.shakeOff);
+    }
+    this.shakeLeft.copy(c);
+    this.camera.updateMatrixWorld();
+  }
+
   update(t: number, now: number, selected: Set<number>): void {
+    this.applyShake(t);
     if (this.scatter) this.updateScatter(t);
     let fresh = false;
     if (this.sim.fogVersion !== this.fogAt) {
@@ -3056,15 +3191,21 @@ export class KingdomScene {
     }
     const C = this.sim.data.diorama.seeThrough;
     const [cx, cz, dist] = this.view;
-    const amount = this.heroView ? 0 : seeAmount(dist, C.zoom, C.amount);
+    const hero = this.heroView ? this.sim.heroEye : null;
+    // D160: in the 3D hero mode a window round the hero himself (a tree between him and the
+    // camera); in both views cover right in front of the camera fades away.
+    const amount = this.heroView ? (hero ? C.hero.amount : 0) : seeAmount(dist, C.zoom, C.amount);
+    const near = this.heroView ? C.near.hero : C.near.rts;
+    U.uSeeNear.value.set(near[0], near[1]);
     const pts: number[] = [];
-    if (amount > 0)
+    if (hero) pts.push(hero[0], 1.0, hero[1]);
+    else if (amount > 0)
       for (const u of this.peopleNear(cx, cz, dist * 1.2, C.targets, selected)) {
         const big = this.sim.def(u.type).role === 'elephant';
         pts.push(u.x, big ? 2.2 : 1.0, u.z);
       }
     this.camera.updateMatrixWorld();
-    setTargets(U, this.camera, pts, C.radius, amount, C.targets);
+    setTargets(U, this.camera, pts, hero ? C.hero.radius : C.radius, amount, C.targets);
   }
 
   /** Stage pixel (1080 × 1920) → ground point, or null off the map. */
@@ -3078,6 +3219,14 @@ export class KingdomScene {
   }
 
   /** World point → stage pixel. */
+  /** D160: the top of a building type's drawn model (m above its foot), for the roof bars. */
+  roofY(type: string): number {
+    const g = this.sets.get(type)?.mesh.geometry;
+    if (!g) return 4;
+    if (!g.boundingBox) g.computeBoundingBox();
+    return Math.max(1, g.boundingBox!.max.y);
+  }
+
   project(x: number, y: number, z: number): { x: number; y: number } {
     const v = new THREE.Vector3(x, y, z).project(this.camera);
     return { x: ((v.x + 1) / 2) * KSIZE.width, y: ((1 - v.y) / 2) * KSIZE.height };

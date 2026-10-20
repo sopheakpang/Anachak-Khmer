@@ -47,7 +47,10 @@ describe("PK's 3D props (1.6.0)", () => {
     );
     mesh.setColorAt(0, new THREE.Color(0xd9a04a));
     const geo = new THREE.BoxGeometry(1, 1, 1);
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(new Array(geo.attributes.position!.count * 3).fill(0.5), 3));
+    geo.setAttribute(
+      'color',
+      new THREE.Float32BufferAttribute(new Array(geo.attributes.position!.count * 3).fill(0.5), 3),
+    );
     const root = new THREE.Group().add(new THREE.Mesh(geo));
     const slot = data.props.slots['tree.palm']!;
     expect(applyProp(mesh, root, slot)).toBe(true);
@@ -80,7 +83,16 @@ describe('PK 1.9.0 (D146 ខ៣): six buildings drawn from PK’s Meshy models',
     const { loadKingdom } = await import('@temples/shared');
     const k = loadKingdom();
     const b = k.props.buildings ?? {};
-    for (const id of ['townCentre', 'house', 'barracks', 'lumberCamp', 'market', 'nobleHouse', 'port', 'storehouse']) {
+    for (const id of [
+      'townCentre',
+      'house',
+      'barracks',
+      'lumberCamp',
+      'market',
+      'nobleHouse',
+      'port',
+      'storehouse',
+    ]) {
       const slot = b[id]!;
       expect(slot, id).toBeTruthy();
       expect(k.buildings[id], id).toBeTruthy();
@@ -97,7 +109,9 @@ describe('PK 1.9.0 (D146 ខ៣): six buildings drawn from PK’s Meshy models',
 });
 
 /** The JSON chunk of a .glb under public-mobile/ (null when the file is not there). */
-async function glbJson(file: string): Promise<{ meshes?: unknown[]; textures?: unknown[]; skins?: unknown[]; animations?: unknown[] } | null> {
+async function glbJson(
+  file: string,
+): Promise<{ meshes?: unknown[]; textures?: unknown[]; skins?: unknown[]; animations?: unknown[] } | null> {
   const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
     existsSync(p: URL): boolean;
     readFileSync(p: URL): Uint8Array;
@@ -113,9 +127,11 @@ describe('PK’s look notes of 2026-10-19', () => {
   it('the forest trees are three times taller (18 m and up), the Khmer house a little taller, boats sit in the water', async () => {
     const { loadKingdom } = await import('@temples/shared');
     const p = loadKingdom().props;
-    for (const id of ['a', 'b', 'c', 'd', 'e', 'f']) expect(p.trees!.find((t) => t.id === id)!.height, id).toBeGreaterThanOrEqual(18);
+    for (const id of ['a', 'b', 'c', 'd', 'e', 'f'])
+      expect(p.trees!.find((t) => t.id === id)!.height, id).toBeGreaterThanOrEqual(18);
     expect(p.buildings!.house!.scaleY).toBeGreaterThan(1);
-    for (const b of Object.values(p.boats!).filter((x) => typeof x === 'object')) expect((b as { sink: number }).sink).toBeGreaterThanOrEqual(0.3);
+    for (const b of Object.values(p.boats!).filter((x) => typeof x === 'object'))
+      expect((b as { sink: number }).sink).toBeGreaterThanOrEqual(0.3);
   });
 });
 
@@ -148,11 +164,13 @@ describe('PK’s notes of 2026-10-20 (D156)', () => {
     const { loadKingdom } = await import('@temples/shared');
     const { shoreScale, waterDistance } = await import('./treeModels');
     const p = loadKingdom().props;
-    for (const id of ['palm', 'coconut']) expect(p.trees!.find((t) => t.id === id)!.height, id).toBeLessThanOrEqual(14);
+    for (const id of ['palm', 'coconut'])
+      expect(p.trees!.find((t) => t.id === id)!.height, id).toBeLessThanOrEqual(14);
     for (const id of ['fanPalm', 'palmA', 'palmB', 'palmC'])
       expect(p.scatter!.kinds.find((k) => k.id === id)!.scale[1], id).toBeLessThanOrEqual(1.6);
     expect(p.buildings!.house!.scale).toBeGreaterThan(1);
-    for (const id of ['nobleHouse', 'storehouse', 'market', 'barracks']) expect(p.buildings![id]!.scale ?? 1, id).toBeGreaterThan(1);
+    for (const id of ['nobleHouse', 'storehouse', 'market', 'barracks'])
+      expect(p.buildings![id]!.scale ?? 1, id).toBeGreaterThan(1);
     expect(p.blend!.amount).toBeGreaterThan(0);
     // A tree on the bank is smaller the nearer the water; none in it.
     expect(shoreScale(0)).toBe(0);
@@ -166,7 +184,14 @@ describe('PK’s notes of 2026-10-20 (D156)', () => {
 
   it('the land blend reaches the shader: colours pulled to the land, the walls’ foot dusted', async () => {
     const { addBlend } = await import('./props');
-    const m = addBlend(new THREE.MeshStandardMaterial(), { color: '#9a8358', amount: 0.2, saturation: 0.8, dust: '#8a5236', dustHeight: 1, dustAmount: 0.5 });
+    const m = addBlend(new THREE.MeshStandardMaterial(), {
+      color: '#9a8358',
+      amount: 0.2,
+      saturation: 0.8,
+      dust: '#8a5236',
+      dustHeight: 1,
+      dustAmount: 0.5,
+    });
     const sh = {
       uniforms: {} as Record<string, unknown>,
       vertexShader: '#include <common>\n#include <begin_vertex>',
@@ -185,5 +210,36 @@ describe('PK’s notes of 2026-10-20 (D156)', () => {
     g.computeBoundingBox();
     expect(g.boundingBox!.max.x - g.boundingBox!.min.x).toBeCloseTo(6, 5);
     expect(g.boundingBox!.min.y).toBeCloseTo(0, 5);
+  });
+});
+
+describe('PK 2026-10-20 (D160): the storehouse has its own look', () => {
+  it('is the Blender pavilion of goods, not a model shared with the villagers’ houses', async () => {
+    const B = data.props.buildings!;
+    const store = B.storehouse!;
+    expect(store.source).toContain('make_storehouse.py');
+    for (const [type, slot] of Object.entries(B))
+      if (type !== 'storehouse') expect(slot!.file).not.toBe(store.file);
+    const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
+      existsSync(p: string): boolean;
+      readFileSync(
+        p: string,
+      ): Uint8Array & {
+        readUInt32LE(o: number): number;
+        subarray(a: number, b: number): { toString(): string };
+      };
+    };
+    const file = new URL(`../../../public-mobile/${store.file}`, import.meta.url).pathname;
+    if (!fs.existsSync(file)) return; // a checkout without the PC models
+    const buf = fs.readFileSync(file);
+    const len = buf.readUInt32LE(12);
+    const j = JSON.parse(buf.subarray(20, 20 + len).toString()) as {
+      meshes: Array<{ primitives: Array<{ indices: number }> }>;
+      accessors: Array<{ count: number }>;
+    };
+    const tris = j.meshes
+      .flatMap((m) => m.primitives)
+      .reduce((a, p) => a + j.accessors[p.indices]!.count / 3, 0);
+    expect(tris).toBeLessThanOrEqual(store.tris * 1.05);
   });
 });

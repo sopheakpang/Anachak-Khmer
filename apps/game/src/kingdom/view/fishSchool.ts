@@ -48,37 +48,78 @@ export function fishGeometry(): THREE.BufferGeometry {
   return g;
 }
 
+/** D160: one kind of fish drawn: its shape and how often it swims in a school. */
+export interface FishKind {
+  geometry: THREE.BufferGeometry;
+  weight: number;
+}
+
 export class FishSchools {
-  readonly mesh: THREE.InstancedMesh;
+  /** D160: every kind of fish is its own instanced draw (PK's Blender fish on the PC). */
+  readonly group = new THREE.Group();
+  private meshes: THREE.InstancedMesh[] = [];
+  private weights: number[] = [1];
   private readonly m = new THREE.Matrix4();
   private readonly q = new THREE.Quaternion();
   private readonly e = new THREE.Euler();
   private readonly p = new THREE.Vector3();
   private readonly s = new THREE.Vector3();
+  private readonly material = new THREE.MeshStandardMaterial({
+    vertexColors: true,
+    roughness: 0.35,
+    metalness: 0.1,
+    emissive: 0x223038,
+    side: THREE.DoubleSide,
+  });
 
   constructor() {
-    this.mesh = new THREE.InstancedMesh(
-      fishGeometry(),
-      new THREE.MeshStandardMaterial({
-        vertexColors: true,
-        roughness: 0.35,
-        metalness: 0.1,
-        emissive: 0x223038,
-      }),
-      PER_SPOT * MAX_SPOTS,
-    );
-    this.mesh.count = 0;
-    this.mesh.frustumCulled = false;
+    this.setKinds([{ geometry: fishGeometry(), weight: 1 }]);
+  }
+
+  /** The first kind's draw (the built-in fish until the models are in). */
+  get mesh(): THREE.InstancedMesh {
+    return this.meshes[0]!;
+  }
+
+  /**
+   * D160 (PK: "ត្រី 3D models"): swim these kinds instead (each fish keeps its kind, picked by
+   * the weights from its number).
+   */
+  setKinds(kinds: readonly FishKind[]): void {
+    if (!kinds.length) return;
+    for (const m of this.meshes) {
+      this.group.remove(m);
+      m.geometry.dispose();
+    }
+    this.meshes = kinds.map((k) => {
+      const mesh = new THREE.InstancedMesh(k.geometry, this.material, PER_SPOT * MAX_SPOTS);
+      mesh.count = 0;
+      mesh.frustumCulled = false;
+      this.group.add(mesh);
+      return mesh;
+    });
+    this.weights = kinds.map((k) => k.weight);
+  }
+
+  /** Which kind fish number `id` is (fixed, by the weights). */
+  kindOf(id: number): number {
+    const total = this.weights.reduce((a, b) => a + b, 0);
+    let r = rand(id, 11) * total;
+    for (let k = 0; k < this.weights.length; k++) {
+      r -= this.weights[k]!;
+      if (r < 0) return k;
+    }
+    return this.weights.length - 1;
   }
 
   /** How many fish swim now (for the tests). */
   get swimming(): number {
-    return this.mesh.count;
+    return this.meshes.reduce((a, m) => a + m.count, 0);
   }
 
   /** Place every fish for time t (s) round the spots given (nearest first). */
   update(spots: readonly FishSpot[], t: number): void {
-    let n = 0;
+    const n = this.meshes.map(() => 0);
     spots.slice(0, MAX_SPOTS).forEach((sp, si) => {
       const fish = Math.max(2, Math.round(PER_SPOT * Math.min(1, sp.full)));
       for (let i = 0; i < fish; i++) {
@@ -107,15 +148,40 @@ export class FishSchools {
         const size = 1.8 + rand(id, 9) * 1.0;
         this.q.setFromEuler(this.e.set(-pitch, heading, 0, 'YXZ'));
         this.m.compose(this.p.set(x, y, z), this.q, this.s.set(size, size, size));
-        this.mesh.setMatrixAt(n++, this.m);
+        const k = this.kindOf(id);
+        this.meshes[k]!.setMatrixAt(n[k]!++, this.m);
       }
     });
-    this.mesh.count = n;
-    this.mesh.instanceMatrix.needsUpdate = true;
+    this.meshes.forEach((m, k) => {
+      m.count = n[k]!;
+      m.instanceMatrix.needsUpdate = true;
+    });
   }
 
   dispose(): void {
-    this.mesh.geometry.dispose();
-    (this.mesh.material as THREE.Material).dispose();
+    for (const m of this.meshes) m.geometry.dispose();
+    this.material.dispose();
   }
+}
+
+/**
+ * A fish model (D160, scripts/models/blender/make_fish.py: 1 m long, nose to glTF −z) as the
+ * schools' shape: nose to +z like the built-in fish, `length` m long, centred.
+ */
+export function fishModelGeometry(src: THREE.BufferGeometry, length = 0.5): THREE.BufferGeometry {
+  const g = src.clone();
+  for (const k of Object.keys(g.attributes))
+    if (!['position', 'normal', 'color'].includes(k)) g.deleteAttribute(k);
+  g.rotateY(Math.PI);
+  g.computeBoundingBox();
+  const b = g.boundingBox!;
+  const k = length / Math.max(1e-6, b.max.z - b.min.z);
+  g.translate(-(b.min.x + b.max.x) / 2, -(b.min.y + b.max.y) / 2, -(b.min.z + b.max.z) / 2);
+  g.scale(k, k, k);
+  if (!g.getAttribute('color')) {
+    const c = new Float32Array(g.getAttribute('position').count * 3).fill(0.75);
+    g.setAttribute('color', new THREE.BufferAttribute(c, 3));
+  }
+  if (!g.getAttribute('normal')) g.computeVertexNormals();
+  return g;
 }

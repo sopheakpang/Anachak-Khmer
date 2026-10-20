@@ -288,11 +288,13 @@
     }
   },
   "seeThrough": {
-    "$comment": "PK 1.8.0: zoomed in close, buildings, trees and tall grass between the camera and the people at work turn see-through round them, so the acting people and animals can always be seen. Fully on when the camera stands nearer than zoom[0] m, off beyond zoom[1] m (the RTS zoom runs 28 to 150 m). targets = how many people and animals (nearest the middle of the view, the selected first) get a window; radius = the window's width in m (it is 1.6 times as tall); amount = how much of the cover is taken away in its middle (a screen-door dither, so it stays sharp and cheap).",
+    "$comment": "PK 1.8.0: zoomed in close, buildings, trees and tall grass between the camera and the people at work turn see-through round them, so the acting people and animals can always be seen. Fully on when the camera stands nearer than zoom[0] m, off beyond zoom[1] m (the RTS zoom runs 28 to 150 m). targets = how many people and animals (nearest the middle of the view, the selected first) get a window; radius = the window's width in m (it is 1.6 times as tall); amount = how much of the cover is taken away in its middle (a screen-door dither, so it stays sharp and cheap). PK 2026-10-20 (D160): PK's scattered models (trees, rocks, plants) are cover too; near = cover closer to the camera than near[0] m is gone, fully back at near[1] m (rts: the tall canopy under a close camera; hero: a trunk the 3D hero's camera backs into); hero = in the 3D hero mode a window round the hero (radius m, amount).",
     "zoom": [45, 70],
     "targets": 24,
     "radius": 2.6,
-    "amount": 0.82
+    "amount": 0.82,
+    "near": { "rts": [12, 22], "hero": [1.2, 3] },
+    "hero": { "radius": 1.8, "amount": 0.9 }
   },
   "detail": {
     "$comment": "Ground detail near the camera: undergrowth in the forest, a few wild flowers, pebbles, reeds and lotus pads at the water. The open meadow is drawn by the ground itself (no scattered tufts: PK 1.7.0). Counts are the most drawn at once. PK 1.8.0 (the jungle clearing reference): mossy laterite rocks (forest floor, its edge, banks, a few on open land and earth), fallen palm fronds and creeping roots (forest floor and its edge).",

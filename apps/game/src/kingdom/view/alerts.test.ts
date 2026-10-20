@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { loadKingdom } from '@temples/shared';
 import { KingdomSim, PLAYER } from '../sim/sim';
 import { ALERT_COLOR, beaconGeometry, beacons } from './alerts';
+import { roofBars } from './roofBars';
 
 /** PK: light alerts for work in progress, finished, a full store; the bar shows what runs out. */
 
@@ -20,13 +21,15 @@ const spot = (s: KingdomSim, type: string, progress: number) => {
 };
 
 describe('light alerts', () => {
-  it('a soft blue light over a building going up, none when it is done', () => {
+  it('D160: a building going up has a roof bar, not the blue light; nothing when it is done', () => {
     const s = fresh();
     const site = spot(s, 'house', 0.3);
     const at = (b: ReturnType<typeof spot>) => beacons(s, 1, []).filter((x) => x.x === s.center(b)[0]);
-    expect(at(site).map((x) => x.kind)).toEqual(['progress']);
+    expect(at(site)).toEqual([]);
+    expect(roofBars(s, () => 5).some((r) => r.id === site.id)).toBe(true);
     site.progress = 1;
     expect(at(site)).toEqual([]);
+    expect(roofBars(s, () => 5).some((r) => r.id === site.id)).toBe(false);
   });
 
   it('an amber light over a full lumber camp waiting for a cart', () => {

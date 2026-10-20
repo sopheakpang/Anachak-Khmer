@@ -22,7 +22,15 @@ describe('sfxForEvent', () => {
   // Keyed by every SimEvent kind, so a new event kind fails typecheck until it is mapped here.
   const cases: Record<SimEvent['kind'], Array<[Record<string, unknown>, SfxName | null]>> = {
     shot: [[{}, 'arrow']],
-    hit: [[{}, 'hit']],
+    hit: [
+      [{}, 'hit'],
+      [{ heavy: true }, 'axe'],
+    ],
+    muster: [[{}, 'drum']],
+    block: [[{}, 'block']],
+    stolen: [[{}, 'deny']],
+    recovered: [[{}, 'discover']],
+    cheer: [[{}, 'cheer']],
     felled: [[{}, 'hit']],
     death: [[{}, 'death']],
     destroyed: [[{}, 'death']],

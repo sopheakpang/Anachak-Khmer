@@ -21,6 +21,8 @@ export interface SeeUniforms {
   uSeeN: THREE.IUniform<number>;
   uSeeAspect: THREE.IUniform<number>;
   uSeeAmount: THREE.IUniform<number>;
+  /** D160: cover nearer the camera than x (m) is gone, fading back in by y (0, 0: off). */
+  uSeeNear: THREE.IUniform<THREE.Vector2>;
 }
 
 export function seeUniforms(): SeeUniforms {
@@ -29,6 +31,7 @@ export function seeUniforms(): SeeUniforms {
     uSeeN: { value: 0 },
     uSeeAspect: { value: 16 / 9 },
     uSeeAmount: { value: 0 },
+    uSeeNear: { value: new THREE.Vector2() },
   };
 }
 
@@ -37,13 +40,16 @@ const VERTEX_BODY = /* glsl */ `vSeeClip = gl_Position;`;
 const FRAGMENT_HEAD = /* glsl */ `
   varying vec4 vSeeClip;
   uniform vec4 uSee[${MAX_SEE}]; uniform int uSeeN; uniform float uSeeAspect; uniform float uSeeAmount;
+  uniform vec2 uSeeNear;
 `;
 /** The window test (exported for the tests). The window is 1.6 times as tall as it is wide. */
 export const SEE_FRAGMENT = /* glsl */ `
+  float sDepth = vSeeClip.w;
+  // D160: cover right in front of the camera (a canopy, a trunk the hero's camera backs into)
+  // fades away, so the tall trees never fill the screen.
+  float sHole = uSeeNear.y > 0.0 ? 1.0 - smoothstep(uSeeNear.x, uSeeNear.y, sDepth) : 0.0;
   if (uSeeN > 0) {
     vec2 sNdc = vSeeClip.xy / vSeeClip.w;
-    float sDepth = vSeeClip.w;
-    float sHole = 0.0;
     for (int i = 0; i < ${MAX_SEE}; i++) {
       if (i >= uSeeN) break;
       vec4 s = uSee[i];
@@ -51,10 +57,12 @@ export const SEE_FRAGMENT = /* glsl */ `
       vec2 d = sNdc - s.xy;
       d.x *= uSeeAspect;
       d.y /= 1.6;
-      sHole = max(sHole, 1.0 - smoothstep(0.5, 1.0, length(d) / s.w));
+      sHole = max(sHole, (1.0 - smoothstep(0.5, 1.0, length(d) / s.w)) * uSeeAmount);
     }
+  }
+  if (sHole > 0.0) {
     float sIgn = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
-    if (sIgn < sHole * uSeeAmount) discard;
+    if (sIgn < sHole) discard;
   }
 `;
 
