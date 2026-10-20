@@ -501,13 +501,18 @@ export function modelUrl(file: string): string {
   return `${base}${file}`;
 }
 
-/** The phone build has no models/heroes/ or models/real/ (vite.mobile.config.ts PC_ONLY): those kits keep the built-in figure. */
+/**
+ * The phone build's hero table. It has no models/heroes/ (vite.mobile.config.ts PC_ONLY); since
+ * D163 it has the PC's models/real/ (phone-sized), so a kit keeps its PC file there and takes its
+ * `phone` file (or the built-in figure) only when the PC file is in models/heroes/.
+ */
 export function phoneModels(models: ModelTable): ModelTable {
   if (!models) return models;
   const out: Record<string, string | ModelSpec> = {};
   for (const [k, m] of Object.entries(models)) {
-    if (typeof m === 'object' && m.phone) out[k] = { ...m, file: m.phone };
-    else if (!/^models\/(heroes|real)\//.test(typeof m === 'object' ? m.file : m)) out[k] = m;
+    const file = typeof m === 'object' ? m.file : m;
+    if (!/^models\/heroes\//.test(file)) out[k] = m;
+    else if (typeof m === 'object' && m.phone) out[k] = { ...m, file: m.phone };
   }
   return out;
 }

@@ -204,8 +204,8 @@ describe('D155: PK’s heroes stand, walk and run by their own clips; the game p
   });
 });
 
-describe('PK 1.9.0 (D146 ខ១): Meshy heroes on the PC, the phone keeps its own', () => {
-  it('every hero on foot has a Meshy model; the phone table drops the PC-only models and swaps the king', async () => {
+describe('PK 1.9.0 (D146 ខ១, D163): Meshy heroes on the PC and, since D163, on the phone', () => {
+  it('every hero on foot has a Meshy model; the phone table keeps models/real, swaps only models/heroes', async () => {
     const { loadKingdom } = await import('@temples/shared');
     const { phoneModels } = await import('./glbModel');
     const models = loadKingdom().anachak.hero.models!;
@@ -214,8 +214,18 @@ describe('PK 1.9.0 (D146 ខ១): Meshy heroes on the PC, the phone keeps its ow
         true,
       );
     const phone = phoneModels(models)!;
-    expect(Object.keys(phone).filter((k) => !k.startsWith('$'))).toEqual(['king']);
-    expect((phone.king as { file: string }).file).toBe('models/king-guardian.glb');
+    // D163: the phone build has models/real/ — the same heroes as the PC.
+    for (const k of ['king', 'worker', 'spear', 'sword', 'bow', 'commander', 'hunter'])
+      expect(phone[k], k).toEqual(models[k]);
+    // A kit whose file is in models/heroes/ (not in the phone build) takes its phone file, or none.
+    const old = phoneModels({
+      a: { file: 'models/heroes/a.glb', hips: 0.9, phone: 'models/king-guardian.glb' },
+      b: { file: 'models/heroes/b.glb', hips: 0.9 },
+      c: 'models/real/people/c.glb',
+    })!;
+    expect((old.a as { file: string }).file).toBe('models/king-guardian.glb');
+    expect(old.b).toBeUndefined();
+    expect(old.c).toBe('models/real/people/c.glb');
   });
 
   it('the model files are in the game, rigged; the PC heroes carry idle, walk and run clips (D155)', async () => {

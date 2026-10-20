@@ -54,6 +54,16 @@ export interface KingdomGfx {
    * a neutral grade without the miniature blur; the models keep their own PBR materials.
    */
   real?: boolean;
+  /**
+   * PK 2026-10-20 (D163): PK's 3D models as on the PC (scattered plants and rocks, the near people
+   * and animals, boats) without the semi-realistic look — the phone. `real` implies it.
+   */
+  models?: boolean;
+}
+
+/** Whether this preset draws PK's 3D models as the PC does (the PC look, or the phone's D163). */
+export function pcModels(g: KingdomGfx): boolean {
+  return !!(g.real || g.models);
 }
 
 export const NO_GFX: KingdomGfx = {

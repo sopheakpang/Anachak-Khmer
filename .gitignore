@@ -8,6 +8,7 @@ playwright-report
 apps/desktop/out
 coverage
 dist-mobile
+.phone-models
 apk/
 __pycache__/
 .claude/*

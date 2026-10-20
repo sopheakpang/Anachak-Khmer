@@ -5,7 +5,7 @@ import { anachakHallGeometry } from './royalHall';
 import { fireGlow, nightness, restsActive } from '../sim/anachak';
 import { sunState, type SunState } from '../sim/sunPath';
 import * as THREE from 'three';
-import { NO_GFX, type KingdomGfx } from './gfx';
+import { NO_GFX, pcModels, type KingdomGfx } from './gfx';
 import { heightTexture, makeWater, type Water, makePrekWater, skyStep } from './water';
 import {
   bambooGeometry,
@@ -623,7 +623,7 @@ export class KingdomScene {
       this.scene.add(m);
     }
     // PK 1.9.0 (D153): PK's boats on the PC presets; the trader boat sails in the junk's place.
-    if (this.gfx.real && sim.data.props.boats) this.loadBoats();
+    if (pcModels(this.gfx) && sim.data.props.boats) this.loadBoats();
     // Village life (D79): kitchen gardens by the houses, palms on the paddy dikes, egrets.
     this.yards = new THREE.InstancedMesh(homeYardGeometry(), figureMaterial, 80);
     this.dikePalms = new THREE.InstancedMesh(palmGeometry(), leaves, 120);
@@ -750,7 +750,7 @@ export class KingdomScene {
     if (this.gfx.props) this.loadProps();
     // PK 1.9.0 (D153): the rest of PK's models scattered over the land in natural patterns.
     const SC = sim.data.props.scatter;
-    if (this.gfx.real && SC) {
+    if (pcModels(this.gfx) && SC) {
       this.scatter = new ScatterView(
         SC.kinds,
         scatterPlan(sim.map, SC.kinds, sim.map.seed, SC.clearHall),
@@ -761,7 +761,7 @@ export class KingdomScene {
     }
     // PK 1.9.0 (D155): the people nearest the middle of the view move like people.
     const PC = sim.data.props.people;
-    if (this.gfx.real && PC && PC.max > 0) {
+    if (pcModels(this.gfx) && PC && PC.max > 0) {
       const dress = dressOf(lookFor(kitFor(sim.data.anachak.hero, 'worker'), 'villager'));
       this.people = new NearPeople(PC, modelUrl, dress);
       this.people.preload();
@@ -780,7 +780,7 @@ export class KingdomScene {
 
     // PK 2026-10-20 (D160, D155 step 3): the animals nearest the middle of the view are PK's.
     const AC = sim.data.props.animals;
-    if (this.gfx.real && this.gfx.meshyModels && AC && AC.max > 0) {
+    if (pcModels(this.gfx) && this.gfx.meshyModels && AC && AC.max > 0) {
       this.animals = new NearAnimals(AC, modelUrl);
       this.animals.preload();
       this.scene.add(this.animals.group);

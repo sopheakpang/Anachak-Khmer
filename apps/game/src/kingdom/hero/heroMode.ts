@@ -224,15 +224,13 @@ export class HeroMode {
   constructor(private readonly host: HeroHost) {
     this.cfg = host.data.anachak.hero;
     this.keymap = host.keymap ?? new Keymap(host.data.controls, null);
-    // PK's model files, if any (in the background). The phone build leaves the PC's Meshy heroes
-    // out (D146 ខ១): it keeps the ones outside models/heroes/ (the king).
+    // PK's model files, if any (in the background). The phone build has the PC's heroes in
+    // models/real/people/ since D163; only models/heroes/ is left out (phoneModels).
     this.models = host.mobile ? phoneModels(this.cfg.models) : this.cfg.models;
     void preloadModels(this.models);
-    // PK 2026-10-20 (D158): the Blender weapons and gear (PC: the phone build has no models/real/).
-    if (!host.mobile) {
-      setGear(host.data.props.people?.gear);
-      void preloadGear();
-    }
+    // PK 2026-10-20 (D158): the Blender weapons and gear (the phone too since D163).
+    setGear(host.data.props.people?.gear);
+    void preloadGear();
     this.el = document.createElement('div');
     this.el.className = 'k-hero';
     this.el.hidden = true;

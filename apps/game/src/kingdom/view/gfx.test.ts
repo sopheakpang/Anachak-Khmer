@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import qualityJson from '../../../../../config/quality.json';
-import { NO_GFX, postChain, type KingdomGfx } from './gfx';
+import { NO_GFX, pcModels, postChain, type KingdomGfx } from './gfx';
 import {
   bambooGeometry,
   forestPalmGeometry,
@@ -72,5 +72,17 @@ describe('the semi-realistic look (D152, D153)', () => {
       expect(presets[k]!.look.style, k).toBe('lowpoly');
       expect(presets[k]!.kingdom.real ?? false, k).toBe(false);
     }
+  });
+});
+
+describe('PK 2026-10-20 (D163): the phone has the PC’s 3D models', () => {
+  it('the phone draws PK’s models as the PC does, but keeps its light look and no post passes', () => {
+    const m = presets.mobile!.kingdom;
+    expect(pcModels(m)).toBe(true);
+    expect(m.props && m.meshyModels).toBe(true);
+    expect(m.real ?? false).toBe(false);
+    expect(postChain(m)).toEqual([]);
+    for (const k of ['pc1660', 'high', 'ultra']) expect(pcModels(presets[k]!.kingdom), k).toBe(true);
+    for (const k of ['low', 'lite']) expect(pcModels(presets[k]!.kingdom), k).toBe(false);
   });
 });

@@ -20,12 +20,12 @@ The Kingdom tab as an offline, single-player Android game (no TikTok LIVE): touc
    npm install
    npm run android
    ```
-   `npm run android` builds the phone page (`apps/game`, `vite.mobile.config.ts` → `dist-mobile`) and copies it into the Android project (`apps/android/android`).
+   `npm run android` builds the phone page (`apps/game`, `vite.mobile.config.ts` → `dist-mobile`) and copies it into the Android project (`apps/android/android`). Since D163 it carries the PC's 3D models (about 100 MB; textures over `modelTextureMax` in `config/quality.json` are shrunk). The first build makes the phone copies; later builds reuse them from `apps/game/.phone-models/`.
 2. បើក Android Studio → **Open** → ជ្រើសថត `the-temples\apps\android\android` · Open that folder in Android Studio (or run `npm run android:open`). The first time, Android Studio downloads Gradle and the SDK parts it needs; wait until "Gradle sync" finishes.
 3. ម៉ឺនុយ **Build → Build App Bundle(s) / APK(s) → Build APK(s)**.
    If Gradle stops with "Unsupported class file major version 69": Android Studio's own Java (25) is too new for this Gradle (8.14). Set **Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK** to **jbr-21** (PK's PC has `C:\Users\ASUS\.jdks\jbr-21.0.11`) and build again.
 4. ពេលរួច ឯកសារនៅក្នុងថត `the-temples\apk\` · When it finishes, the file is copied to
-   `the-temples\apk\KhmerKingdoms-1.9.0-debug.apk` (the name comes from `versionName` in `app/build.gradle`; the original stays in `app\build\outputs\apk\debug\`).
+   `the-temples\apk\KhmerKingdoms-1.9.1-debug.apk` (the name comes from `versionName` in `app/build.gradle`; the original stays in `app\build\outputs\apk\debug\`).
 
 ## ៣. ដំឡើងលើទូរស័ព្ទ · Install on a phone
 

@@ -22,6 +22,17 @@ describe('iPhone web app (D73)', () => {
     ).toEqual(['./', './assets/a.js', './assets/b.woff2', './index.html']);
   });
 
+  it('D163: the 3D models are cached as they are used, not all at install', () => {
+    expect(offlineFiles(['index.html', 'models/real/plants/a.glb', 'models/buildings/b.glb', 'models/grass/c.webp'])).toEqual([
+      './',
+      './index.html',
+      './models/grass/c.webp',
+    ]);
+    const sw = serviceWorkerSource(['./'], 'v1');
+    expect(sw).toContain('const LAZY = ["models/real/","models/buildings/"]');
+    expect(sw).toContain('c.put(e.request, copy)');
+  });
+
   it('a new build gets a new cache name; the same build the same name', () => {
     const a = cacheVersion([
       ['index.html', 100],

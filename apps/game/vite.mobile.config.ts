@@ -4,6 +4,8 @@ import { defineConfig } from 'vite';
 import { cacheVersion, offlineFiles, serviceWorkerSource } from './src/pwa/offline';
 import { musicFiles } from './tools/musicFiles';
 import musicJson from '../../config/kingdom/music.json';
+import qualityJson from '../../config/quality.json';
+import { shrinkModels } from './tools/phoneModels';
 
 /**
  * The phone build: only mobile.html, into dist-mobile/ as index.html.
@@ -18,8 +20,12 @@ function walk(dir: string): string[] {
   });
 }
 
-/** Model folders the phone build leaves out (the PC's Meshy models). */
-export const PC_ONLY = ['models/heroes', 'models/buildings', 'models/real'];
+/**
+ * Model folders the phone build leaves out. PK 2026-10-20 (D163): the phone has the PC's models
+ * now (models/real, models/buildings, phone-sized by tools/phoneModels.ts); only the old Meshy
+ * heroes (models/heroes, replaced by models/real/people in D155) stay off it.
+ */
+export const PC_ONLY = ['models/heroes'];
 
 export default defineConfig({
   base: './',
@@ -37,12 +43,14 @@ export default defineConfig({
     musicFiles({ dir: resolve(__dirname, 'public/music'), copy: musicJson.tracksOnMobile === true }),
     {
       name: 'mobile-index-and-offline',
-      closeBundle() {
+      async closeBundle() {
         const out = resolve(__dirname, 'dist-mobile');
         renameSync(resolve(out, 'mobile.html'), resolve(out, 'index.html'));
-        // PK's Meshy heroes and buildings are for the PC (D146 ខ១, ខ២): the phone keeps its
-        // built-in figures and buildings, and its app stays small (about 23 MB less).
         for (const dir of PC_ONLY) rmSync(resolve(out, dir), { recursive: true, force: true });
+        // D163: the PC's 3D models, at the phone's texture size (cached in .phone-models/).
+        const max = (qualityJson.mobile as { modelTextureMax?: number }).modelTextureMax ?? 1024;
+        const r = await shrinkModels(resolve(__dirname, 'public-mobile'), out, resolve(__dirname, '.phone-models'), max);
+        console.log(`phone models: ${r.files} (${r.made} made), ${(r.saved / 1e6).toFixed(1)} MB smaller`);
         const files = walk(out).map((p) => [relative(out, p).replace(/\\/g, '/'), statSync(p).size] as const);
         const list = offlineFiles(files.map(([f]) => f));
         writeFileSync(resolve(out, 'sw.js'), serviceWorkerSource(list, cacheVersion(files)));

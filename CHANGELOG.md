@@ -34,6 +34,8 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.9.0-26 | **Blender work** (D161): **Preah Ko textured** — brick courses, old lime stucco, weathering and a laterite platform, shown as the finished temple on the PC look; the **noble house** loses its tall Thai-style finials (short horns kept) and the broken ground under it; the **gibbon, langur, douc, macaque, slow loris and binturong** are 3D models now, so every wild animal has one. |
 | 1.9.0-27 | **Android APK 1.9.0** (versionCode 10): the phone build of Kingdom and Anachak Khmer with everything up to 1.9.0-26, built in Android Studio's Gradle on PK's PC (`apk\KhmerKingdoms-1.9.0-debug.apk`). The PC-only 3D models stay out of the phone app (it keeps its built-in figures and buildings). |
 | 1.9.0-28 | **Animals with their own coats** (D162): the banteng is chestnut, the serow charcoal, the moon bear black with its cream chest crescent and the clouded leopard greyer — before, they looked like the kouprey, the muntjac, the sun bear and the leopard. |
+| 1.9.0-29 | **The phone has the PC's 3D models** (PK; D163): trees, plants, rocks, the people and animals near the view, boats, fish, PK's buildings, the finished Preah Ko and the 3D heroes with their weapons are the same models as on the PC, in the same places; the phone keeps its lighter look. The app is bigger (about 90 MB). |
+| 1.9.0-30 | **Android APK 1.9.1** (versionCode 11): everything up to 1.9.0-29, built in Android Studio's Gradle on PK's PC (`apk\KhmerKingdoms-1.9.1-debug.apk`). |
 
 ## 1.8.0 — 2026-10-09
 

@@ -11,7 +11,8 @@ describe('graphics presets and the 🖥 panel', () => {
     expect(q.pc1660!.kingdom.meshyModels).toBe(true);
     expect(q.low!.kingdom.meshyModels).toBe(false);
     expect(q.lite!.kingdom.meshyModels).toBe(false);
-    expect(q.mobile!.kingdom.meshyModels).toBe(false);
+    // D163: the phone has the PC's models (phone-sized) — buildings included.
+    expect(q.mobile!.kingdom.meshyModels).toBe(true);
     for (const p of PRESETS) expect(q[p], p).toBeTruthy();
     expect(GFX_PRESETS.map((p) => p.id)).toEqual([...PRESETS]);
   });
