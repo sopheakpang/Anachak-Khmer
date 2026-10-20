@@ -834,4 +834,5 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | Phone build, Anachak Khmer, software GL: RTS 570 388 → 344 739 triangles (draw calls 72 → 70); 3D hero 800 936 → 459 067 (91 → 81); heap 117 → 111 MB; no page errors | ✅ | probe on `vite preview` of dist-mobile vs the 1.9.1 settings |
 | Painted shade under every forest tree drawn (179 in the 3D hero view, one draw call) and the bigger plants | ✅ placed | magenta debug render |
 | How the shade looks on the phone (strength 0.55, `config/quality.json` mobile.kingdom.shade) | ⚠️ not judged | fog of war and the canopy hid the ground in the software-GL shots |
+| `gradlew assembleDebug` on PK's PC: BUILD SUCCESSFUL, `apk\KhmerKingdoms-1.9.2-debug.apk` 89.6 MB (1.9.1: 100.0 MB), new game bundle, phone-cut models inside | ✅ | Gradle 8.14.3, Java 21 |
 | Frame rate and taps on PK's phone | ⚠️ not yet | PK |
