@@ -36,6 +36,7 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.9.0-28 | **Animals with their own coats** (D162): the banteng is chestnut, the serow charcoal, the moon bear black with its cream chest crescent and the clouded leopard greyer — before, they looked like the kouprey, the muntjac, the sun bear and the leopard. |
 | 1.9.0-29 | **The phone has the PC's 3D models** (PK; D163): trees, plants, rocks, the people and animals near the view, boats, fish, PK's buildings, the finished Preah Ko and the 3D heroes with their weapons are the same models as on the PC, in the same places; the phone keeps its lighter look. The app is bigger (about 90 MB). |
 | 1.9.0-30 | **Android APK 1.9.1** (versionCode 11): everything up to 1.9.0-29, built in Android Studio's Gradle on PK's PC (`apk\KhmerKingdoms-1.9.1-debug.apk`). |
+| 1.9.0-31 | **The fantasy plants no longer smear** (D164): the glowcap, the crystal tree and the red mushrooms are repainted in clean colours (violet, teal, red caps on pale stems) instead of the broken streaky textures. |
 
 ## 1.8.0 — 2026-10-09
 

@@ -815,3 +815,11 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | `gradlew assembleDebug` on PK's PC: BUILD SUCCESSFUL, `apk\KhmerKingdoms-1.9.1-debug.apk` 100.0 MB; it holds the new game bundle, 237 web files, 178 models in `models/real` (2 old files left in PK's PC folder: emerald-tree, lone-tree) | ✅ | Gradle 8.14.3 with Java 21 |
 | Installed and played on a phone (frame rate, memory) | ⚠️ not yet | PK's phone |
 
+## 1.9.0-31 fantasy plants repainted (D164) — 2026-10-20
+
+| Check | Result | How |
+| --- | --- | --- |
+| Glowcap, crystal tree, red mushrooms: no streaks; colours read as violet, teal and red-on-pale (white spots on the red caps lost) | ✅ | `fix_smeared.py` (bpy 4.2), Cycles render before/after |
+| The files carry vertex colours and no texture; the game material keeps vertex colours, textured models unchanged | ✅ | `props.test.ts` D164 |
+| Seen in the game on the PC | ⚠️ not yet | PK |
+

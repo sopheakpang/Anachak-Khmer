@@ -1224,6 +1224,7 @@
       "size": ["h", 0.5],
       "tris": 1200,
       "rare": true,
+      "repaint": "D164: textures smeared (UVs broken by the cut to a game budget): vertex colours sampled from the atlas at each triangle's middle, median per corner (scripts/models/blender/fix_smeared.py)",
       "status": "pk"
     },
     {
@@ -1234,6 +1235,7 @@
       "size": ["h", 0.9],
       "tris": 1200,
       "rare": true,
+      "repaint": "D164: textures smeared (UVs broken by the cut to a game budget): vertex colours sampled from the atlas at each triangle's middle, median per corner (scripts/models/blender/fix_smeared.py)",
       "status": "pk"
     },
     {
@@ -1244,6 +1246,7 @@
       "size": ["h", 3],
       "tris": 3000,
       "rare": true,
+      "repaint": "D164: textures smeared (UVs broken by the cut to a game budget): vertex colours sampled from the atlas at each triangle's middle, median per corner (scripts/models/blender/fix_smeared.py)",
       "status": "pk"
     },
     {

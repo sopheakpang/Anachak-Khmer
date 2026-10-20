@@ -152,6 +152,8 @@ export function realMaterial(own: THREE.Material, tint?: string): THREE.MeshStan
     side: src.side,
     alphaTest: src.alphaTest,
     transparent: false,
+    // D164: models painted with vertex colours (the repainted fantasy plants) keep them.
+    vertexColors: !!src.vertexColors,
   });
   if (src.normalMap) m.normalScale.copy(src.normalScale);
   return m;

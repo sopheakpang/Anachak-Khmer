@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { loadKingdom, PROP_SLOTS } from '@temples/shared';
-import { applyProp, fitGeometry } from './props';
+import { applyProp, fitGeometry, realMaterial } from './props';
 
 const data = loadKingdom();
 describe("PK's 3D props (1.6.0)", () => {
@@ -281,5 +281,27 @@ describe('PK 2026-10-20 (D161): Blender jobs — Preah Ko textured, the noble ho
     if (!j) return;
     const pos = j.accessors[j.meshes[0]!.primitives[0]!.attributes.POSITION]!;
     expect(pos.max![1]! - pos.min![1]!).toBeLessThan(8.5);
+  });
+});
+
+describe('PK 2026-10-20 (D164): the repainted fantasy plants', () => {
+  it('the game keeps a model’s vertex colours, and textured models stay as they were', () => {
+    const painted = new THREE.MeshStandardMaterial({ vertexColors: true });
+    expect(realMaterial(painted).vertexColors).toBe(true);
+    expect(realMaterial(new THREE.MeshStandardMaterial()).vertexColors).toBe(false);
+  });
+
+  it('glowcap, crystal tree and red mushrooms carry vertex colours and no smeared texture', async () => {
+    const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as { readFileSync(p: string): Uint8Array };
+    for (const n of ['glowcap', 'crystal-tree', 'mushrooms-red']) {
+      const b = fs.readFileSync(new URL(`../../../public-mobile/models/real/plants/${n}.glb`, import.meta.url).pathname);
+      const len = new DataView(b.buffer, b.byteOffset).getUint32(12, true);
+      const json = JSON.parse(new TextDecoder().decode(b.subarray(20, 20 + len))) as {
+        meshes: Array<{ primitives: Array<{ attributes: Record<string, number> }> }>;
+        textures?: unknown[];
+      };
+      expect(json.meshes[0]!.primitives[0]!.attributes.COLOR_0, n).toBeDefined();
+      expect(json.textures ?? [], n).toHaveLength(0);
+    }
   });
 });
