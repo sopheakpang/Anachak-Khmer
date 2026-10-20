@@ -123,6 +123,19 @@ describe("PK 1.8.0: PK's trees", () => {
     }
   });
 
+  it('D159: a leaf-card tree keeps its own normals (out of its clumps); others are worked out again', () => {
+    const quad = new THREE.PlaneGeometry(2, 2); // faces +z
+    const out = new Float32Array(quad.getAttribute('normal').count * 3);
+    for (let i = 0; i < out.length; i += 3) out.set([0, 0.6, 0.8], i); // leaned up, as a clump's top
+    quad.setAttribute('normal', new THREE.BufferAttribute(out, 3));
+    const kept = fitTree(quad, 6, Infinity, true).getAttribute('normal');
+    expect(kept.getY(0)).toBeCloseTo(0.6);
+    expect(kept.getZ(0)).toBeCloseTo(0.8);
+    const redone = fitTree(quad, 6).getAttribute('normal');
+    expect(redone.getY(0)).toBeCloseTo(0);
+    expect(Math.abs(redone.getZ(0))).toBeCloseTo(1);
+  });
+
   it('weighted picks follow the weights', () => {
     const list = [
       { id: 'x', weight: 1 },

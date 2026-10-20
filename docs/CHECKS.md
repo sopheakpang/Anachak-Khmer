@@ -750,3 +750,12 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | Oak and lone tree → mango and rain tree (Blender) | ✅ | `view/scatter.test.ts` |
 | Forest trees a–f re-made in Blender (3 455–4 399 triangles, alpha leaf atlas, new cards); full height kept; leaf cut-out and leafy shadows; stray objects from other Blender scenes stripped from the exports | ✅ | `view/trees18.test.ts`, card atlas and browser probe |
 | `npm run verify` (94 test files / 799 tests, build) | ✅ | |
+
+## 1.9.0-24 leafier trees (D159) — 2026-10-20
+
+| Check | Result | How |
+| --- | --- | --- |
+| New leaf atlas and crowns (round lobes of leaf sprays, sunlit top, shaded heart, normals out of the clumps); forest trees a–f 4 375–5 713 triangles, new picture cards | ✅ | Blender renders on PK's PC, card atlas checked by picture |
+| A leaf-card tree keeps its own normals; other trees get them worked out again | ✅ | `view/trees18.test.ts` |
+| Mango, rain and big tropical trees remade, each ≤ 4 984 triangles, scatter worst case still < 550k | ✅ | `view/scatter.test.ts` |
+| lint, typecheck, tests (94 files / 800 tests), game build | ✅ | |

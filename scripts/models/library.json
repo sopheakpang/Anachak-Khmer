@@ -1311,7 +1311,7 @@
       "out": "plants/rain-tree.glb",
       "kind": "plant",
       "size": ["h", 12],
-      "tris": 4100,
+      "tris": 4910,
       "status": "pk"
     },
     {
@@ -1320,7 +1320,7 @@
       "out": "plants/big-tropical-tree.glb",
       "kind": "plant",
       "size": ["h", 26],
-      "tris": 4100,
+      "tris": 4944,
       "status": "pk"
     },
     {
@@ -1329,7 +1329,7 @@
       "out": "plants/mango-tree.glb",
       "kind": "plant",
       "size": ["h", 12],
-      "tris": 4100,
+      "tris": 4984,
       "rare": true,
       "status": "pk"
     },

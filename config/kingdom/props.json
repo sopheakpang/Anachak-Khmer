@@ -157,8 +157,8 @@
       "cards": "models/trees/a-cards.webp",
       "card": 1.02,
       "height": 18,
-      "width": 16.5,
-      "hi": 4500,
+      "width": 16,
+      "hi": 6000,
       "tex": 1024
     },
     {
@@ -168,10 +168,10 @@
       "source": "scripts/models/blender/make_bigtree.py (forest-b)",
       "file": "models/trees/b.glb",
       "cards": "models/trees/b-cards.webp",
-      "card": 1.202,
+      "card": 1.109,
       "height": 19.5,
-      "width": 23,
-      "hi": 4500,
+      "width": 21,
+      "hi": 6000,
       "tex": 1024
     },
     {
@@ -184,7 +184,7 @@
       "card": 1.02,
       "height": 19.5,
       "width": 18,
-      "hi": 4500,
+      "hi": 6000,
       "tex": 1024
     },
     {
@@ -194,10 +194,10 @@
       "source": "scripts/models/blender/make_bigtree.py (forest-d)",
       "file": "models/trees/d.glb",
       "cards": "models/trees/d-cards.webp",
-      "card": 1.396,
+      "card": 1.315,
       "height": 21,
-      "width": 28.5,
-      "hi": 4500,
+      "width": 27,
+      "hi": 6000,
       "tex": 1024
     },
     {
@@ -209,8 +209,8 @@
       "cards": "models/trees/e-cards.webp",
       "card": 1.02,
       "height": 19.5,
-      "width": 16.5,
-      "hi": 4500,
+      "width": 16,
+      "hi": 6000,
       "tex": 1024
     },
     {
@@ -220,10 +220,10 @@
       "source": "scripts/models/blender/make_bigtree.py (forest-f)",
       "file": "models/trees/f.glb",
       "cards": "models/trees/f-cards.webp",
-      "card": 1.471,
+      "card": 1.402,
       "height": 21,
-      "width": 30,
-      "hi": 4500,
+      "width": 28.5,
+      "hi": 6000,
       "tex": 1024
     },
     {

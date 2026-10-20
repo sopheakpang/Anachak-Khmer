@@ -14,10 +14,13 @@ P = {
     'name': 'big-tropical-tree', 'seed': 11, 'trunk': 15.0, 'radius': 1.15, 'buttress': 3.4,
     'limbs': 6, 'limbLen': [7.5, 10.0], 'limbRise': [2.5, 5.0], 'crown': 12.0, 'clumps': 60,
     'clumpSize': [4.2, 6.2], 'crownLift': 4.0, 'crownDome': 3.2, 'roots': 6,
+    # D159: leaf clumps of small cards on the shell of round lobes (lobe radius = clump size × this,
+    # cards per lobe, card size × lobe radius) and the atlas with bark in the left quarter, 3 × 2 leaf sprays.
+    'lobe': 0.6, 'cards': 22, 'card': [0.95, 1.35], 'atlas': 'bigtree_atlas3.png',
 }
 if len(ARGS) > 1:
     P.update(json.loads(ARGS[1]))
-ATLAS = os.path.join(OUT, 'bigtree_atlas.png')
+ATLAS = os.path.join(OUT, P['atlas'])
 random.seed(P['seed'])
 
 for o in list(bpy.data.objects):
@@ -26,8 +29,8 @@ for o in list(bpy.data.objects):
 
 bm = bmesh.new()
 uvl = bm.loops.layers.uv.new()
-BARK_U = (0.0, 0.5)
-LEAF_U = (0.5, 1.0)
+BARK_U = (0.0, 0.25)
+LEAF_U = (0.25, 1.0)
 V_PER_M = 1.0 / 12.0  # the bark repeats every 12 m up the trunk
 
 
@@ -70,7 +73,7 @@ def tube(pts, radii, segs, star=None, v0=0.0, cap=False):
         for k in range(segs):
             f = bm.faces.new((last[k][0], last[k + 1][0], c))
             for loop in f.loops:
-                loop[uvl].uv = (0.25, 0.5)
+                loop[uvl].uv = ((BARK_U[0] + BARK_U[1]) / 2, 0.5)
     return s
 
 
@@ -102,10 +105,10 @@ tube(trunk, trunk_r, 30, buttress)
 for j in range(P['roots']):
     th = (j + 0.5) / max(1, P['roots']) * 2 * math.pi - phase + random.uniform(-0.2, 0.2)
     d = Vector((math.cos(th), math.sin(th), 0))
-    start = d * 2.6 + Vector((0, 0, 0.25))
-    L = random.uniform(3.5, 6.5)
+    start = d * (P['radius'] * 1.5) + Vector((0, 0, 0.12))
+    L = random.uniform(3.5, 6.5) * min(1.0, P['radius'] / 0.9)
     side = d.cross(Vector((0, 0, 1)))
-    pts = [start + d * (L * t) + side * math.sin(t * 5 + j) * 0.6 + Vector((0, 0, 0.18 * (1 - t) - 0.05)) for t in (i / 7 for i in range(8))]
+    pts = [start + d * (L * t) + side * math.sin(t * 5 + j) * 0.6 + Vector((0, 0, 0.1 * (1 - t) - 0.12 * t)) for t in (i / 7 for i in range(8))]
     tube(pts, [0.32 * (1 - 0.8 * t) for t in (i / 7 for i in range(8))], 7, cap=True)
 
 # --- limbs and branches -------------------------------------------------------------------
@@ -133,40 +136,74 @@ for j in range(nl):
         tube(sp, [0.22 * (1 - 0.7 * i / 5) for i in range(6)], 7, cap=True)
         ends.append((q2, 0.85))
 
-# --- the crown: crossed leaf cards in clumps, an umbrella over the limbs ------------------
-def card(c, size, normal_tilt):
-    """One leaf card through c: a square, turned at random, tilted toward the sky."""
-    az = random.random() * math.pi
-    rot = Matrix.Rotation(az, 3, 'Z') @ Matrix.Rotation(normal_tilt, 3, 'X')
+# --- the crown (D159): round lobes of leaf clumps, each card facing out of its lobe --------
+LEAF_N = {}  # vertex -> the normal it shades with: out of its lobe and up (soft, round crowns)
+UP = Vector((0, 0, 1))
+
+
+def card(c, size, out, sprite):
+    """One leaf spray through c, facing `out`, picture `sprite` (0-2 sunlit, 3-5 shade)."""
+    z = out.normalized()
+    x = z.cross(UP if abs(z.z) < 0.95 else Vector((1, 0, 0))).normalized()
+    y = z.cross(x)
+    spin = random.uniform(-0.6, 0.6)  # the spray mostly upright, its twigs below
+    xr = x * math.cos(spin) + y * math.sin(spin)
+    yr = y * math.cos(spin) - x * math.sin(spin)
+    if yr.z < 0:
+        xr, yr = -xr, -yr
     h = size / 2
-    corners = [rot @ Vector(v) for v in ((-h, 0, -h), (h, 0, -h), (h, 0, h), (-h, 0, h))]
-    vs = [bm.verts.new(c + v) for v in corners]
+    vs = [bm.verts.new(c + xr * u * h + yr * v * h) for u, v in ((-1, -1), (1, -1), (1, 1), (-1, 1))]
     f = bm.faces.new(vs)
+    col, row = sprite % 3, sprite // 3
+    u0 = LEAF_U[0] + (LEAF_U[1] - LEAF_U[0]) * col / 3
+    du = (LEAF_U[1] - LEAF_U[0]) / 3
     for loop, uv in zip(f.loops, ((0, 0), (1, 0), (1, 1), (0, 1))):
-        loop[uvl].uv = (LEAF_U[0] + (LEAF_U[1] - LEAF_U[0]) * (0.002 + uv[0] * 0.996), 0.002 + uv[1] * 0.996)
+        loop[uvl].uv = (u0 + du * (0.01 + uv[0] * 0.98), 1.0 - (row + 1 - (0.01 + uv[1] * 0.98)) * 0.5)
+    n = (z * 0.75 + UP * 0.45).normalized()
+    for v in vs:
+        LEAF_N[v] = n
 
 
-clumps = []
+lobes = []
 for p, k in ends:
-    clumps.append((p + Vector((0, 0, 0.2)), P['clumpSize'][1] * 1.15 * k))
-# more clumps filling an umbrella-shaped crown
+    lobes.append((p + Vector((0, 0, 0.6)), P['clumpSize'][1] * P['lobe'] * k))
 cr = P['crown']
-for i in range(P['clumps']):
+for i in range(max(4, P['clumps'] // 4)):
     a = random.random() * 2 * math.pi
-    r = cr * math.sqrt(random.random())
-    z = top.z + P['crownLift'] + P['crownDome'] * (1 - (r / cr) ** 2) + random.uniform(-0.8, 0.8)
-    clumps.append((Vector((top.x + math.cos(a) * r, top.y + math.sin(a) * r, z)), random.uniform(*P['clumpSize'])))
-for c, s in clumps:
-    card(c, s, math.radians(random.uniform(55, 80)))   # mostly lying flat: the crown's roof
-    card(c, s * 0.9, math.radians(random.uniform(0, 25)))   # and standing: its depth from the side
-    card(c, s * 0.85, math.radians(random.uniform(20, 50)))
+    r = cr * 0.75 * math.sqrt(random.random())
+    z = top.z + P['crownLift'] + P['crownDome'] * (1 - (r / cr) ** 2) + random.uniform(-0.5, 0.8)
+    lobes.append((Vector((top.x + math.cos(a) * r, top.y + math.sin(a) * r, z)), random.uniform(*P['clumpSize']) * P['lobe']))
+heart = sum((c for c, _ in lobes), Vector()) / len(lobes)
+gold = math.pi * (3 - math.sqrt(5))
+for c, R in lobes:
+    n = P['cards']
+    for i in range(n):
+        # spread over the lobe's shell (golden spiral), fewer underneath
+        zz = 1 - 2 * (i + 0.5) / n
+        zz = 1 - (1 - zz) * 0.85
+        rr = math.sqrt(max(0.0, 1 - zz * zz))
+        th = i * gold + random.uniform(-0.3, 0.3)
+        d = Vector((math.cos(th) * rr, math.sin(th) * rr, zz))
+        pos = c + d * R * random.uniform(0.7, 1.0)
+        # sunlit on top and on the crown's outside, shaded underneath and toward its heart
+        outward = (pos - heart).normalized().dot(d)
+        lit = zz > -0.15 and (zz > 0.45 or outward > -0.2)
+        card(pos, R * random.uniform(*P['card']), d + Vector((random.uniform(-0.25, 0.25), random.uniform(-0.25, 0.25), 0.15)), random.randrange(3) + (0 if lit else 3))
+    for i in range(3):  # a shaded heart so the light does not show through the lobe
+        d = Vector((random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-0.3, 0.6))).normalized()
+        card(c + d * R * 0.3, R * 1.1, d, 3 + random.randrange(3))
 
 me = bpy.data.meshes.new(P['name'])
 bm.normal_update()
+bm.verts.index_update()
+vnorm = [tuple(LEAF_N.get(v, v.normal)) for v in bm.verts]
 bm.to_mesh(me)
 bm.free()
 for p in me.polygons:
     p.use_smooth = True
+if hasattr(me, 'use_auto_smooth'):
+    me.use_auto_smooth = True  # Blender < 4.1: custom normals need it
+me.normals_split_custom_set_from_vertices(vnorm)
 ob = bpy.data.objects.new('BigTree-' + P['name'], me)
 bpy.context.scene.collection.objects.link(ob)
 
@@ -193,9 +230,13 @@ me.materials.append(mat)
 
 tris = sum(len(p.vertices) - 2 for p in me.polygons)
 size = [round(v, 2) for v in ob.dimensions]
-bpy.ops.object.select_all(action='DESELECT')
+for sc in bpy.data.scenes:  # never export another scene's selection (D158)
+    for vl in sc.view_layers:
+        for o in vl.objects:
+            if o is not None and o.select_get(view_layer=vl):
+                o.select_set(False, view_layer=vl)
 ob.select_set(True)
 bpy.context.view_layer.objects.active = ob
 os.makedirs(OUT, exist_ok=True)
-bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, P['name'] + '.glb'), use_selection=True, export_format='GLB', export_image_format='WEBP', export_apply=True)
+bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, P['name'] + '.glb'), use_selection=True, export_format='GLB', export_image_format='WEBP', export_apply=True, use_active_scene=True)
 print('BIGTREE', tris, size)

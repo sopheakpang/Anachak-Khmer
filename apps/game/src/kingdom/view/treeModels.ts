@@ -339,10 +339,6 @@ interface Kind {
 }
 
 /**
- * Scale a model's geometry to `height` m (or smaller, so its crown is at most `width` m
- * across), its trunk on the origin, its foot on the ground.
- */
-/**
  * D158: the alpha cut-out a near tree keeps from its model's material (leaf cards in an
  * alpha-masked atlas; glTF alphaMode MASK arrives as alphaTest). 0 for an opaque model.
  */
@@ -351,9 +347,22 @@ export function nearCutout(m: THREE.Material | null | undefined): number {
   return a > 0 && a < 1 ? a : 0;
 }
 
-export function fitTree(src: THREE.BufferGeometry, height: number, width = Infinity): THREE.BufferGeometry {
+/**
+ * Scale a model's geometry to `height` m (or smaller, so its crown is at most `width` m
+ * across), its trunk on the origin, its foot on the ground. D159: `keepNormals` keeps the
+ * model's own normals (the Blender trees' leaf cards face out of their round clumps, so the
+ * crown shades softly like one mass instead of flat cards); otherwise they are worked out again.
+ */
+export function fitTree(
+  src: THREE.BufferGeometry,
+  height: number,
+  width = Infinity,
+  keepNormals = false,
+): THREE.BufferGeometry {
   const g = src.clone();
-  for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'uv') g.deleteAttribute(k);
+  const keep = keepNormals && !!g.getAttribute('normal');
+  for (const k of Object.keys(g.attributes))
+    if (k !== 'position' && k !== 'uv' && !(keep && k === 'normal')) g.deleteAttribute(k);
   g.computeBoundingBox();
   const b = g.boundingBox!;
   const k = Math.min(
@@ -362,7 +371,7 @@ export function fitTree(src: THREE.BufferGeometry, height: number, width = Infin
   );
   g.translate(-(b.min.x + b.max.x) / 2, -b.min.y, -(b.min.z + b.max.z) / 2);
   g.scale(k, k, k);
-  g.computeVertexNormals();
+  if (!keep) g.computeVertexNormals();
   g.computeBoundingSphere();
   return g;
 }
@@ -438,15 +447,16 @@ export class ModelTrees {
       // Near: PK's model itself, fitted to the tree's height (and crown width).
       const geo = model.geometry.clone();
       geo.applyMatrix4(model.matrixWorld);
-      const fitted = fitTree(geo, kind.cfg.height, kind.cfg.width);
+      // D158: the Blender forest trees carry leaf cards (an alpha-masked leaf atlas); keep the
+      // model's cut-out so the leaves are leaves, and cast shadows through the same cut-out;
+      // D159: and keep their normals (out of each round leaf clump).
+      const cut = nearCutout(model.material as THREE.Material);
+      const fitted = fitTree(geo, kind.cfg.height, kind.cfg.width, cut > 0);
       geo.dispose();
       kind.near.geometry.dispose();
       kind.near.geometry = fitted;
       const map = (model.material as THREE.MeshStandardMaterial).map ?? null;
       if (map) map.colorSpace = THREE.SRGBColorSpace;
-      // D158: the Blender forest trees carry leaf cards (an alpha-masked leaf atlas); keep the
-      // model's cut-out so the leaves are leaves, and cast shadows through the same cut-out.
-      const cut = nearCutout(model.material as THREE.Material);
       const mat = new THREE.MeshStandardMaterial({
         map,
         roughness: 0.9,
