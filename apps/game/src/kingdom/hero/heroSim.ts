@@ -34,15 +34,22 @@ export interface StrikeResult {
 }
 
 /**
- * Can the hero stand here: open ground, a ford or a bridge, or the river's shallows up to his
- * chest (PK 2026-10-20, D156: he wades in, as the people do) — no deep water, trees, rocks, walls.
+ * Can the hero be here: open ground, a ford or a bridge, or the water — wading in the shallows
+ * (PK 2026-10-20, D156) and swimming where it is deeper than his chest (D158) — but no trees,
+ * rocks or walls.
  */
 export function heroOpen(sim: KingdomSim, x: number, z: number): boolean {
   const half = (sim.map.size * sim.map.tile) / 2 - 2;
   if (Math.abs(x) > half || Math.abs(z) > half) return false;
   const [tx, tz] = worldToTile(sim.map, x, z);
-  if (sim.grid.ok(tx, tz)) return true;
-  return sim.grid.isWater(tx, tz) && sim.depthAt(x, z) <= sim.data.rules.water.chestDepth;
+  return sim.grid.ok(tx, tz) || sim.grid.isWater(tx, tz);
+}
+
+/** D158: his pace in the water, as the people's (rules.water: wading, swimming); 1 on land. */
+export function heroPace(sim: KingdomSim, x: number, z: number): number {
+  const W = sim.data.rules.water;
+  const d = sim.depthAt(x, z);
+  return d <= 0 ? 1 : d < W.chestDepth ? W.wadeSpeed : W.swimSpeed;
 }
 
 /** How deep the water he stands in is at a tile (m): the river's depth, or a ford's (drawn as water). */

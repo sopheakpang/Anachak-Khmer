@@ -131,7 +131,11 @@ function clip(name: string, bone: string, amp: number): THREE.AnimationClip {
   const q0 = new THREE.Quaternion();
   const q1 = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), amp);
   return new THREE.AnimationClip(name, 1, [
-    new THREE.QuaternionKeyframeTrack(`${bone}.quaternion`, [0, 0.5, 1], [...q0.toArray(), ...q1.toArray(), ...q0.toArray()]),
+    new THREE.QuaternionKeyframeTrack(
+      `${bone}.quaternion`,
+      [0, 0.5, 1],
+      [...q0.toArray(), ...q1.toArray(), ...q0.toArray()],
+    ),
   ]);
 }
 
@@ -206,7 +210,9 @@ describe('PK 1.9.0 (D146 ខ១): Meshy heroes on the PC, the phone keeps its ow
     const { phoneModels } = await import('./glbModel');
     const models = loadKingdom().anachak.hero.models!;
     for (const k of ['king', 'worker', 'spear', 'sword', 'bow', 'commander', 'hunter'])
-      expect(typeof models[k] === 'object' && /^models\/(heroes|real\/people)\//.test(models[k].file)).toBe(true);
+      expect(typeof models[k] === 'object' && /^models\/(heroes|real\/people)\//.test(models[k].file)).toBe(
+        true,
+      );
     const phone = phoneModels(models)!;
     expect(Object.keys(phone).filter((k) => !k.startsWith('$'))).toEqual(['king']);
     expect((phone.king as { file: string }).file).toBe('models/king-guardian.glb');
@@ -231,7 +237,9 @@ describe('PK 1.9.0 (D146 ខ១): Meshy heroes on the PC, the phone keeps its ow
 });
 
 /** The JSON chunk of a .glb under public-mobile/ (null when the file is not there). */
-async function glbJson(file: string): Promise<{ meshes?: unknown[]; textures?: unknown[]; skins?: unknown[]; animations?: unknown[] } | null> {
+async function glbJson(
+  file: string,
+): Promise<{ meshes?: unknown[]; textures?: unknown[]; skins?: unknown[]; animations?: unknown[] } | null> {
   const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
     existsSync(p: URL): boolean;
     readFileSync(p: URL): Uint8Array;
@@ -242,3 +250,57 @@ async function glbJson(file: string): Promise<{ meshes?: unknown[]; textures?: u
   const len = new DataView(b.buffer, b.byteOffset, b.byteLength).getUint32(12, true);
   return JSON.parse(new TextDecoder().decode(b.subarray(20, 20 + len)));
 }
+
+describe('PK 2026-10-20 (D158): the hero’s weapons and gear made in Blender', () => {
+  it('every gear file is in the game: one mesh, light enough to carry', async () => {
+    const gear = loadKingdom().props.people!.gear!;
+    for (const k of [
+      'sword',
+      'preahKhan',
+      'spear',
+      'lance',
+      'axe',
+      'goad',
+      'staff',
+      'bow',
+      'shield',
+      'quiver',
+    ])
+      expect(gear[k], k).toBeTruthy();
+    const first = await glbJson(gear.sword!);
+    if (!first) return; // a checkout without the PC models
+    for (const [k, f] of Object.entries(gear)) {
+      const j = (await glbJson(f)) as {
+        meshes: Array<{ primitives: Array<{ indices: number }> }>;
+        accessors: Array<{ count: number }>;
+      };
+      expect(j, k).toBeTruthy();
+      expect(j.meshes).toHaveLength(1);
+      const tris = j.meshes[0]!.primitives.reduce((a, p) => a + j.accessors[p.indices]!.count / 3, 0);
+      expect(tris, k).toBeLessThan(2000);
+    }
+  });
+
+  it('on the PC look the Blender sword, shield and quiver replace the built-in shapes; other looks keep them', async () => {
+    const { setGear } = await import('./glbModel');
+    const { setLook } = await import('../../engine/look');
+    const gear = loadKingdom().props.people!.gear!;
+    const fake = () => new THREE.Group().add(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.9, 0.01)));
+    for (const f of Object.values(gear)) registerModel(modelUrl(f), fake());
+    setGear(gear);
+    const kit = kitFor(H, 'spearman');
+    expect(kit.weapon).toBe('spear');
+    const look = { ...lookFor(kit, 'spearman'), shield: true, quiver: true };
+    setLook({ style: 'real' });
+    const real = new HeroModel(kit, look);
+    const blender: string[] = [];
+    real.group.traverse((o) => o.userData.blender && blender.push(o.userData.blender as string));
+    expect(blender.sort()).toEqual(['quiver', 'shield', 'spear']);
+    setLook({ style: 'lowpoly' });
+    const low = new HeroModel(kit, look);
+    let any = false;
+    low.group.traverse((o) => (any ||= !!o.userData.blender));
+    expect(any).toBe(false);
+    setGear({});
+  });
+});

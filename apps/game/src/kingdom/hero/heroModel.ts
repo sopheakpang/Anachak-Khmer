@@ -4,7 +4,10 @@ import type { HeroKit } from '@temples/shared';
 import type { HeroState } from './heroCore';
 import { ink, setFlat, toon, toonFlat, toonGradient } from './toon';
 import { adultFigure, type Dress, type Joints } from './body';
-import { HeroRig, type ModelSpec } from './glbModel';
+import { HeroRig, gearModel, type ModelSpec } from './glbModel';
+import { realLook } from '../../engine/look';
+import { actPose, applyActPose } from '../view/actPose';
+import { ACT } from '../../engine/figures';
 
 /**
  * The played character, drawn anime-style (PK: "cel-shaded, like Genshin Impact"): toon
@@ -194,7 +197,11 @@ const at = <T extends THREE.Object3D>(o: T, x: number, y: number, z: number): T 
  * hilt up and forward by the hip, the blade slanting down and back; drawn for `keepDrawn`
  * seconds after the last strike.
  */
-export const SHEATH = { at: [0.19, 0.06, 0.1] as const, rot: [Math.PI + 0.5, 0, -0.18] as const, keepDrawn: 1.5 };
+export const SHEATH = {
+  at: [0.19, 0.06, 0.1] as const,
+  rot: [Math.PI + 0.5, 0, -0.18] as const,
+  keepDrawn: 1.5,
+};
 
 function weapon(kind: HeroKit['weapon']): THREE.Group {
   const g = new THREE.Group();
@@ -609,14 +616,35 @@ export class HeroModel {
   ) {
     const f = adultFigure(dressOf(look));
     this.j = f.j;
+    // PK 2026-10-20 (D158): on the PC look the gear is PK's Blender models when they are in.
+    const real = realLook();
     if (look.quiver) {
-      const q = part(new THREE.CylinderGeometry(0.045, 0.04, 0.5, 8), 0x6a4422);
-      q.userData.keep = q.userData.gear = true;
-      q.position.set(0.08, 0.3, -0.15);
-      q.rotation.z = 0.45;
-      this.j.spine.add(q);
+      const bq = real ? gearModel('quiver') : null;
+      if (bq) {
+        const g = new THREE.Group();
+        g.userData.keep = g.userData.gear = true;
+        g.position.set(0.08, 0.3, -0.15);
+        g.rotation.z = 0.45;
+        bq.position.y = -0.3;
+        g.add(bq);
+        this.j.spine.add(g);
+      } else {
+        const q = part(new THREE.CylinderGeometry(0.045, 0.04, 0.5, 8), 0x6a4422);
+        q.userData.keep = q.userData.gear = true;
+        q.position.set(0.08, 0.3, -0.15);
+        q.rotation.z = 0.45;
+        this.j.spine.add(q);
+      }
     }
-    if (look.shield) {
+    const bs = real && look.shield ? gearModel('shield') : null;
+    if (bs) {
+      const g = new THREE.Group();
+      g.userData.keep = g.userData.gear = true;
+      g.position.set(0.06, -0.12, 0.02);
+      g.rotation.z = Math.PI / 2;
+      g.add(bs);
+      this.j.elbowL.add(g);
+    } else if (look.shield) {
       // A small round shield on the left forearm (spearmen of the reliefs).
       const sh = part(new THREE.CylinderGeometry(0.25, 0.25, 0.035, 18), 0x8a5a2c);
       sh.userData.keep = sh.userData.gear = true;
@@ -639,6 +667,12 @@ export class HeroModel {
     this.gripR = this.j.gripR;
     this.weapon = weapon(kit.weapon);
     this.weapon.userData.gear = true;
+    const bw = real ? gearModel(kit.weapon) : null;
+    if (bw) {
+      // PK's Blender weapon in place of the built-in shape (the same grip and length axis).
+      this.weapon.clear();
+      this.weapon.add(bw);
+    }
     this.j.gripR.add(this.weapon);
     // PK 1.8.0: a sword is worn at the left hip, hilt forward, and drawn only to fight.
     this.sheath = new THREE.Group();
@@ -649,7 +683,8 @@ export class HeroModel {
     this.sheathes = kit.weapon === 'sword' || kit.weapon === 'preahKhan';
     if (this.sheathes) this.sheath.add(this.weapon);
     if (kit.weapon === 'bow') {
-      const b = bow();
+      const bb = real ? gearModel('bow') : null;
+      const b = bb ? new THREE.Group().add(bb) : bow();
       b.userData.gear = true;
       b.rotation.set(0, Math.PI / 2, 0);
       this.j.gripL.add(b);
@@ -729,9 +764,38 @@ export class HeroModel {
    * Pose for this frame. `s` is the hero's state, `p` its time in that state (s), `combo` the
    * strike in the combo, `stride` the walk phase, `speed` m/s, `y` the jump height.
    */
-  pose(h: Parameters<HeroModel['poseJoints']>[0]): void {
+  pose(h: Parameters<HeroModel['poseJoints']>[0] & { swim?: 'crawl' | 'tread' }): void {
     this.poseJoints(h);
-    this.rig?.drive({ state: h.state, speed: h.speed, t: h.t, mounted: !!this.beast });
+    if (h.swim) this.poseSwim(h.swim, h.t);
+    this.rig?.drive({
+      state: h.swim ? 'swim' : h.state,
+      speed: h.swim ? 0 : h.speed,
+      t: h.t,
+      mounted: !!this.beast,
+    });
+  }
+
+  /**
+   * PK 2026-10-20 (D158): swimming in deep water — the front crawl (the crowd's own swim:
+   * arms over in turn, legs fluttering; the body is laid flat by the hero mode), or treading
+   * water upright, hands sculling at the surface.
+   */
+  private poseSwim(kind: 'crawl' | 'tread', t: number): void {
+    const j = this.j;
+    if (kind === 'crawl') {
+      applyActPose(j, actPose(ACT.swim, t, 0));
+      j.head.rotation.x = -0.9; // the face up out of the water, looking ahead
+      return;
+    }
+    const k = Math.sin(t * 3.2);
+    j.shoulderL.rotation.set(-0.35, 0, 0.9 + 0.25 * k);
+    j.shoulderR.rotation.set(-0.35, 0, -0.9 - 0.25 * k);
+    j.elbowL.rotation.set(-0.5, 0, 0);
+    j.elbowR.rotation.set(-0.5, 0, 0);
+    j.hipL.rotation.set(0.35 * Math.sin(t * 2.6), 0, 0.05);
+    j.hipR.rotation.set(-0.35 * Math.sin(t * 2.6), 0, -0.05);
+    j.kneeL.rotation.set(0.5 + 0.3 * Math.max(0, Math.sin(t * 2.6)), 0, 0);
+    j.kneeR.rotation.set(0.5 + 0.3 * Math.max(0, -Math.sin(t * 2.6)), 0, 0);
   }
 
   private poseJoints(h: {

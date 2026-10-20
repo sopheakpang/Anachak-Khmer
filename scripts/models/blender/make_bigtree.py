@@ -5,9 +5,20 @@
 import bpy, bmesh, math, random, os, sys
 from mathutils import Vector, Matrix
 
-OUT = sys.argv[sys.argv.index('--') + 1] if '--' in sys.argv else r"C:\Users\ASUS\Downloads\3D model\Anachak-Khmer\game-ready\bigtree"
+import json
+ARGS = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+OUT = ARGS[0] if ARGS else r"C:\Users\ASUS\Downloads\3D model\Anachak-Khmer\game-ready\bigtree"
+# PK 2026-10-20 (D158): the same maker shapes the other tropical trees (a mango, a rain tree):
+# the second argument is a JSON of what differs from the big spung.
+P = {
+    'name': 'big-tropical-tree', 'seed': 11, 'trunk': 15.0, 'radius': 1.15, 'buttress': 3.4,
+    'limbs': 6, 'limbLen': [7.5, 10.0], 'limbRise': [2.5, 5.0], 'crown': 12.0, 'clumps': 60,
+    'clumpSize': [4.2, 6.2], 'crownLift': 4.0, 'crownDome': 3.2, 'roots': 6,
+}
+if len(ARGS) > 1:
+    P.update(json.loads(ARGS[1]))
 ATLAS = os.path.join(OUT, 'bigtree_atlas.png')
-random.seed(11)
+random.seed(P['seed'])
 
 for o in list(bpy.data.objects):
     if o.name.startswith('BigTree'):
@@ -68,18 +79,18 @@ def bezier(p0, p1, p2, n):
 
 
 # --- the trunk on its buttresses --------------------------------------------------------
-TRUNK_H = 15.0
+TRUNK_H = P['trunk']
 N = 22
 lean = Vector((0.35, -0.2, 0))
 trunk = [Vector((0, 0, -0.3)) + lean * ((i / (N - 1)) ** 2) + Vector((0, 0, TRUNK_H * (i / (N - 1)) ** 1.5)) for i in range(N)]
-trunk_r = [1.15 * (1 - 0.55 * (p.z / TRUNK_H)) for p in trunk]
+trunk_r = [P['radius'] * (1 - 0.55 * (p.z / TRUNK_H)) for p in trunk]
 phase = random.random() * 6.28
 weights = [random.uniform(0.7, 1.25) for _ in range(6)]
 
 
 def buttress(th, i):
     h = max(0.0, trunk[i].z)
-    A = 3.4 * math.exp(-h / 2.6)
+    A = P['buttress'] * math.exp(-h / 2.6)
     k = int(((th + phase) % (2 * math.pi)) / (2 * math.pi) * 6) % 6
     c = max(0.0, math.cos(6 * (th + phase))) ** 7
     return 1 + A * c * weights[k] + 0.05 * math.sin(th * 13 + h)
@@ -88,8 +99,8 @@ def buttress(th, i):
 tube(trunk, trunk_r, 30, buttress)
 
 # --- roots snaking over the ground from the buttresses --------------------------------
-for j in range(6):
-    th = (j + 0.5) / 6 * 2 * math.pi - phase + random.uniform(-0.2, 0.2)
+for j in range(P['roots']):
+    th = (j + 0.5) / max(1, P['roots']) * 2 * math.pi - phase + random.uniform(-0.2, 0.2)
     d = Vector((math.cos(th), math.sin(th), 0))
     start = d * 2.6 + Vector((0, 0, 0.25))
     L = random.uniform(3.5, 6.5)
@@ -100,12 +111,12 @@ for j in range(6):
 # --- limbs and branches -------------------------------------------------------------------
 top = trunk[-1]
 ends = []
-nl = 6
+nl = P['limbs']
 for j in range(nl):
     a = j / nl * 2 * math.pi + random.uniform(-0.25, 0.25)
     out = Vector((math.cos(a), math.sin(a), 0))
-    L = random.uniform(7.5, 10.0)
-    rise = random.uniform(2.5, 5.0)
+    L = random.uniform(*P['limbLen'])
+    rise = random.uniform(*P['limbRise'])
     p0 = top + Vector((0, 0, -random.uniform(0.5, 3.0)))
     p2 = p0 + out * L + Vector((0, 0, rise + 3.0))
     p1 = p0 + out * (L * 0.35) + Vector((0, 0, rise + 3.5))
@@ -137,26 +148,26 @@ def card(c, size, normal_tilt):
 
 clumps = []
 for p, k in ends:
-    clumps.append((p + Vector((0, 0, 0.6)), 5.5 * k))
+    clumps.append((p + Vector((0, 0, 0.2)), P['clumpSize'][1] * 1.15 * k))
 # more clumps filling an umbrella-shaped crown
-cr = 12.0
-for i in range(60):
+cr = P['crown']
+for i in range(P['clumps']):
     a = random.random() * 2 * math.pi
     r = cr * math.sqrt(random.random())
-    z = top.z + 4.0 + 3.2 * (1 - (r / cr) ** 2) + random.uniform(-0.8, 0.8)
-    clumps.append((Vector((top.x + math.cos(a) * r, top.y + math.sin(a) * r, z)), random.uniform(4.2, 6.2)))
+    z = top.z + P['crownLift'] + P['crownDome'] * (1 - (r / cr) ** 2) + random.uniform(-0.8, 0.8)
+    clumps.append((Vector((top.x + math.cos(a) * r, top.y + math.sin(a) * r, z)), random.uniform(*P['clumpSize'])))
 for c, s in clumps:
     card(c, s, math.radians(random.uniform(55, 80)))   # mostly lying flat: the crown's roof
     card(c, s * 0.9, math.radians(random.uniform(0, 25)))   # and standing: its depth from the side
     card(c, s * 0.85, math.radians(random.uniform(20, 50)))
 
-me = bpy.data.meshes.new('BigTree')
+me = bpy.data.meshes.new(P['name'])
 bm.normal_update()
 bm.to_mesh(me)
 bm.free()
 for p in me.polygons:
     p.use_smooth = True
-ob = bpy.data.objects.new('BigTree', me)
+ob = bpy.data.objects.new('BigTree-' + P['name'], me)
 bpy.context.scene.collection.objects.link(ob)
 
 # --- material: one atlas, leaf alpha clipped, both sides drawn -----------------------------
@@ -186,5 +197,5 @@ bpy.ops.object.select_all(action='DESELECT')
 ob.select_set(True)
 bpy.context.view_layer.objects.active = ob
 os.makedirs(OUT, exist_ok=True)
-bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, 'big-tropical-tree.glb'), use_selection=True, export_format='GLB', export_image_format='WEBP', export_apply=True)
+bpy.ops.export_scene.gltf(filepath=os.path.join(OUT, P['name'] + '.glb'), use_selection=True, export_format='GLB', export_image_format='WEBP', export_apply=True)
 print('BIGTREE', tris, size)

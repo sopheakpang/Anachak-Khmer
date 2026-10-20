@@ -1306,12 +1306,12 @@
       "status": "pk"
     },
     {
-      "game": "tree.lone",
-      "src": "3D model/Meshy_AI_Lone_Tree_1002205915_texture.glb",
-      "out": "plants/lone-tree.glb",
+      "game": "tree.rain",
+      "src": "scripts/models/blender/make_bigtree.py (made in Blender; PK 2026-10-20 replaced a poor model)",
+      "out": "plants/rain-tree.glb",
       "kind": "plant",
-      "size": ["h", 6],
-      "tris": 3000,
+      "size": ["h", 12],
+      "tris": 4100,
       "status": "pk"
     },
     {
@@ -1324,12 +1324,12 @@
       "status": "pk"
     },
     {
-      "game": "tree.oak",
-      "src": "3D model/Meshy_AI__X_Oak_Tree_1003045542_texture.glb",
-      "out": "plants/oak.glb",
+      "game": "tree.mango",
+      "src": "scripts/models/blender/make_bigtree.py (made in Blender; PK 2026-10-20 replaced a poor model)",
+      "out": "plants/mango-tree.glb",
       "kind": "plant",
-      "size": ["h", 9],
-      "tris": 4000,
+      "size": ["h", 12],
+      "tris": 4100,
       "rare": true,
       "status": "pk"
     },

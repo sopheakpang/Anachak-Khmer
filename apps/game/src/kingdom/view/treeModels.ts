@@ -31,8 +31,14 @@ function cardPatch(m: THREE.Material, sway: SwayUniforms | null, key: string): v
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U);
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nuniform float uTime;\nuniform float uWind;\nattribute float aKind;\nattribute float aVariant;')
-      .replace('#include <uv_vertex>', '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv.y = vMapUv.y * 0.5 + aVariant * 0.5;\n#endif')
+      .replace(
+        '#include <common>',
+        '#include <common>\nuniform float uTime;\nuniform float uWind;\nattribute float aKind;\nattribute float aVariant;',
+      )
+      .replace(
+        '#include <uv_vertex>',
+        '#include <uv_vertex>\n#ifdef USE_MAP\nvMapUv.y = vMapUv.y * 0.5 + aVariant * 0.5;\n#endif',
+      )
       .replace(
         '#include <begin_vertex>',
         `#include <begin_vertex>
@@ -132,7 +138,8 @@ export interface Lot {
 
 /** Inside a building's footprint (with a margin, m)? */
 function inside(lots: readonly Lot[], x: number, z: number, margin: number): boolean {
-  for (const b of lots) if (Math.abs(x - b.x) < b.w / 2 + margin && Math.abs(z - b.z) < b.d / 2 + margin) return true;
+  for (const b of lots)
+    if (Math.abs(x - b.x) < b.w / 2 + margin && Math.abs(z - b.z) < b.d / 2 + margin) return true;
   return false;
 }
 
@@ -141,13 +148,18 @@ function inside(lots: readonly Lot[], x: number, z: number, margin: number): boo
  * least `minHouses` gets a coconut palm and a banana plant in its yard, behind or beside the
  * house (houses face east, +x), never inside a building or where `ok` says no (water).
  */
-export function villageTrees(lots: readonly Lot[], V: TreePlacement['village'], ok: (x: number, z: number) => boolean): TreeSpot[] {
+export function villageTrees(
+  lots: readonly Lot[],
+  V: TreePlacement['village'],
+  ok: (x: number, z: number) => boolean,
+): TreeSpot[] {
   const houses = lots.filter((b) => V.houseTypes.includes(b.type));
   const parent = houses.map((_, i) => i);
   const find = (i: number): number => (parent[i] === i ? i : (parent[i] = find(parent[i]!)));
   for (let i = 0; i < houses.length; i++)
     for (let j = i + 1; j < houses.length; j++)
-      if (Math.hypot(houses[i]!.x - houses[j]!.x, houses[i]!.z - houses[j]!.z) <= V.linkM) parent[find(i)] = find(j);
+      if (Math.hypot(houses[i]!.x - houses[j]!.x, houses[i]!.z - houses[j]!.z) <= V.linkM)
+        parent[find(i)] = find(j);
   const size = new Map<number, number>();
   houses.forEach((_, i) => size.set(find(i), (size.get(find(i)) ?? 0) + 1));
   const out: TreeSpot[] = [];
@@ -175,7 +187,15 @@ export function villageTrees(lots: readonly Lot[], V: TreePlacement['village'], 
         const jz = z + (r(k + 1) - 0.5) * 0.8;
         if (inside(lots, jx, jz, 0.4) || !ok(jx, jz)) continue;
         if (out.some((t) => Math.hypot(t.x - jx, t.z - jz) < 1.4)) continue;
-        out.push({ id, x: jx, y: 0, z: jz, rot: r(k + 2) * Math.PI * 2, scale: 0.85 + 0.3 * r(k + 3), shade: 0.92 + 0.16 * r(k + 4) });
+        out.push({
+          id,
+          x: jx,
+          y: 0,
+          z: jz,
+          rot: r(k + 2) * Math.PI * 2,
+          scale: 0.85 + 0.3 * r(k + 3),
+          shade: 0.92 + 0.16 * r(k + 4),
+        });
         return;
       }
     };
@@ -218,7 +238,12 @@ export function waysideTrees(
         let px = 0;
         let pz = 0;
         // (Within two tiles: the worn earth fades out over a tile at its edge.)
-        for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const)
+        for (const [dx, dz] of [
+          [1, 0],
+          [-1, 0],
+          [0, 1],
+          [0, -1],
+        ] as const)
           for (const k of [1, 2])
             if (wearAt(tx + dx * k, tz + dz * k) > W.worn) {
               px += dx;
@@ -231,7 +256,15 @@ export function waysideTrees(
         const fz = z - (pz / l) * tile * 0.3;
         if (!ok(fx, fz)) continue;
         const kind = pickWeighted(W.kinds, hash(tx, tz, 402));
-        out.push({ id: kind.id, x: fx, y: 0, z: fz, rot: hash(tx, tz, 403) * Math.PI * 2, scale: 0.85 + 0.3 * hash(tx, tz, 404), shade: 0.92 + 0.16 * hash(tx, tz, 405) });
+        out.push({
+          id: kind.id,
+          x: fx,
+          y: 0,
+          z: fz,
+          rot: hash(tx, tz, 403) * Math.PI * 2,
+          scale: 0.85 + 0.3 * hash(tx, tz, 404),
+          shade: 0.92 + 0.16 * hash(tx, tz, 405),
+        });
       }
   }
   return out;
@@ -309,6 +342,15 @@ interface Kind {
  * Scale a model's geometry to `height` m (or smaller, so its crown is at most `width` m
  * across), its trunk on the origin, its foot on the ground.
  */
+/**
+ * D158: the alpha cut-out a near tree keeps from its model's material (leaf cards in an
+ * alpha-masked atlas; glTF alphaMode MASK arrives as alphaTest). 0 for an opaque model.
+ */
+export function nearCutout(m: THREE.Material | null | undefined): number {
+  const a = m?.alphaTest ?? 0;
+  return a > 0 && a < 1 ? a : 0;
+}
+
 export function fitTree(src: THREE.BufferGeometry, height: number, width = Infinity): THREE.BufferGeometry {
   const g = src.clone();
   for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'uv') g.deleteAttribute(k);
@@ -346,7 +388,11 @@ export class ModelTrees {
   ) {
     for (const cfg of trees) {
       const mk = (cap: number) => {
-        const mesh = new THREE.InstancedMesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial(), cap);
+        const mesh = new THREE.InstancedMesh(
+          new THREE.BufferGeometry(),
+          new THREE.MeshStandardMaterial(),
+          cap,
+        );
         mesh.count = 0;
         mesh.frustumCulled = false;
         mesh.castShadow = shadows;
@@ -398,10 +444,29 @@ export class ModelTrees {
       kind.near.geometry = fitted;
       const map = (model.material as THREE.MeshStandardMaterial).map ?? null;
       if (map) map.colorSpace = THREE.SRGBColorSpace;
-      const mat = new THREE.MeshStandardMaterial({ map, roughness: 0.9, metalness: 0, side: THREE.DoubleSide });
+      // D158: the Blender forest trees carry leaf cards (an alpha-masked leaf atlas); keep the
+      // model's cut-out so the leaves are leaves, and cast shadows through the same cut-out.
+      const cut = nearCutout(model.material as THREE.Material);
+      const mat = new THREE.MeshStandardMaterial({
+        map,
+        roughness: 0.9,
+        metalness: 0,
+        side: THREE.DoubleSide,
+        alphaTest: cut,
+      });
       if (this.sway) addSway(mat, this.sway, 'tree-model');
       (kind.near.material as THREE.Material).dispose();
       kind.near.material = mat;
+      if (cut > 0 && map) {
+        const nd = new THREE.MeshDepthMaterial({
+          depthPacking: THREE.RGBADepthPacking,
+          map,
+          alphaTest: cut,
+          side: THREE.DoubleSide,
+        });
+        if (this.sway) addSway(nd, this.sway, 'tree-model-depth');
+        kind.near.customDepthMaterial = nd;
+      }
       kind.nearTris = (fitted.index ? fitted.index.count : fitted.getAttribute('position').count) / 3;
       // Middle: the lighter copy, fitted the same way, in the near model's material (its texture).
       if (lighter) {
@@ -438,7 +503,11 @@ export class ModelTrees {
       cardPatch(cm, this.sway, 'tree-cards');
       (kind.far.material as THREE.Material).dispose();
       kind.far.material = cm;
-      const depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: cards, alphaTest: 0.5 });
+      const depth = new THREE.MeshDepthMaterial({
+        depthPacking: THREE.RGBADepthPacking,
+        map: cards,
+        alphaTest: 0.5,
+      });
       cardPatch(depth, this.sway, 'tree-cards-depth');
       kind.far.customDepthMaterial = depth;
       kind.ready = true;

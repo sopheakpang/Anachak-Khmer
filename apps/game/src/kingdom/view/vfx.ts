@@ -7,7 +7,8 @@ import * as THREE from 'three';
  * when full), the shader draws soft round sprites sized by distance.
  */
 
-export type BurstKind = 'chips' | 'dust' | 'sparks' | 'splash' | 'smoke' | 'hit' | 'leaves' | 'gold';
+export type BurstKind =
+  'chips' | 'dust' | 'sparks' | 'splash' | 'smoke' | 'hit' | 'leaves' | 'gold' | 'droplets' | 'spray';
 
 export const BURST_KINDS: readonly BurstKind[] = [
   'chips',
@@ -18,6 +19,8 @@ export const BURST_KINDS: readonly BurstKind[] = [
   'hit',
   'leaves',
   'gold',
+  'droplets',
+  'spray',
 ];
 
 interface Recipe {
@@ -85,18 +88,47 @@ const RECIPES: Record<BurstKind, Recipe> = {
     alpha: 1,
     shape: 1,
   },
+  // PK 2026-10-20 (D158): smaller, finer water — splash drops a few cm across.
   splash: {
     n: 12,
-    colors: [0xb8def5, 0x9cc9e8, 0xe6f4ff],
-    up: [2.8, 4.6],
-    out: [0.8, 1.8],
-    spread: 0.3,
-    gravity: -14,
+    colors: [0xd8eef8, 0xbcdcec, 0xf2fbff],
+    up: [2.2, 3.8],
+    out: [0.6, 1.5],
+    spread: 0.25,
+    gravity: -9.8,
     drag: 0.4,
-    life: [0.5, 0.75],
-    size: [0.34, 0.2],
-    alpha: 0.9,
+    life: [0.45, 0.7],
+    size: [0.14, 0.07],
+    alpha: 0.85,
     shape: 1,
+  },
+  /** D158: fine bright droplets kicked up by a foot or a paddle, falling back under gravity. */
+  droplets: {
+    n: 10,
+    colors: [0xf4fbff, 0xdcefff, 0xffffff],
+    up: [1.4, 3.0],
+    out: [0.4, 1.3],
+    spread: 0.18,
+    gravity: -9.8,
+    drag: 0.3,
+    life: [0.35, 0.6],
+    size: [0.06, 0.035],
+    alpha: 0.95,
+    shape: 1,
+  },
+  /** D158: a faint mist puff over the splash, quickly gone. */
+  spray: {
+    n: 3,
+    colors: [0xe8f3fa, 0xd6e8f2],
+    up: [0.5, 1.1],
+    out: [0.3, 0.8],
+    spread: 0.2,
+    gravity: 0.2,
+    drag: 2.5,
+    life: [0.35, 0.6],
+    size: [0.3, 0.9],
+    alpha: 0.28,
+    shape: 0,
   },
   smoke: {
     n: 16,
@@ -274,7 +306,11 @@ export class Particles {
     opts: { colors?: readonly number[]; ring?: boolean } = {},
   ): void {
     const base = RECIPES[kind];
-    const r = { ...base, colors: opts.colors?.length ? [...opts.colors] : base.colors, ring: opts.ring ?? base.ring };
+    const r = {
+      ...base,
+      colors: opts.colors?.length ? [...opts.colors] : base.colors,
+      ring: opts.ring ?? base.ring,
+    };
     const count = Math.min(this.capacity, Math.max(0, Math.floor(n ?? r.n)));
     const P = Particles.P;
     for (let k = 0; k < count; k++) {

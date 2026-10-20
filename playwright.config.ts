@@ -16,7 +16,8 @@ export default defineConfig({
       // Test bridge with an in-memory world, so tests never touch data/temples.db.
       command: 'npm run start -w @temples/bridge',
       url: 'http://localhost:7420/health',
-      env: { TEMPLES_DB: ':memory:' },
+      // The tests' Royal Orders are a copy (the dashboard test adds and removes one, D157).
+      env: { TEMPLES_DB: ':memory:', TEMPLES_ORDERS: 'test-results/orders.e2e.json' },
       reuseExistingServer: false,
       timeout: 60_000,
     },

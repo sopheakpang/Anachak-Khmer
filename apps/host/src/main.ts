@@ -7,7 +7,12 @@ import {
   type FeedLine,
   type GameState,
   type HostMessage,
+  type Orders,
+  ORDER_DUTIES,
+  ORDER_KITS,
+  ORDER_PLACES,
 } from '@temples/shared';
+import { DUTY_NAMES, KIT_NAMES, PLACE_NAMES, orderFromForm, ordersTable, type OrderForm } from './orders';
 import {
   demoKind,
   dueEvents,
@@ -199,6 +204,8 @@ $('remove-btn').addEventListener('click', () => {
 document.addEventListener('keydown', (e) => {
   if ((e.target as HTMLElement).closest('input, select, textarea') || e.ctrlKey || e.metaKey || e.altKey)
     return;
+  // The simulator's keys stay off on the Royal Orders page (D157).
+  if (!$('tab-orders').hidden) return;
   const k = e.key.toLowerCase();
   const map: Record<string, () => void> = {
     l: actions.like!,
@@ -301,6 +308,9 @@ function feedLine(f: FeedLine): void {
 
 function onMessage(m: BridgeMessage): void {
   switch (m.kind) {
+    case 'orders':
+      renderOrders(m);
+      break;
     case 'state':
       renderState(m);
       break;
@@ -333,6 +343,97 @@ function onMessage(m: BridgeMessage): void {
       if (m.name === 'welcome') addFeed(`Welcome <b>${esc(m.displayName ?? '')}</b>`, 'cmd');
       break;
   }
+}
+
+// ---------- pages and the Royal Orders (D157) ----------
+document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) =>
+  b.addEventListener('click', () => {
+    for (const t of Array.from(document.querySelectorAll<HTMLButtonElement>('[data-tab]'))) {
+      const on = t === b;
+      t.setAttribute('aria-pressed', String(on));
+      $(`tab-${t.dataset.tab}`).hidden = !on;
+    }
+  }),
+);
+let orders: Orders | null = null;
+let pendingAdd = false;
+$<HTMLSelectElement>('o-dutykind').innerHTML = ORDER_DUTIES.map(
+  (d) => `<option value="${d}">${DUTY_NAMES[d]}</option>`,
+).join('');
+$<HTMLSelectElement>('o-place').innerHTML = ORDER_PLACES.map(
+  (p) => `<option value="${p}">${PLACE_NAMES[p]}</option>`,
+).join('');
+$('o-kits').innerHTML = ORDER_KITS.map(
+  (k) => `<label class="check"><input type="checkbox" value="${k}" /> ${KIT_NAMES[k]}</label>`,
+).join('');
+$('o-options').innerHTML = [0, 1, 2, 3]
+  .map(
+    (i) =>
+      `<div class="opt"><input type="radio" name="o-answer" value="${i}" ${i === 0 ? 'checked' : ''} aria-label="Right answer ${i + 1}" />` +
+      `<input class="o-okm" placeholder="ចម្លើយ ${i + 1} (ខ្មែរ)" /><input class="o-oen" placeholder="Answer ${i + 1} (English)" /></div>`,
+  )
+  .join('');
+const formType = () =>
+  (document.querySelector<HTMLInputElement>('input[name="otype"]:checked')?.value ?? 'duty') as
+    'duty' | 'question';
+function syncForm(): void {
+  const q = formType() === 'question';
+  $('o-duty').hidden = q;
+  $('o-question').hidden = !q;
+  const visit = $<HTMLSelectElement>('o-dutykind').value === 'visit';
+  $('o-place-field').hidden = !visit;
+  $('o-n-field').hidden = visit;
+}
+document.querySelectorAll('input[name="otype"]').forEach((r) => r.addEventListener('change', syncForm));
+$('o-dutykind').addEventListener('change', syncForm);
+syncForm();
+$<HTMLFormElement>('order-form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const val = (id: string) => $<HTMLInputElement>(id).value;
+  const f: OrderForm = {
+    type: formType(),
+    km: val('o-km'),
+    en: val('o-en'),
+    kits: Array.from(document.querySelectorAll<HTMLInputElement>('#o-kits input:checked')).map(
+      (c) => c.value,
+    ),
+    duty: val('o-dutykind'),
+    n: val('o-n'),
+    place: val('o-place'),
+    options: Array.from(document.querySelectorAll<HTMLElement>('#o-options .opt')).map((row) => ({
+      km: row.querySelector<HTMLInputElement>('.o-okm')!.value,
+      en: row.querySelector<HTMLInputElement>('.o-oen')!.value,
+    })),
+    answer: Number(document.querySelector<HTMLInputElement>('input[name="o-answer"]:checked')?.value ?? 0),
+    reward: { food: val('o-food'), wood: val('o-wood'), stone: val('o-stone'), gold: val('o-gold') },
+  };
+  pendingAdd = true;
+  send({ kind: 'control', action: 'orders', op: 'add', order: orderFromForm(f) });
+  $('orders-status').textContent = 'Sending…';
+});
+$('orders-list').addEventListener('click', (e) => {
+  const id = (e.target as HTMLElement).closest<HTMLElement>('[data-order-remove]')?.dataset.orderRemove;
+  if (!id) return;
+  if (!confirm(`Remove the order “${id}”?`)) return;
+  send({ kind: 'control', action: 'orders', op: 'remove', id });
+});
+function renderOrders(m: Extract<BridgeMessage, { kind: 'orders' }>): void {
+  const before = orders?.list.length ?? 0;
+  orders = m.orders;
+  $('orders-list').innerHTML = ordersTable(m.orders);
+  const st = $('orders-status');
+  if (m.error) {
+    st.textContent = `Not saved: ${m.error}`;
+    st.dataset.state = 'warn';
+  } else {
+    st.textContent = `${m.orders.list.length} orders · ${m.orders.list.filter((o) => o.type === 'question').length} questions`;
+    st.dataset.state = 'ok';
+    if (pendingAdd && m.orders.list.length > before) {
+      $<HTMLFormElement>('order-form').reset();
+      syncForm();
+    }
+  }
+  pendingAdd = false;
 }
 
 connect();

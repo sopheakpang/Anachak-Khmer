@@ -227,3 +227,87 @@ describe('host panel files', () => {
     await b.close();
   });
 });
+
+describe('PK 2026-10-20 (D157): Royal Orders from the host dashboard', () => {
+  it('sends the orders on connect; the host adds and removes one; the file is written; bad orders are refused', async () => {
+    const { mkdtempSync, copyFileSync, readFileSync, rmSync: rm } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join, resolve } = await import('node:path');
+    const dir = mkdtempSync(join(tmpdir(), 'orders-'));
+    const file = join(dir, 'orders.json');
+    copyFileSync(resolve(import.meta.dirname, '../../../config/kingdom/orders.json'), file);
+    const b = createBridge({ configs, store: new MemoryStore(configs), blocklist: [], ordersFile: file });
+    const p = await b.listen(0);
+    const open = (role: string) =>
+      new Promise<{ ws: WebSocket; messages: BridgeMessage[] }>((res) => {
+        const ws = new WebSocket(`ws://localhost:${p}/?role=${role}`);
+        const messages: BridgeMessage[] = [];
+        ws.on('message', (d) => messages.push(JSON.parse(d.toString()) as BridgeMessage));
+        ws.on('open', () => res({ ws, messages }));
+      });
+    const game = await open('game');
+    const host = await open('host');
+    await until(() => game.messages.some((m) => m.kind === 'orders'));
+    const n0 = (game.messages.find((m) => m.kind === 'orders') as Extract<BridgeMessage, { kind: 'orders' }>)
+      .orders.list.length;
+    host.ws.send(
+      JSON.stringify({
+        kind: 'control',
+        action: 'orders',
+        op: 'add',
+        order: {
+          type: 'duty',
+          duty: 'visit',
+          place: 'market',
+          n: 1,
+          km: 'ទិញត្រី',
+          en: 'Buy fish at the market',
+          kits: [],
+          reward: { food: 5 },
+        },
+      }),
+    );
+    const last = () =>
+      [...game.messages].reverse().find((m) => m.kind === 'orders') as Extract<
+        BridgeMessage,
+        { kind: 'orders' }
+      >;
+    await until(() => last().orders.list.length === n0 + 1);
+    expect(last().orders.list.at(-1)!.id).toBe('buy-fish-at-the-market');
+    expect(JSON.parse(readFileSync(file, 'utf8')).list).toHaveLength(n0 + 1);
+    // A question whose answer points past its options is refused, with the reason.
+    host.ws.send(
+      JSON.stringify({
+        kind: 'control',
+        action: 'orders',
+        op: 'add',
+        order: {
+          type: 'question',
+          km: 'ក',
+          en: 'Q',
+          options: [
+            { km: 'ក', en: 'a' },
+            { km: 'ខ', en: 'b' },
+          ],
+          answer: 5,
+          reward: {},
+        },
+      }),
+    );
+    await until(() => !!last().error);
+    expect(last().error).toContain('answer');
+    expect(last().orders.list).toHaveLength(n0 + 1);
+    host.ws.send(
+      JSON.stringify({ kind: 'control', action: 'orders', op: 'remove', id: 'buy-fish-at-the-market' }),
+    );
+    await until(() => last().orders.list.length === n0 && !last().error);
+    // A game client cannot change them.
+    game.ws.send(JSON.stringify({ kind: 'control', action: 'orders', op: 'remove', id: 'gather' }));
+    await new Promise((r) => setTimeout(r, 60));
+    expect(JSON.parse(readFileSync(file, 'utf8')).list).toHaveLength(n0);
+    game.ws.close();
+    host.ws.close();
+    await b.close();
+    rm(dir, { recursive: true, force: true });
+  });
+});

@@ -282,11 +282,11 @@ describe('the hero in the live kingdom', () => {
     expect(heroOpen(s, sx, sz)).toBe(true);
   });
 
-  it('PK 2026-10-20 (D156): wades into the shallows up to his chest, never into deep water; a ford is water too', async () => {
-    const { heroWaterDepth } = await import('./heroSim');
+  it('PK 2026-10-20 (D156, D158): wades in the shallows, swims in deep water, slower in both; a ford is water too', async () => {
+    const { heroWaterDepth, heroPace } = await import('./heroSim');
     const s = quiet();
     const N = s.map.size;
-    const chest = s.data.rules.water.chestDepth;
+    const W = s.data.rules.water;
     let shallow = 0;
     let deep = 0;
     for (let tz = 1; tz < N - 1 && (shallow < 5 || deep < 5); tz += 3)
@@ -294,8 +294,9 @@ describe('the hero in the live kingdom', () => {
         if (s.map.terrain[tz * N + tx] !== 'water') continue;
         const [x, z] = tileToWorld(s.map, tx, tz);
         const d = s.depthAt(x, z);
-        expect(heroOpen(s, x, z)).toBe(d <= chest);
-        if (d <= chest) shallow++;
+        expect(heroOpen(s, x, z)).toBe(true);
+        expect(heroPace(s, x, z)).toBe(d < W.chestDepth ? W.wadeSpeed : W.swimSpeed);
+        if (d <= W.chestDepth) shallow++;
         else deep++;
       }
     expect(shallow).toBeGreaterThan(0);
@@ -307,6 +308,24 @@ describe('the hero in the live kingdom', () => {
     }
     const [lx, lz] = tileToWorld(s.map, s.map.start[0], s.map.start[1] + 9);
     expect(heroWaterDepth(s, lx, lz, 0.45)).toBe(0);
+    expect(heroPace(s, lx, lz)).toBe(1);
+  });
+
+  it('D158: swimming he cannot jump or dodge, and moves at the water’s pace', () => {
+    const kit = kitFor(H, 'king');
+    const run = (swim: boolean, pace: number) => {
+      const c = new HeroCore(H, kit, 0, 0, 0);
+      const world = { open: () => true, pace: () => pace, swimming: () => swim };
+      c.step(0.05, { ...NO_INPUT, jump: true, dash: true }, world);
+      const jumped = c.airborne || c.state === 'dash';
+      for (let i = 0; i < 20; i++) c.step(0.05, { ...NO_INPUT, move: { x: 0, y: 1 }, keys: true }, world);
+      return { jumped, dist: Math.hypot(c.x, c.z) };
+    };
+    const land = run(false, 1);
+    const water = run(true, 0.4);
+    expect(land.jumped).toBe(true);
+    expect(water.jumped).toBe(false);
+    expect(water.dist).toBeLessThan(land.dist * 0.6);
   });
 
   it('the camera comes in front of a wall between it and the hero', () => {
@@ -356,7 +375,17 @@ describe('the anime model', () => {
     const k = kitFor(H, 'king');
     const m = new HeroModel(k, lookFor(k, 'king'));
     const pose = (state: 'idle' | 'attack' | 'skill' | 'run', t: number) =>
-      m.pose({ state, stateT: 0.1, combo: 0, stride: 1, speed: state === 'run' ? 4 : 0, y: 0, t, strikeSec: 0.4, skillKind: k.skill.kind });
+      m.pose({
+        state,
+        stateT: 0.1,
+        combo: 0,
+        stride: 1,
+        speed: state === 'run' ? 4 : 0,
+        y: 0,
+        t,
+        strikeSec: 0.4,
+        skillKind: k.skill.kind,
+      });
     pose('idle', 1);
     expect(m.drawn).toBe(false);
     pose('run', 2);
@@ -372,7 +401,17 @@ describe('the anime model', () => {
     // Spears and axes stay in the hand.
     const sp = kitFor(H, 'spearman');
     const s2 = new HeroModel(sp, lookFor(sp, 'spearman'));
-    s2.pose({ state: 'idle', stateT: 0, combo: 0, stride: 0, speed: 0, y: 0, t: 1, strikeSec: 0.4, skillKind: sp.skill.kind });
+    s2.pose({
+      state: 'idle',
+      stateT: 0,
+      combo: 0,
+      stride: 0,
+      speed: 0,
+      y: 0,
+      t: 1,
+      strikeSec: 0.4,
+      skillKind: sp.skill.kind,
+    });
     expect(s2.drawn).toBe(true);
   });
 
@@ -611,7 +650,9 @@ describe('stylised shader touches (PK 1.6.0)', () => {
     expect(sh.vertexShader).toContain('position.y * position.y');
     g.update(0, 0, 12.5, () => 'grass');
     expect(sh.uniforms.uTime!.value).toBe(12.5);
-    expect(grassWindMaterial({ uTime: { value: 0 }, uWind: { value: 1 } }).customProgramCacheKey()).toBe('grass-wind');
+    expect(grassWindMaterial({ uTime: { value: 0 }, uWind: { value: 1 } }).customProgramCacheKey()).toBe(
+      'grass-wind',
+    );
   });
 
   it('a slash dissolves in hard steps as it fades', () => {

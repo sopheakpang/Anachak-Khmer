@@ -7,7 +7,12 @@ export default defineConfig({
   base: './',
   // The phone page's manifest and icons (iPhone web app, D73), harmless for the desktop page.
   publicDir: 'public-mobile',
-  server: { fs: { allow: ['../..'] } },
+  server: {
+    fs: { allow: ['../..'] },
+    // The host dashboard writes the Royal Orders file during a stream (D157); the bridge sends the
+    // new list to the game, so the dev server must not reload the game for it.
+    watch: { ignored: ['**/config/kingdom/orders.json'] },
+  },
   // PK's own music (D76): public/music/ served at ./music/ and copied to dist/music/ (see the plugin).
   plugins: [musicFiles({ dir: resolve(__dirname, 'public/music'), copy: true })],
   build: {

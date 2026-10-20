@@ -13,6 +13,7 @@ import { Director, type DirectorView, type ShotName } from './logic/director';
 import { Activity } from './logic/activity';
 import { biggestStoneOf, emptyModel, newestNames, reduce, type GameModel } from './logic/store';
 import { BridgeClient } from './net/client';
+import { setLiveOrders } from './kingdom/hero/royalOrders';
 import { Overlay } from './ui/overlay';
 import { Expedition } from './expedition/expedition';
 import { Kingdom } from './kingdom/kingdom';
@@ -123,6 +124,11 @@ async function start(): Promise<void> {
   let firstState = true;
 
   const onMessage = (msg: BridgeMessage): void => {
+    // PK 2026-10-20 (D157): Royal Orders changed in the dashboard.
+    if (msg.kind === 'orders') {
+      setLiveOrders(msg.orders);
+      return;
+    }
     const now = performance.now();
     const r = reduce(model, msg, now);
     const s = model.state;

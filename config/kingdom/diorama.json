@@ -52,6 +52,23 @@
     "aoSteps": 3,
     "aoStrength": 0.32
   },
+  "realWater": {
+    "$comment": "PK 2026-10-20 (D158) 'shade stylized water look much reality' — the PC look (PC 1660, High, Ultra) only; the other presets keep the Prek water below. The water mirrors the world (trees, banks, buildings, sky: a planar reflection drawn at reflectScale of the screen size), more at a glancing view (Fresnel, f0 = straight down), less straight down where you see into it. Light is absorbed with depth (absorb per metre for red, green, blue: red goes first, so deep water turns green-blue-dark), the bed shows through the shallows (clarity = opacity in the shallows and the deep). Layered waves (waveScale m, waveStrength) and fine wind ripples (rippleStrength) bend the reflection (distort) and break the sun into glitter (sunShine, sunSharp). Soft foam where the water thins out at the bank (foamDepth m).",
+    "reflectScale": 0.35,
+    "f0": 0.02,
+    "deep": "#0f2f2a",
+    "shallow": "#3d6b52",
+    "absorb": [0.9, 0.35, 0.28],
+    "clarity": [0.25, 0.94],
+    "waveScale": 6,
+    "waveStrength": 0.35,
+    "rippleStrength": 0.22,
+    "distort": 0.035,
+    "sunShine": 2.4,
+    "sunSharp": 380,
+    "foamDepth": 0.05,
+    "foam": "#e9ece4"
+  },
   "water": {
     "$comment": "Prek canal water: no mirrors. PK 1.8.0: crystal-clear turquoise: clear in the shallows (clarity = opacity in the shallows and the deep, so the pale sand bed shows), light dancing on the bed (caustics), turquoise to deep blue-green. Depth fade from shallow jade over the silt bed to deep teal (m); the sky is faked by Fresnel (power) with a stepped sky colour by time of day; the sun glints in a sharp 2-step cel highlight; a crisp foam line where water meets the bank (m of depth); two slow ripple layers drift against each other (speed m/s, scale m).",
     "shallow": "#4fe3d0",
@@ -216,18 +233,21 @@
     "keepAway": 3,
     "height": [0.55, 0.95],
     "spread": [1.1, 1.7],
-    "cards": {"file": "models/grass/cards.webp", "card": 1.279, "spread": [1.0, 1.35], "top": true, "source": "PK's Meshy model Resilient Oasis (286 660 triangles, 1.7 x 1.44 x 1.8 m), baked into a 3-side + top x 2-variant atlas by scripts/models/grassCards.mjs (cut 38 top); card = the frame size when the grass is 1 tall"},
-    "cogon": {"share": 0.55, "height": [0.3, 0.7], "tint": "#e6edb0"},
+    "cards": {
+      "file": "models/grass/cards.webp",
+      "card": 1.279,
+      "spread": [1.0, 1.35],
+      "top": true,
+      "source": "PK's Meshy model Resilient Oasis (286 660 triangles, 1.7 x 1.44 x 1.8 m), baked into a 3-side + top x 2-variant atlas by scripts/models/grassCards.mjs (cut 38 top); card = the frame size when the grass is 1 tall"
+    },
+    "cogon": { "share": 0.55, "height": [0.3, 0.7], "tint": "#e6edb0" },
     "dry": "#c9b46a",
     "dryShare": 0.18,
     "flowering": 0.3,
     "gustSheen": 0.13,
     "baseDark": 0.2,
     "trample": 1.4,
-    "lod": [
-      0.75,
-      1.0
-    ],
+    "lod": [0.75, 1.0],
     "wind": {
       "strength": 1.0,
       "dirDeg": 20,
@@ -252,7 +272,7 @@
       "opacity": 0.55,
       "color": "#e3ebe6",
       "nightColor": "#5d6f8f",
-      "weather": {"clear": 0.12, "cloudy": 0.3, "windy": 0.05, "rain": 0.55, "storm": 0.45, "mist": 1},
+      "weather": { "clear": 0.12, "cloudy": 0.3, "windy": 0.05, "rain": 0.55, "storm": 0.45, "mist": 1 },
       "dawn": 0.55,
       "wet": 0.35
     },
@@ -263,16 +283,13 @@
       "length": 70,
       "strength": 0.65,
       "color": "#ffe7b0",
-      "weather": {"clear": 0.3, "cloudy": 0.95, "windy": 0.25, "rain": 0.1, "storm": 0, "mist": 0.75},
+      "weather": { "clear": 0.3, "cloudy": 0.95, "windy": 0.25, "rain": 0.1, "storm": 0, "mist": 0.75 },
       "afterRain": 0.7
     }
   },
   "seeThrough": {
     "$comment": "PK 1.8.0: zoomed in close, buildings, trees and tall grass between the camera and the people at work turn see-through round them, so the acting people and animals can always be seen. Fully on when the camera stands nearer than zoom[0] m, off beyond zoom[1] m (the RTS zoom runs 28 to 150 m). targets = how many people and animals (nearest the middle of the view, the selected first) get a window; radius = the window's width in m (it is 1.6 times as tall); amount = how much of the cover is taken away in its middle (a screen-door dither, so it stays sharp and cheap).",
-    "zoom": [
-      45,
-      70
-    ],
+    "zoom": [45, 70],
     "targets": 24,
     "radius": 2.6,
     "amount": 0.82

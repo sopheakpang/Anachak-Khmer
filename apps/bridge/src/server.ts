@@ -1,7 +1,13 @@
 import { createServer, type Server } from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import {
   GAME_MODES,
+  OrderSchema,
+  OrdersSchema,
+  orderId,
+  ordersFileText,
+  type Orders,
   GAME_NAME,
   startTemple,
   type BridgeMessage,
@@ -24,6 +30,40 @@ export interface BridgeOptions {
   now?: () => number;
   /** Built host panel folder, served at /host/ (optional). */
   hostDist?: string;
+  /**
+   * PK 2026-10-20 (D157): config/kingdom/orders.json — the Royal Orders the host dashboard edits
+   * (read at start, written after each change). Without it the dashboard cannot change them.
+   */
+  ordersFile?: string;
+}
+
+/** Read the Royal Orders file (null when there is none or it does not validate). */
+export function readOrders(file: string | undefined): Orders | null {
+  if (!file || !existsSync(file)) return null;
+  const r = OrdersSchema.safeParse(JSON.parse(readFileSync(file, 'utf8')));
+  return r.success ? r.data : null;
+}
+
+/**
+ * Apply a dashboard change to the orders: add (validated; an id is made from the English text
+ * when missing or taken) or remove (never the last one). Returns the new orders or why not.
+ */
+export function changeOrders(
+  orders: Orders,
+  change: { op: 'add'; order: unknown } | { op: 'remove'; id: string },
+): { orders: Orders } | { error: string } {
+  if (change.op === 'remove') {
+    if (!orders.list.some((o) => o.id === change.id)) return { error: `no order ${change.id}` };
+    if (orders.list.length <= 1) return { error: 'the last order cannot be removed' };
+    return { orders: { ...orders, list: orders.list.filter((o) => o.id !== change.id) } };
+  }
+  const raw = { ...(change.order as Record<string, unknown>) };
+  const taken = orders.list.map((o) => o.id);
+  if (typeof raw.id !== 'string' || !raw.id || taken.includes(raw.id))
+    raw.id = orderId(String(raw.en ?? ''), taken);
+  const r = OrderSchema.safeParse(raw);
+  if (!r.success) return { error: r.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ') };
+  return { orders: { ...orders, list: [...orders.list, r.data] } };
 }
 
 export interface Bridge {
@@ -80,8 +120,14 @@ export function createBridge(opts: BridgeOptions): Bridge {
   });
   if (source !== simulator) simulator.onEvent((raw) => pipeline.enqueue(raw)); // host test buttons always work
 
+  let orders = readOrders(opts.ordersFile);
+  const ordersMsg = (error?: string): BridgeMessage | null =>
+    orders ? { kind: 'orders', orders, ts: now(), ...(error ? { error } : {}) } : null;
+
   wss.on('connection', (ws, req) => {
     const role = new URL(req.url ?? '/', 'http://x').searchParams.get('role') ?? 'game';
+    const om = ordersMsg();
+    if (om) ws.send(JSON.stringify(om));
     ws.send(JSON.stringify(pipeline.state(now())));
     ws.send(JSON.stringify(pipeline.names(now())));
     ws.send(JSON.stringify(status()));
@@ -127,6 +173,24 @@ export function createBridge(opts: BridgeOptions): Bridge {
         const p = opts.store.progress();
         opts.store.setProgress({ ...p, progress: Math.floor(p.target * 0.99), completed: false });
         break;
+      }
+      case 'orders': {
+        if (!orders || !opts.ordersFile) return;
+        const change =
+          msg.op === 'remove'
+            ? { op: 'remove' as const, id: msg.id }
+            : { op: 'add' as const, order: msg.order };
+        const r = changeOrders(orders, change);
+        if ('error' in r) {
+          broadcast(ordersMsg(r.error)!);
+          log.warn('royal order refused', { error: r.error });
+          return;
+        }
+        orders = r.orders;
+        writeFileSync(opts.ordersFile, ordersFileText(orders));
+        broadcast(ordersMsg()!);
+        log.info('royal orders changed', { op: msg.op, count: orders.list.length });
+        return;
       }
       case 'kingdom':
         if (!['save', 'load', 'new'].includes(msg.op)) return;

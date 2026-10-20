@@ -178,8 +178,8 @@ export function gaitWeights(speed: number): { idle: number; walk: number; run: n
 /** Joints the game's own poses take over from the clips (upper body: strikes, skills, work). */
 const UPPER: ReadonlySet<RigJoint> = new Set(['spine', 'head', 'shoulderL', 'shoulderR', 'elbowL', 'elbowR']);
 /** States the game poses the arms in, and states it poses the whole body in. */
-const OWN_ARMS = new Set(['attack', 'skill', 'work', 'hurt', 'jump', 'dash']);
-const OWN_BODY = new Set(['skill', 'work', 'hurt', 'jump', 'dash']);
+const OWN_ARMS = new Set(['attack', 'skill', 'work', 'hurt', 'jump', 'dash', 'swim']);
+const OWN_BODY = new Set(['skill', 'work', 'hurt', 'jump', 'dash', 'swim']);
 
 /** What the rig needs to know each frame to blend its clips with the game's poses. */
 export interface DriveInfo {
@@ -536,4 +536,39 @@ export function heroModelFor(
   if (!spec) return null;
   const source = modelNow(modelUrl(spec.file));
   return source ? { source, spec } : null;
+}
+
+// ---------------------------------------------------------------- PK's Blender weapons (D158)
+
+let gearFiles: Record<string, string> = {};
+
+/** The weapons and gear made in Blender (props.json people.gear), by kind or part. */
+export function setGear(table: Record<string, string> | undefined): void {
+  gearFiles = { ...(table ?? {}) };
+}
+
+/** Load them in the background (the hero mode starts it; the built-in shapes stand in till then). */
+export function preloadGear(): Promise<void> {
+  return Promise.all(Object.values(gearFiles).map((f) => loadModel(modelUrl(f)))).then(() => undefined);
+}
+
+/**
+ * A copy of the Blender model for a weapon kind or part (sword, spear, bow, shield, quiver …),
+ * or null when there is none or it is not loaded yet. Its long axis runs up +Y, gripped at the
+ * origin, as the built-in shapes.
+ */
+export function gearModel(kind: string): THREE.Object3D | null {
+  const f = gearFiles[kind];
+  const src = f ? modelNow(modelUrl(f)) : null;
+  if (!src) return null;
+  const c = src.clone(true);
+  c.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) {
+      o.castShadow = true;
+      o.userData.gear = true;
+    }
+  });
+  c.userData.gear = true;
+  c.userData.blender = kind;
+  return c;
 }

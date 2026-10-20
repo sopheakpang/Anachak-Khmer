@@ -728,3 +728,25 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | PC hero buttons: one bar at the bottom, every button with its key | ✅ | e2e KG-14, `docs/screens/k-hero-ultimate.png` |
 
 | `npm run verify` (90 test files / 781 tests, build) | ✅ | |
+
+## 1.9.0-22 Royal Orders ព្រះរាជបញ្ជា (D157) — 2026-10-20
+
+| Check | Result | How |
+| --- | --- | --- |
+| Orders file read and checked: duties and questions, unique ids, answers in range, kits and places known; a bad file is refused with its reason | ✅ | `shared/orders.test.ts` |
+| Random pick by kit, a question every 3rd order, never the same order twice in a row; ids made from the English name | ✅ | `shared/orders.test.ts` |
+| Bridge sends the orders on connect, adds and removes from the host, writes `config/kingdom/orders.json`, refuses a bad order | ✅ | `bridge/server.test.ts` |
+| Host tab: list, add form (duty or question), remove | ✅ | `host/orders.test.ts`, e2e `host.spec.ts`, `docs/screens/host-royal-orders.png` |
+| 3D hero: next order skips visits to buildings not built; duty progress counted; keys 1–4 or clicks answer a question | ✅ | `hero/royalOrders.test.ts`; browser probe: question card shown |
+
+## 1.9.0-23 PK's notes of 2026-10-20 10:28 (D158)
+
+| Check | Result | How |
+| --- | --- | --- |
+| Real water: Fresnel 2 % straight down → mirror at a glancing view; light absorbed red first; reflection drawn once a frame, disposed | ✅ | `view/realWater.test.ts`; browser probe |
+| Hero swims in deep water (crawl moving, treading still), no jump or dodge there, swim pace from the rules | ✅ | `hero/hero.test.ts`; browser probe: swimming, card shown |
+| Court before the hall: PK's king, queens, Brahmins, parasol bearers; files present | ✅ | `view/nearPeople.test.ts` |
+| Blender weapons and gear: 10 models, one mesh each, 466–1 202 triangles; hero swaps them in on the PC look | ✅ | `hero/glbModel.test.ts`, renders on PK's PC |
+| Oak and lone tree → mango and rain tree (Blender) | ✅ | `view/scatter.test.ts` |
+| Forest trees a–f re-made in Blender (3 455–4 399 triangles, alpha leaf atlas, new cards); full height kept; leaf cut-out and leafy shadows; stray objects from other Blender scenes stripped from the exports | ✅ | `view/trees18.test.ts`, card atlas and browser probe |
+| `npm run verify` (94 test files / 799 tests, build) | ✅ | |

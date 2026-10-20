@@ -69,6 +69,12 @@ export interface HeroGoal {
 export interface HeroWorld {
   /** Can the hero stand at this world point (ground he may walk on)? */
   open(x: number, z: number): boolean;
+  /**
+   * PK 2026-10-20 (D158): his pace here (1 on land; wading and swimming slower, from
+   * rules.water), and whether he is swimming (no jumps or dodges from deep water).
+   */
+  pace?(x: number, z: number): number;
+  swimming?(): boolean;
 }
 
 type Cfg = Anachak['hero'];
@@ -207,7 +213,14 @@ export class HeroCore {
       this.struck = false;
       break;
     }
-    if (input.dash && this.t >= this.dashReady && this.stamina >= M.staminaDash && this.state !== 'skill') {
+    const swim = world.swimming?.() ?? false;
+    if (
+      !swim &&
+      input.dash &&
+      this.t >= this.dashReady &&
+      this.stamina >= M.staminaDash &&
+      this.state !== 'skill'
+    ) {
       this.stamina -= M.staminaDash;
       this.dashReady = this.t + M.dashCd;
       const h = this.wantHeading(input);
@@ -219,7 +232,7 @@ export class HeroCore {
       this.enter('work');
       this.struck = false;
     }
-    if (input.jump && !this.airborne && this.state !== 'skill' && this.state !== 'work') {
+    if (!swim && input.jump && !this.airborne && this.state !== 'skill' && this.state !== 'work') {
       this.vy = M.jump;
       out.push({ kind: 'jump' });
     }
@@ -303,7 +316,11 @@ export class HeroCore {
     if (this.state === 'dash') speed = M.dash;
     else if (want !== null && this.state !== 'skill' && this.state !== 'work') {
       const canRun = input.run && this.stamina > 1;
-      speed = (canRun ? M.run : M.walk) * m * (this.state === 'attack' ? 0.25 : 1);
+      speed =
+        (canRun ? M.run : M.walk) *
+        m *
+        (this.state === 'attack' ? 0.25 : 1) *
+        (world.pace?.(this.x, this.z) ?? 1);
       if (canRun && speed > 0) this.stamina = Math.max(0, this.stamina - M.staminaRun * dt);
       let d = face! - this.heading;
       d = Math.atan2(Math.sin(d), Math.cos(d));

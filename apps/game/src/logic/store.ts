@@ -95,6 +95,9 @@ export function reduce(
       if (msg.name === 'pause') m.paused = true;
       if (msg.name === 'resume') m.paused = false;
       return { command: msg };
+    case 'orders':
+      // The Royal Orders (D157) are taken by the hero mode (main.ts → setLiveOrders).
+      return {};
   }
 }
 

@@ -801,72 +801,7 @@
       "en": "The Preah Khan, the sacred sword of the Khmer kings; tradition traces it to Angkor, and it is shown here as the king's weapon for play."
     },
     "confidence": "GAMEPLAY_ABSTRACTION",
-    "quests": {
-      "$comment": "The king's small tasks in hero mode (PK: more ideas): one at a time for the played character's kit; done, they pay the reward and the next one comes, a little bigger (grow).",
-      "grow": 1.5,
-      "list": [
-        {
-          "kits": ["worker", "cart"],
-          "kind": "gather",
-          "n": 20,
-          "km": "ប្រមូលធនធាន",
-          "en": "Gather goods",
-          "reward": {
-            "gold": 15
-          }
-        },
-        {
-          "kits": ["worker", "cart"],
-          "kind": "store",
-          "n": 2,
-          "km": "ដឹកចូលឃ្លាំង",
-          "en": "Bring loads to a store",
-          "reward": {
-            "gold": 15
-          }
-        },
-        {
-          "kits": ["spear", "sword", "rider", "elephant", "commander", "king"],
-          "kind": "defeat",
-          "n": 3,
-          "km": "កម្ចាត់សត្រូវ",
-          "en": "Defeat raiders",
-          "reward": {
-            "gold": 30
-          }
-        },
-        {
-          "kits": ["bow", "hunter"],
-          "kind": "hunt",
-          "n": 2,
-          "km": "បរបាញ់សត្វ",
-          "en": "Hunt game",
-          "reward": {
-            "food": 60
-          }
-        },
-        {
-          "kits": ["commander", "king", "cart"],
-          "kind": "heal",
-          "n": 5,
-          "km": "ថែទាំប្រជាជន",
-          "en": "Heal your people",
-          "reward": {
-            "gold": 20
-          }
-        },
-        {
-          "kits": ["worker", "king"],
-          "kind": "build",
-          "n": 10,
-          "km": "ជួយសាងសង់",
-          "en": "Help build",
-          "reward": {
-            "stone": 30
-          }
-        }
-      ]
-    },
+    "ordersReach": 4,
     "tuning": {
       "$comment": "Smaller hero rules (UI review: no numbers in code): the third blow's extra reach (m), a bare work swing's power when nothing is there to work, the bow's aim cone (rad), how far ahead the rain of arrows falls (m) and how many it hits, how many works a Mighty chop does and its knock-back power.",
       "thirdReach": 0.6,

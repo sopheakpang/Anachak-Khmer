@@ -67,6 +67,8 @@ const kindSound: Record<string, SfxName> = {
   hit: 'hit',
   leaves: 'farm',
   gold: 'mine',
+  droplets: 'splash',
+  spray: 'splash',
 };
 
 const cycle = ['windy', 'rain', 'storm'];

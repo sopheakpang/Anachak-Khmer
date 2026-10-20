@@ -1,7 +1,20 @@
 import * as THREE from 'three';
 import { describe, expect, it } from 'vitest';
 import { loadKingdom } from '@temples/shared';
-import { FAR, MID, NEAR, fitTree, nearOrFar, pickWeighted, treeLevels, villageTrees, waysideTrees, type Lot, type TreeSpot } from './treeModels';
+import {
+  FAR,
+  MID,
+  NEAR,
+  fitTree,
+  nearCutout,
+  nearOrFar,
+  pickWeighted,
+  treeLevels,
+  villageTrees,
+  waysideTrees,
+  type Lot,
+  type TreeSpot,
+} from './treeModels';
 
 const P = loadKingdom().props;
 const T = P.trees!;
@@ -36,7 +49,15 @@ describe("PK 1.8.0: PK's trees", () => {
   });
 
   it('the nearest trees get the detailed model while the triangle budget lasts, the rest picture cards', () => {
-    const spots: TreeSpot[] = Array.from({ length: 20 }, (_, i) => ({ id: 'e', x: i * 3, y: 0, z: 0, rot: 0, scale: 1, shade: 1 }));
+    const spots: TreeSpot[] = Array.from({ length: 20 }, (_, i) => ({
+      id: 'e',
+      x: i * 3,
+      y: 0,
+      z: 0,
+      rot: 0,
+      scale: 1,
+      shade: 1,
+    }));
     const near = nearOrFar(spots, 0, 0, 25_000, () => 6000);
     expect(near.filter(Boolean).length).toBe(4);
     expect(near.slice(0, 4).every(Boolean)).toBe(true);
@@ -45,9 +66,25 @@ describe("PK 1.8.0: PK's trees", () => {
   });
 
   it('1.8.0: three steps out from the camera: the model, its lighter copy, then picture cards', () => {
-    const spots: TreeSpot[] = Array.from({ length: 30 }, (_, i) => ({ id: i % 5 === 4 ? 'x' : 'e', x: i * 3, y: 0, z: 0, rot: 0, scale: 1, shade: 1 }));
+    const spots: TreeSpot[] = Array.from({ length: 30 }, (_, i) => ({
+      id: i % 5 === 4 ? 'x' : 'e',
+      x: i * 3,
+      y: 0,
+      z: 0,
+      rot: 0,
+      scale: 1,
+      shade: 1,
+    }));
     // 'x' has no lighter copy: it goes from the model straight to cards.
-    const lv = treeLevels(spots, 0, 0, 25_000, () => 6000, 6_000, (id) => (id === 'x' ? Infinity : 1500));
+    const lv = treeLevels(
+      spots,
+      0,
+      0,
+      25_000,
+      () => 6000,
+      6_000,
+      (id) => (id === 'x' ? Infinity : 1500),
+    );
     expect([...lv.slice(0, 4)]).toEqual([NEAR, NEAR, NEAR, NEAR]);
     expect(lv.filter((l) => l === MID).length).toBe(4);
     const firstFar = lv.indexOf(FAR);
@@ -57,14 +94,33 @@ describe("PK 1.8.0: PK's trees", () => {
     expect(firstFar).toBe(4);
     // No middle budget: the two-step rule, as before.
     expect([...treeLevels(spots, 0, 0, 25_000, () => 6000)].filter((l) => l === MID).length).toBe(0);
-    // Every tree has a lighter copy that ships, lighter than the model; the middle budget is set.
+    // A lighter copy, where a tree has one, ships and is lighter than the model (D158: the
+    // Blender forest trees a–f are ~4k triangles with leaf cards and go straight to picture
+    // cards); the middle budget is set.
     const shipped = Object.keys(import.meta.glob('../../../public-mobile/models/trees/*'));
     for (const t of T) {
+      if (!t.midFile) continue;
       expect(t.mid).toBeLessThan(t.hi / 2);
       expect(shipped.some((f) => f.endsWith(t.midFile!))).toBe(true);
     }
+    expect(T.some((t) => t.midFile)).toBe(true);
     expect(L.midTris!.rts).toBeGreaterThan(0);
     expect(L.midTris!.hero).toBeGreaterThan(0);
+  });
+
+  it('D158: the Blender forest trees keep their leaf cut-out and stand at full height', () => {
+    expect(nearCutout(new THREE.MeshStandardMaterial({ alphaTest: 0.5 }))).toBe(0.5);
+    expect(nearCutout(new THREE.MeshStandardMaterial())).toBe(0);
+    expect(nearCutout(null)).toBe(0);
+    for (const id of ['a', 'b', 'c', 'd', 'e', 'f']) {
+      const t = T.find((x) => x.id === id)!;
+      expect(t.source).toContain('make_bigtree.py');
+      expect(t.midFile).toBeUndefined();
+      expect(t.height).toBeGreaterThanOrEqual(18);
+      // The crown allowance is wide enough that fitTree keeps the full 18–21 m height.
+      expect(t.width).toBeGreaterThanOrEqual(t.height * 0.8);
+      expect(t.card).toBeGreaterThanOrEqual(1);
+    }
   });
 
   it('weighted picks follow the weights', () => {
@@ -79,16 +135,27 @@ describe("PK 1.8.0: PK's trees", () => {
 
   it('every house of a hamlet of three or more has a coconut and a banana, never inside a building', () => {
     const house = (x: number, z: number): Lot => ({ type: 'house', x, z, w: 4, d: 4 });
-    const lots: Lot[] = [house(0, 0), house(0, 8), house(9, 4), house(80, 0), house(88, 0), { type: 'storehouse', x: 6, z: -8, w: 6, d: 6 }];
+    const lots: Lot[] = [
+      house(0, 0),
+      house(0, 8),
+      house(9, 4),
+      house(80, 0),
+      house(88, 0),
+      { type: 'storehouse', x: 6, z: -8, w: 6, d: 6 },
+    ];
     const trees = villageTrees(lots, L.village, () => true);
-    const near = (h: Lot, id: string) => trees.some((t) => t.id === id && Math.hypot(t.x - h.x, t.z - h.z) < 6);
+    const near = (h: Lot, id: string) =>
+      trees.some((t) => t.id === id && Math.hypot(t.x - h.x, t.z - h.z) < 6);
     for (const h of lots.slice(0, 3)) {
       expect(near(h, L.village.coconut)).toBe(true);
       expect(L.village.banana.some((b) => near(h, b))).toBe(true);
     }
     // Two houses on their own: no yard trees.
-    for (const h of lots.slice(3, 5)) expect(trees.some((t) => Math.hypot(t.x - h.x, t.z - h.z) < 8)).toBe(false);
-    for (const t of trees) for (const b of lots) expect(Math.abs(t.x - b.x) < b.w / 2 && Math.abs(t.z - b.z) < b.d / 2).toBe(false);
+    for (const h of lots.slice(3, 5))
+      expect(trees.some((t) => Math.hypot(t.x - h.x, t.z - h.z) < 8)).toBe(false);
+    for (const t of trees)
+      for (const b of lots)
+        expect(Math.abs(t.x - b.x) < b.w / 2 && Math.abs(t.z - b.z) < b.d / 2).toBe(false);
     // Same houses, same trees.
     expect(villageTrees(lots, L.village, () => true)).toEqual(trees);
   });
@@ -105,7 +172,12 @@ describe("PK 1.8.0: PK's trees", () => {
       const tx = Math.floor((t.x + half) / tile);
       const tz = Math.floor((t.z + half) / tile);
       expect(wear(tx, tz)).toBe(0); // never on the path itself
-      const beside = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dz]) => wear(tx + dx!, tz + dz!) > 0 || wear(tx + 2 * dx!, tz + 2 * dz!) > 0);
+      const beside = [
+        [1, 0],
+        [-1, 0],
+        [0, 1],
+        [0, -1],
+      ].some(([dx, dz]) => wear(tx + dx!, tz + dz!) > 0 || wear(tx + 2 * dx!, tz + 2 * dz!) > 0);
       expect(beside).toBe(true);
       expect(L.wayside.kinds.some((k) => k.id === t.id)).toBe(true);
       expect(Math.hypot(t.x - 1, t.z - 1)).toBeLessThanOrEqual(L.wayside.radius + tile);
@@ -114,6 +186,15 @@ describe("PK 1.8.0: PK's trees", () => {
     const some = waysideTrees([{ x: 1, z: 1 }], L.wayside, tile, half, wear, () => true);
     expect(some.length).toBeLessThan(trees.length);
     // No path, no wayside trees.
-    expect(waysideTrees([{ x: 1, z: 1 }], W, tile, half, () => 0, () => true)).toEqual([]);
+    expect(
+      waysideTrees(
+        [{ x: 1, z: 1 }],
+        W,
+        tile,
+        half,
+        () => 0,
+        () => true,
+      ),
+    ).toEqual([]);
   });
 });

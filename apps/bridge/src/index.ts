@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { copyFileSync, mkdirSync, readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import { loadConfigs, parseBlocklist, PORTS } from '@temples/shared';
 import { createBridge } from './server';
 import { fileLogger } from './logger';
@@ -26,7 +26,23 @@ log.info('world loaded', {
   stockpile: p.stockpile,
 });
 
-const bridge = createBridge({ configs, store, blocklist, log, hostDist: resolve(root, 'apps/host/dist') });
+// The tests' copy of the Royal Orders starts from the real file each run (D157).
+const ordersFile = process.env.TEMPLES_ORDERS
+  ? resolve(root, process.env.TEMPLES_ORDERS)
+  : resolve(root, 'config/kingdom/orders.json');
+if (process.env.TEMPLES_ORDERS) {
+  mkdirSync(dirname(ordersFile), { recursive: true });
+  copyFileSync(resolve(root, 'config/kingdom/orders.json'), ordersFile);
+}
+const bridge = createBridge({
+  configs,
+  store,
+  blocklist,
+  log,
+  hostDist: resolve(root, 'apps/host/dist'),
+  // The Royal Orders the host dashboard edits (D157); TEMPLES_ORDERS points the tests elsewhere.
+  ordersFile,
+});
 const port = await bridge.listen(Number(process.env.PORT_WS ?? PORTS.bridgeWs));
 log.info(`listening on ws://localhost:${port} · host panel: http://localhost:${port}/host/`);
 

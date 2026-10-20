@@ -45,6 +45,7 @@ import { TempleView } from '../../world/temple';
 import { bigsDue, growStep } from '../../world/templeGrow';
 import { DangerRings } from './dangerRings';
 import { ScatterView, scatterCentre, scatterPlan } from './scatter';
+import { makeRealWater } from './realWater';
 import { NearPeople, personFile, pickNear } from './nearPeople';
 import { dressOf, lookFor } from '../hero/heroModel';
 import { kitFor } from '../hero/heroCore';
@@ -101,12 +102,21 @@ import { GroundDetailRts, hash as detailHash, type Patch } from './detail';
 import { WearMap } from './wear';
 import { ElephantGrass, grassReach } from './elephantGrass';
 import { LightShafts, MistLayer, mistAmount, shaftAmount } from './atmosphere';
-import { ModelTrees, pickWeighted, shoreScale, villageTrees, waterDistance, waysideTrees, type Lot, type TreeSpot } from './treeModels';
+import {
+  ModelTrees,
+  pickWeighted,
+  shoreScale,
+  villageTrees,
+  waterDistance,
+  waysideTrees,
+  type Lot,
+  type TreeSpot,
+} from './treeModels';
 import { addSeeThrough, seeAmount, seeUniforms, setTargets, type SeeUniforms } from './seeThrough';
 import { TorchView, torchSpots, type TorchSite } from './torches';
 import { NightSky } from './nightSky';
 import { FallenTrees, boatGeometry, paddleGeometry, paddleMatrix } from './actions';
-import { modelUrl } from '../hero/glbModel';
+import { loadModel, modelUrl } from '../hero/glbModel';
 import type { PropSlotId } from '@temples/shared';
 import { disposeNode } from '../../engine/dispose';
 
@@ -383,6 +393,8 @@ export class KingdomScene {
   readonly scatter: ScatterView | null = null;
   /** PK 1.9.0 (D155): PK's Meshy people for the units nearest the middle of the view (PC look). */
   readonly people: NearPeople | null = null;
+  /** PK 2026-10-20 (D158): the royal court as PK's Meshy people (PC look). */
+  readonly courtPeople: NearPeople | null = null;
   private readonly ray = new THREE.Vector3();
   private readonly bars: { bg: THREE.InstancedMesh; fg: THREE.InstancedMesh };
   private readonly arrows: THREE.InstancedMesh;
@@ -484,8 +496,7 @@ export class KingdomScene {
         this.sun.shadow.camera.far = 400;
       }
       const hemi = this.scene.children.find((o) => o instanceof THREE.HemisphereLight) as
-        | THREE.HemisphereLight
-        | undefined;
+        THREE.HemisphereLight | undefined;
       if (hemi) hemi.intensity = L.fill;
       this.foliage = new THREE.Color(L.foliage);
     }
@@ -497,7 +508,10 @@ export class KingdomScene {
     }
     // PK 1.8.0: tall elephant grass rolling in the wind.
     if (this.gfx.diorama && this.gfx.elephantGrass && sim.data.diorama.elephantGrass.count > 0) {
-      const g = new ElephantGrass(sim.data.diorama.elephantGrass, !!this.gfx.grassShadows && this.sun.castShadow);
+      const g = new ElephantGrass(
+        sim.data.diorama.elephantGrass,
+        !!this.gfx.grassShadows && this.sun.castShadow,
+      );
       (this as { egrass: ElephantGrass | null }).egrass = g;
       this.scene.add(g.group);
     }
@@ -505,7 +519,11 @@ export class KingdomScene {
     // PK 1.8.0: under it the 10 cm lawn on every green tile, and a few clusters of stones.
     if (this.gfx.diorama && this.gfx.sward) {
       const D = sim.data.diorama;
-      for (const [key, cfg] of [['lawn', D.lawn], ['sward', D.sward], ['stones', D.stones]] as const) {
+      for (const [key, cfg] of [
+        ['lawn', D.lawn],
+        ['sward', D.sward],
+        ['stones', D.stones],
+      ] as const) {
         if (cfg.count <= 0) continue;
         const g = new ElephantGrass(cfg, false);
         (this as unknown as Record<string, ElephantGrass | null>)[key] = g;
@@ -725,7 +743,12 @@ export class KingdomScene {
     // PK 1.9.0 (D153): the rest of PK's models scattered over the land in natural patterns.
     const SC = sim.data.props.scatter;
     if (this.gfx.real && SC) {
-      this.scatter = new ScatterView(SC.kinds, scatterPlan(sim.map, SC.kinds, sim.map.seed, SC.clearHall), SC, modelUrl);
+      this.scatter = new ScatterView(
+        SC.kinds,
+        scatterPlan(sim.map, SC.kinds, sim.map.seed, SC.clearHall),
+        SC,
+        modelUrl,
+      );
       this.scene.add(this.scatter.group);
     }
     // PK 1.9.0 (D155): the people nearest the middle of the view move like people.
@@ -735,6 +758,16 @@ export class KingdomScene {
       this.people = new NearPeople(PC, modelUrl, dress);
       this.people.preload();
       this.scene.add(this.people.group);
+      if (PC.court) {
+        // Up to three halls' courts at once (capital moves keep the old halls).
+        this.courtPeople = new NearPeople(
+          { ...PC, max: COURT_LAYOUT.length * 3, byType: {}, byJob: {} },
+          modelUrl,
+          dress,
+        );
+        for (const f of Object.values(PC.court)) void loadModel(modelUrl(`${PC.dir}${f}.glb`));
+        this.scene.add(this.courtPeople.group);
+      }
     }
 
     // Building sets per type, scaffolding, the monument (the real Preah Ko kit).
@@ -983,9 +1016,24 @@ export class KingdomScene {
       // Living water (D79): depth colour from the ground under it, ripples, foam at the shore.
       const heights = new Float32Array((S + 1) * (S + 1));
       for (let i = 0; i < pos.count; i++) heights[i] = pos.getY(i);
-      this.water = this.gfx.diorama
-        ? makePrekWater(heightTexture(heights, S + 1), size, -0.12, this.sunDirNow, this.sim.data.diorama.water)
-        : makeWater(heightTexture(heights, S + 1), size, -0.12, SUN_DIR);
+      // PK 2026-10-20 (D158): the PC look's realistic water mirrors the world.
+      this.water = this.gfx.real
+        ? makeRealWater(
+            heightTexture(heights, S + 1),
+            size,
+            -0.12,
+            this.sunDirNow,
+            this.sim.data.diorama.realWater,
+          )
+        : this.gfx.diorama
+          ? makePrekWater(
+              heightTexture(heights, S + 1),
+              size,
+              -0.12,
+              this.sunDirNow,
+              this.sim.data.diorama.water,
+            )
+          : makeWater(heightTexture(heights, S + 1), size, -0.12, SUN_DIR);
       this.scene.add(this.water.mesh);
     } else {
       const water = new THREE.Mesh(
@@ -1031,7 +1079,14 @@ export class KingdomScene {
     const size = s.fog.size;
     const reach = Math.max(90, dist * 2.2);
     const counts = { stone: 0, gold: 0, gems: 0, fruit: 0 };
-    const place = (mesh: THREE.InstancedMesh, i: number, x: number, z: number, scale: number, rot: number) => {
+    const place = (
+      mesh: THREE.InstancedMesh,
+      i: number,
+      x: number,
+      z: number,
+      scale: number,
+      rot: number,
+    ) => {
       this.m.makeRotationY(rot);
       this.m.scale(this.v.setScalar(scale));
       this.m.setPosition(x, 0, z);
@@ -1088,13 +1143,20 @@ export class KingdomScene {
       if (b.type === place.wayside.near && b.progress >= 1) stores.push({ x, z });
     }
     const dry = (x: number, z: number) => this.groundY(x, z) > WATER_Y + GRASS_DRY + 0.05;
-    const open = (x: number, z: number) => dry(x, z) && !lots.some((b) => Math.abs(x - b.x) < b.w / 2 + 1 && Math.abs(z - b.z) < b.d / 2 + 1);
+    const open = (x: number, z: number) =>
+      dry(x, z) && !lots.some((b) => Math.abs(x - b.x) < b.w / 2 + 1 && Math.abs(z - b.z) < b.d / 2 + 1);
     const village = villageTrees(lots, place.village, dry);
     const wear = this.wear;
-    const way = wear ? waysideTrees(stores, place.wayside, T, this.half, (tx, tz) => wear.at(tx, tz), open) : [];
+    const way = wear
+      ? waysideTrees(stores, place.wayside, T, this.half, (tx, tz) => wear.at(tx, tz), open)
+      : [];
     const next = [...village, ...way];
     const same =
-      next.length === this.yardTrees.length && next.every((a, i) => a.id === this.yardTrees[i]!.id && a.x === this.yardTrees[i]!.x && a.z === this.yardTrees[i]!.z);
+      next.length === this.yardTrees.length &&
+      next.every(
+        (a, i) =>
+          a.id === this.yardTrees[i]!.id && a.x === this.yardTrees[i]!.x && a.z === this.yardTrees[i]!.z,
+      );
     if (same) return;
     this.yardTrees = next;
     this.treesAt = [NaN, NaN, NaN];
@@ -1142,10 +1204,18 @@ export class KingdomScene {
       // D156: on the bank a tree is smaller, so it never stands in or over the river.
       const bank = shoreScale(wet[tile] ?? 4);
       if (models && place) {
-        const kind = pickWeighted(place.forest, (((h * 2654435761) % 1000) + 1000) % 1000 / 1000);
+        const kind = pickWeighted(place.forest, ((((h * 2654435761) % 1000) + 1000) % 1000) / 1000);
         const scale = (0.75 + (h % 10) / 20) * bank;
         if (kind.id !== 'bamboo' && models.has(kind.id)) {
-          spots.push({ id: kind.id, x, y: 0, z, rot: (h * 0.37) % 6.28, scale, shade: 0.9 + ((h * 37) % 100) / 500 });
+          spots.push({
+            id: kind.id,
+            x,
+            y: 0,
+            z,
+            rot: (h * 0.37) % 6.28,
+            scale,
+            shade: 0.9 + ((h * 37) % 100) / 500,
+          });
           continue;
         }
         // Bamboo (and any kind whose model is missing) keeps the built-in shape.
@@ -1174,7 +1244,8 @@ export class KingdomScene {
     if (models && place) {
       // The coconuts and bananas of the hamlets, the palms by the paths: on explored land near the view.
       for (const t of this.yardTrees)
-        if (Math.abs(t.x - cx) < reach && Math.abs(t.z - cz) < reach && this.exploredAt(t.x, t.z)) spots.push(t);
+        if (Math.abs(t.x - cx) < reach && Math.abs(t.z - cz) < reach && this.exploredAt(t.x, t.z))
+          spots.push(t);
       const mid = place.midTris;
       models.draw(
         spots,
@@ -1229,7 +1300,9 @@ export class KingdomScene {
         if (s.map.bridge?.[j]) return 'none';
         const land = (x: number, z: number) =>
           x >= 0 && z >= 0 && x < N && z < N && s.map.terrain[z * N + x] !== 'water';
-        return land(tx + 1, tz) || land(tx - 1, tz) || land(tx, tz + 1) || land(tx, tz - 1) ? 'bank' : 'water';
+        return land(tx + 1, tz) || land(tx - 1, tz) || land(tx, tz + 1) || land(tx, tz - 1)
+          ? 'bank'
+          : 'water';
       }
       if (t === 'forest') return 'forest';
       if (t === 'grass') {
@@ -1306,6 +1379,8 @@ export class KingdomScene {
     this.fogTex.dispose();
     this.scatter?.dispose();
     this.people?.dispose();
+    this.courtPeople?.dispose();
+    (this.water as { dispose?: () => void } | null)?.dispose?.();
     for (const o of [...this.scene.children]) disposeNode(o, { textures: true });
     this.scene.clear();
   }
@@ -1847,11 +1922,45 @@ export class KingdomScene {
       }
     }
     const counts = new Map<CourtRole, number>();
+    const CP = this.courtPeople;
+    const courtFiles = this.sim.data.props.people?.court;
+    CP?.begin();
+    let hall = 0;
     for (const b of this.sim.buildings.values()) {
       if (b.team !== PLAYER || b.type !== 'townCentre' || b.progress < 1) continue;
       const [cx, cz] = this.sim.center(b);
-      for (const c of COURT_LAYOUT) {
+      hall++;
+      for (const [ci, c] of COURT_LAYOUT.entries()) {
         if (c.role === 'king' && this.hideKing) continue; // the king is out, played in 3D
+        // D158: PK's Meshy court on the PC look (the built-in figure until the model is in).
+        if (CP && courtFiles?.[c.role]) {
+          const pose = courtPose(c.role, t, this.courtMood);
+          const blessing = t < this.courtMood.blessUntil;
+          const act =
+            c.role === 'king'
+              ? blessing
+                ? ACT.lift
+                : pose.arm > 0.3
+                  ? ACT.torch
+                  : ACT.stand
+              : c.role === 'brahmin' && blessing
+                ? ACT.lift
+                : ACT.stand;
+          const placed = CP.place(
+            -(hall * 100 + ci),
+            `${this.sim.data.props.people!.dir}${courtFiles[c.role]}.glb`,
+            {
+              x: cx + c.at[0],
+              y: c.at[1] + pose.lift,
+              z: cz + c.at[2],
+              heading: pose.heading,
+              act,
+              speed: 0,
+            },
+            t,
+          );
+          if (placed) continue;
+        }
         const m = this.court.get(c.role)!;
         const i = counts.get(c.role) ?? 0;
         if (i >= m.instanceMatrix.count) continue;
@@ -1869,6 +1978,7 @@ export class KingdomScene {
         m.setColorAt(i, this.c.set(cloth[c.role]));
       }
     }
+    CP?.end();
     for (const [role, m] of this.court) {
       const pose = courtPose(role, t, this.courtMood);
       const u = (m.material as THREE.Material).userData.uniforms as Record<string, { value: number }>;
@@ -2193,7 +2303,13 @@ export class KingdomScene {
           x -= Math.sin(heading) * 0.85;
           z -= Math.cos(heading) * 0.85;
           if ((t + u.id * 0.31) % 0.9 < this.frameDt && this.near(x, z)) {
-            this.particles.burst('splash', x + Math.sin(heading) * 1.4, WATER_Y + 0.1, z + Math.cos(heading) * 1.4, 4);
+            this.particles.burst(
+              'splash',
+              x + Math.sin(heading) * 1.4,
+              WATER_Y + 0.1,
+              z + Math.cos(heading) * 1.4,
+              4,
+            );
           }
         } else if (way === 'raft' && nbamboo < this.bamboo.instanceMatrix.count) {
           y = WATER_Y + 0.12 + bob;
@@ -2353,7 +2469,7 @@ export class KingdomScene {
       if (e.kind === 'hunted') this.meatIds.add(e.node);
       if (e.kind === 'hit') this.particles.burst('sparks', e.at[0], 1.1, e.at[1], 5);
       if (e.kind === 'felled') {
-        this.fallen.fell(e.at[0], e.at[1], e.dir, t, 0.75 + ((Math.abs(e.at[0] * 7 + e.at[1] * 13) % 10) / 20));
+        this.fallen.fell(e.at[0], e.at[1], e.dir, t, 0.75 + (Math.abs(e.at[0] * 7 + e.at[1] * 13) % 10) / 20);
         this.particles.burst('dust', e.at[0], 0.6, e.at[1], 14);
       }
       if (e.kind === 'death') this.particles.burst('hit', e.unit.x, 0.3, e.unit.z, 10);
@@ -2514,7 +2630,9 @@ export class KingdomScene {
     // The sky dome: the disc where the sun is.
     this.skyDome ??=
       (this.scene.children.find(
-        (o) => (o as THREE.Mesh).isMesh && !!((o as THREE.Mesh).material as THREE.ShaderMaterial).uniforms?.sunDisc,
+        (o) =>
+          (o as THREE.Mesh).isMesh &&
+          !!((o as THREE.Mesh).material as THREE.ShaderMaterial).uniforms?.sunDisc,
       ) as THREE.Mesh | undefined) ?? null;
     if (this.skyDome) {
       const u = (this.skyDome.material as THREE.ShaderMaterial).uniforms;
@@ -2522,7 +2640,8 @@ export class KingdomScene {
       u.sunDisc!.value = st.dir[1] > -0.05 ? 1 : 0;
     }
     // The water: the glint from where the sun is, and at sunrise and sunset a path of light.
-    const prek = this.water as (Water & { setSun?: (d: THREE.Vector3, c: THREE.Color, g: number) => void }) | null;
+    const prek = this.water as
+      (Water & { setSun?: (d: THREE.Vector3, c: THREE.Color, g: number) => void }) | null;
     prek?.setSun?.(st.dir[1] > 0.02 ? this.sunSkyDir : this.sunDirNow, this.sunColor, g * (1 - this.night));
   }
   private skyDome: THREE.Mesh | null = null;
@@ -2694,7 +2813,12 @@ export class KingdomScene {
     // Game time drives it (the ground dries faster when the game runs faster).
     const dt = this.wetAt < 0 ? 0 : Math.max(0, this.sim.time - this.wetAt);
     this.wetAt = this.sim.time;
-    this.wet = wetness(this.wet, id === 'rain' || id === 'storm', Math.min(dt, 30), this.sim.data.diorama.wet);
+    this.wet = wetness(
+      this.wet,
+      id === 'rain' || id === 'storm',
+      Math.min(dt, 30),
+      this.sim.data.diorama.wet,
+    );
     U.uWet.value = this.wet;
     U.uRain.value = this.weatherFx.rain;
     U.uTime.value = t;
@@ -2741,7 +2865,15 @@ export class KingdomScene {
     const [cx, cz, dist] = this.view;
     const radius = Math.max(60, dist * 1.3);
     const off = this.heroView;
-    mist.update(t, cx, cz, radius, off ? 0 : mistAmount(id, this.dawn(), this.wet, A.mist), this.night, this.windXZ);
+    mist.update(
+      t,
+      cx,
+      cz,
+      radius,
+      off ? 0 : mistAmount(id, this.dawn(), this.wet, A.mist),
+      this.night,
+      this.windXZ,
+    );
     shafts.update(
       t,
       cx,
@@ -2815,7 +2947,11 @@ export class KingdomScene {
       return;
     }
     const at = this.detailAt ?? this.patchAt(new Set());
-    if (g.lay(cx, cz, radius, s.map.tile, this.half, at, clear, this.grassDue.has(g), (x, z) => this.groundY(x, z))) {
+    if (
+      g.lay(cx, cz, radius, s.map.tile, this.half, at, clear, this.grassDue.has(g), (x, z) =>
+        this.groundY(x, z),
+      )
+    ) {
       this.grassLaidNow = true;
       this.grassDue.delete(g);
       this.grassLaidAt.set(g, ++this.grassLays);

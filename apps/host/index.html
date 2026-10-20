@@ -11,6 +11,10 @@
         <span class="brand-km">សាងប្រាសាទ</span>
         <span class="brand-en">Host panel</span>
       </div>
+      <nav class="tabs" aria-label="Pages">
+        <button class="toggle" data-tab="panel" aria-pressed="true">Panel</button>
+        <button class="toggle" data-tab="orders" aria-pressed="false">ព្រះរាជបញ្ជា · Royal Orders</button>
+      </nav>
       <div class="pills">
         <span class="pill" id="pill-bridge" data-state="off">Bridge: connecting…</span>
         <span class="pill" id="pill-source" data-state="off">Source: –</span>
@@ -19,7 +23,7 @@
       </div>
     </header>
 
-    <main class="grid">
+    <main class="grid" id="tab-panel">
       <section class="card sim" aria-labelledby="sim-h">
         <h2 id="sim-h">Simulate viewers</h2>
         <label class="field">
@@ -153,6 +157,57 @@
           </span>
         </label>
         <p class="hint" id="ctl-status"></p>
+      </section>
+    </main>
+
+    <main class="orders-page" id="tab-orders" hidden>
+      <section class="card" aria-labelledby="orders-h">
+        <h2 id="orders-h">ព្រះរាជបញ្ជា · Royal Orders</h2>
+        <p class="hint">
+          The king's daily orders in the 3D hero mode: duties to do and questions to answer. One at a time,
+          at random, for the hero being played. Saved to <code>config/kingdom/orders.json</code> and sent to
+          the game at once.
+        </p>
+        <p class="hint" id="orders-status"></p>
+        <table class="orders-table">
+          <thead>
+            <tr><th>Kind</th><th>Order</th><th>What</th><th>For</th><th>Reward</th><th></th></tr>
+          </thead>
+          <tbody id="orders-list"></tbody>
+        </table>
+      </section>
+
+      <section class="card" aria-labelledby="order-new-h">
+        <h2 id="order-new-h">បន្ថែមបញ្ជា · Add an order</h2>
+        <form id="order-form">
+          <div class="btns">
+            <label class="radio"><input type="radio" name="otype" value="duty" checked /> 🛠️ Duty · កិច្ចការ</label>
+            <label class="radio"><input type="radio" name="otype" value="question" /> ❓ Question · សំណួរ</label>
+          </div>
+          <label class="field"><span>Khmer · ខ្មែរ</span><input id="o-km" required maxlength="300" /></label>
+          <label class="field"><span>English</span><input id="o-en" required maxlength="300" /></label>
+          <div id="o-duty">
+            <label class="field"><span>Duty</span><select id="o-dutykind"></select></label>
+            <label class="field" id="o-n-field"><span>How many</span><input id="o-n" type="number" min="1" max="500" value="5" /></label>
+            <label class="field" id="o-place-field" hidden><span>Where</span><select id="o-place"></select></label>
+          </div>
+          <div id="o-question" hidden>
+            <span class="label">Answers — tick the right one (2 to 4)</span>
+            <div id="o-options"></div>
+          </div>
+          <fieldset class="kits">
+            <legend>For whom (none ticked = everyone)</legend>
+            <div id="o-kits"></div>
+          </fieldset>
+          <fieldset class="reward">
+            <legend>Reward</legend>
+            <label>🍚 <input id="o-food" type="number" min="0" max="1000" value="0" /></label>
+            <label>🪵 <input id="o-wood" type="number" min="0" max="1000" value="0" /></label>
+            <label>🪨 <input id="o-stone" type="number" min="0" max="1000" value="0" /></label>
+            <label>🪙 <input id="o-gold" type="number" min="0" max="1000" value="10" /></label>
+          </fieldset>
+          <button type="submit" class="wide">បន្ថែម · Add the order</button>
+        </form>
       </section>
     </main>
     <script type="module" src="/src/main.ts"></script>

@@ -708,7 +708,17 @@ export const GUARDIANS = ['naga', 'garuda', 'tiger', 'gaja', 'singha', 'hongsa']
  * lotus petals falling; orbit = spectral weapons wheeling round him; trail = a streak of light
  * along a dash or a shot.
  */
-export const SKILL_VFX = ['wave', 'rain', 'spirit', 'pillars', 'shock', 'dome', 'petals', 'orbit', 'trail'] as const;
+export const SKILL_VFX = [
+  'wave',
+  'rain',
+  'spirit',
+  'pillars',
+  'shock',
+  'dome',
+  'petals',
+  'orbit',
+  'trail',
+] as const;
 
 export const HeroSkillSchema = z.object({
   id: z.string(),
@@ -722,7 +732,10 @@ export const HeroSkillSchema = z.object({
   /** Its effects (D151), played in this order with its yantra. */
   vfx: z.array(z.enum(SKILL_VFX)).default([]),
   /** Its light colour, #rrggbb (default: gold for the king and healing, sky blue otherwise). */
-  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
   /** Its sound (KingdomSound effect name; default by kind). */
   sound: z.string().optional(),
 });
@@ -1024,20 +1037,11 @@ export const AnachakSchema = z.object({
         ]),
       )
       .optional(),
-    quests: z.object({
-      grow: z.number().positive(),
-      list: z
-        .array(
-          z.object({
-            kits: z.array(z.string()).min(1),
-            kind: z.enum(['gather', 'store', 'defeat', 'hunt', 'heal', 'build']),
-            n: z.number().positive(),
-            ...Bi,
-            reward: Cost,
-          }),
-        )
-        .min(1),
-    }),
+    /**
+     * PK 2026-10-20 (D157): the king's daily orders moved to config/kingdom/orders.json (Royal
+     * Orders, edited in the host dashboard); a "visit" is done within this many metres of the walls.
+     */
+    ordersReach: z.number().positive(),
     confidence: ConfidenceSchema,
   }),
 });
@@ -1139,7 +1143,16 @@ export type PropSlotId = (typeof PROP_SLOTS)[number];
  * natural patterns (clumps, edges, shores) on the PC presets — one instanced mesh a kind,
  * only the nearest `maxVisible` drawn.
  */
-export const SCATTER_HABITATS = ['forest', 'forestEdge', 'grass', 'shore', 'pond', 'hill', 'ruin', 'village'] as const;
+export const SCATTER_HABITATS = [
+  'forest',
+  'forestEdge',
+  'grass',
+  'shore',
+  'pond',
+  'hill',
+  'ruin',
+  'village',
+] as const;
 export const ScatterKindSchema = z.object({
   id: z.string().min(1),
   en: z.string(),
@@ -1168,9 +1181,18 @@ export const PropsSchema = z.object({
   /** PK 1.9.0 (D153): boats from PK's models on the PC presets; the trader boat stands in for the junk. */
   boats: z
     .object({
-      dugout: PropSlotSchema.pick({ file: true, fit: true }).extend({ en: z.string(), sink: z.number().min(0).max(0.9) }),
-      bambooRaft: PropSlotSchema.pick({ file: true, fit: true }).extend({ en: z.string(), sink: z.number().min(0).max(0.9) }),
-      trader: PropSlotSchema.pick({ file: true, fit: true }).extend({ en: z.string(), sink: z.number().min(0).max(0.9) }),
+      dugout: PropSlotSchema.pick({ file: true, fit: true }).extend({
+        en: z.string(),
+        sink: z.number().min(0).max(0.9),
+      }),
+      bambooRaft: PropSlotSchema.pick({ file: true, fit: true }).extend({
+        en: z.string(),
+        sink: z.number().min(0).max(0.9),
+      }),
+      trader: PropSlotSchema.pick({ file: true, fit: true }).extend({
+        en: z.string(),
+        sink: z.number().min(0).max(0.9),
+      }),
     })
     .optional(),
   /** PK 1.9.0 (D153): scattered plants, rocks and small life (PC presets). */
@@ -1217,6 +1239,13 @@ export const PropsSchema = z.object({
       hips: z.number().positive(),
       byType: z.record(z.string(), z.array(z.string()).min(1)),
       byJob: z.record(z.string(), z.array(z.string()).min(1)),
+      /**
+       * PK 2026-10-20 (D158): the 3D hero's weapons and gear made in Blender
+       * (scripts/models/blender/make_weapons.py), by weapon kind and part (shield, quiver), PC look.
+       */
+      gear: z.record(z.string(), z.string()).optional(),
+      /** PK 2026-10-20 (D158): the royal court before each hall, by role (king, queen, brahmin, parasol). */
+      court: z.record(z.enum(['king', 'queen', 'brahmin', 'parasol']), z.string()).optional(),
     })
     .optional(),
   /**
@@ -1273,7 +1302,11 @@ export const PropsSchema = z.object({
       nearTris: z.object({ rts: z.number().int().min(0), hero: z.number().int().min(0) }),
       /** 1.8.0: the middle step (a lighter copy of the model) between the model and the cards. */
       midTris: z
-        .object({ $comment: z.string().optional(), rts: z.number().int().min(0), hero: z.number().int().min(0) })
+        .object({
+          $comment: z.string().optional(),
+          rts: z.number().int().min(0),
+          hero: z.number().int().min(0),
+        })
         .optional(),
     })
     .optional(),
@@ -1283,70 +1316,96 @@ export const PropsSchema = z.object({
 const Hex = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 /** A field of wind-blown grass (view/elephantGrass.ts): the tall stands and the short sward. */
 const GrassFieldSchema = z.object({
-    count: z.number().int().min(0),
-    /** Leaves of the built-in clump. Ignored when `cards` is set (the cards are the clump). */
-    blades: z.number().int().min(3).max(24),
-    reach: z.number().positive(),
-    standTiles: z.number().positive(),
-    cover: z.number().min(0).max(1),
-    perTile: z.number().min(0).max(16),
-    bank: z.number().min(0).max(1),
-    keepAway: z.number().int().min(0).max(12),
+  count: z.number().int().min(0),
+  /** Leaves of the built-in clump. Ignored when `cards` is set (the cards are the clump). */
+  blades: z.number().int().min(3).max(24),
+  reach: z.number().positive(),
+  standTiles: z.number().positive(),
+  cover: z.number().min(0).max(1),
+  perTile: z.number().min(0).max(16),
+  bank: z.number().min(0).max(1),
+  keepAway: z.number().int().min(0).max(12),
+  height: z.tuple([z.number().positive(), z.number().positive()]),
+  /**
+   * Width of a tussock (m): it is wider than tall, so stands read as a dense mass. Ignored
+   * when `cards` is set: `cards.spread` (width per height) is used instead.
+   */
+  spread: z.tuple([z.number().positive(), z.number().positive()]),
+  /** PK 1.8.0: PK's Meshy grass baked into cards (atlas file, card size per 1 of grass height, width share). */
+  cards: z
+    .object({
+      file: z.string(),
+      card: z.number().positive(),
+      spread: z.tuple([z.number().positive(), z.number().positive()]),
+      /** Rows each card is cut in (more = it bends smoother in the wind; 1 for short grass). */
+      rows: z.number().int().min(1).max(8).optional(),
+      /** The atlas has a 4th column, the grass from above, shown on a flat card (the RTS camera). */
+      top: z.boolean().optional(),
+      /** Height of that flat card, as a share of the grass height (default 0.45; higher for a short lawn on bumpy ground). */
+      topAt: z.number().min(0.05).max(1).optional(),
+      source: z.string(),
+    })
+    .optional(),
+  /** PK 1.8.0: dense cogon grass (ស្បូវ) mixed in: its share, its heights (m) and paler tint. */
+  cogon: z.object({
+    share: z.number().min(0).max(1),
     height: z.tuple([z.number().positive(), z.number().positive()]),
-    /**
-     * Width of a tussock (m): it is wider than tall, so stands read as a dense mass. Ignored
-     * when `cards` is set: `cards.spread` (width per height) is used instead.
-     */
-    spread: z.tuple([z.number().positive(), z.number().positive()]),
-    /** PK 1.8.0: PK's Meshy grass baked into cards (atlas file, card size per 1 of grass height, width share). */
-    cards: z
-      .object({
-        file: z.string(),
-        card: z.number().positive(),
-        spread: z.tuple([z.number().positive(), z.number().positive()]),
-        /** Rows each card is cut in (more = it bends smoother in the wind; 1 for short grass). */
-        rows: z.number().int().min(1).max(8).optional(),
-        /** The atlas has a 4th column, the grass from above, shown on a flat card (the RTS camera). */
-        top: z.boolean().optional(),
-        /** Height of that flat card, as a share of the grass height (default 0.45; higher for a short lawn on bumpy ground). */
-        topAt: z.number().min(0.05).max(1).optional(),
-        source: z.string(),
-      })
-      .optional(),
-    /** PK 1.8.0: dense cogon grass (ស្បូវ) mixed in: its share, its heights (m) and paler tint. */
-    cogon: z.object({
-      share: z.number().min(0).max(1),
-      height: z.tuple([z.number().positive(), z.number().positive()]),
-      tint: Hex,
-    }),
-    /** Most wear (0..1) a tile may have and still grow it (default 0.04; worn earth shows from ground.soilFrom). */
-    wearMax: z.number().min(0).max(1).optional(),
-    /** Colour every clump is multiplied by (x1.5: may brighten), to match the ground's green. */
-    tint: Hex.optional(),
-    dry: Hex,
-    dryShare: z.number().min(0).max(1),
-    flowering: z.number().min(0).max(1),
-    gustSheen: z.number().min(0).max(1),
-    baseDark: z.number().min(0).max(1),
-    trample: z.number().min(0),
-    lod: z.tuple([z.number().positive(), z.number().positive()]),
-    wind: z.object({
-      strength: z.number().min(0).max(3),
-      dirDeg: z.number(),
-      speed: z.number().min(0),
-      waveScale: z.number().positive(),
-      sharpness: z.number().min(0).max(0.49),
-      baseBend: z.number().min(0).max(1),
-      gustBend: z.number().min(0).max(1.5),
-      sway: z.number().min(0).max(0.5),
-      swaySpeed: z.number().min(0),
-      flutter: z.number().min(0).max(0.3),
-      flutterSpeed: z.number().min(0),
-    }),
-  });
+    tint: Hex,
+  }),
+  /** Most wear (0..1) a tile may have and still grow it (default 0.04; worn earth shows from ground.soilFrom). */
+  wearMax: z.number().min(0).max(1).optional(),
+  /** Colour every clump is multiplied by (x1.5: may brighten), to match the ground's green. */
+  tint: Hex.optional(),
+  dry: Hex,
+  dryShare: z.number().min(0).max(1),
+  flowering: z.number().min(0).max(1),
+  gustSheen: z.number().min(0).max(1),
+  baseDark: z.number().min(0).max(1),
+  trample: z.number().min(0),
+  lod: z.tuple([z.number().positive(), z.number().positive()]),
+  wind: z.object({
+    strength: z.number().min(0).max(3),
+    dirDeg: z.number(),
+    speed: z.number().min(0),
+    waveScale: z.number().positive(),
+    sharpness: z.number().min(0).max(0.49),
+    baseBend: z.number().min(0).max(1),
+    gustBend: z.number().min(0).max(1.5),
+    sway: z.number().min(0).max(0.5),
+    swaySpeed: z.number().min(0),
+    flutter: z.number().min(0).max(0.3),
+    flutterSpeed: z.number().min(0),
+  }),
+});
+
+/**
+ * PK 2026-10-20 (D158): the PC look's realistic water — a mirror of the world (planar
+ * reflection at `reflectScale` of the screen), Fresnel (`f0`), light absorbed with depth
+ * (`absorb` per metre: red goes first), the bed seen through the shallows (`clarity`), layered
+ * waves and fine ripples (`waveScale` m, `waveStrength`, `rippleStrength`), the sun's glitter
+ * (`sunShine`, `sunSharp`), soft foam at the bank (`foamDepth` m, `foam`).
+ */
+export const RealWaterSchema = z.object({
+  reflectScale: z.number().min(0.1).max(1),
+  f0: z.number().min(0).max(0.2),
+  deep: Hex,
+  shallow: Hex,
+  absorb: z.tuple([z.number().nonnegative(), z.number().nonnegative(), z.number().nonnegative()]),
+  clarity: z.tuple([z.number().min(0).max(1), z.number().min(0).max(1)]),
+  waveScale: z.number().positive(),
+  waveStrength: z.number().min(0),
+  rippleStrength: z.number().min(0),
+  distort: z.number().min(0),
+  sunShine: z.number().min(0),
+  sunSharp: z.number().positive(),
+  foamDepth: z.number().min(0),
+  foam: Hex,
+});
+export type RealWater = z.infer<typeof RealWaterSchema>;
 
 export const DioramaSchema = z.object({
   camera: z.object({ fov: z.number().min(8).max(60), far: z.number().positive() }),
+  realWater: RealWaterSchema,
   post: z.object({
     focusBand: z.number().min(0).max(0.5),
     blur: z.number().min(0),
@@ -1532,7 +1591,11 @@ export const ControlsSchema = z
       for (const a of c.hero)
         for (const k of sc.keys[a.id] ?? a.keys) {
           if (keys.has(k))
-            ctx.addIssue({ code: 'custom', path: ['heroSchemes'], message: `${sc.id}: ${k} on ${keys.get(k)} and ${a.id}` });
+            ctx.addIssue({
+              code: 'custom',
+              path: ['heroSchemes'],
+              message: `${sc.id}: ${k} on ${keys.get(k)} and ${a.id}`,
+            });
           keys.set(k, a.id);
         }
     }
@@ -1543,7 +1606,8 @@ export const ControlsSchema = z
         if (ids.has(a.id)) ctx.addIssue({ code: 'custom', path: [g], message: `${a.id} twice` });
         ids.add(a.id);
         for (const k of a.keys) {
-          if (keys.has(k)) ctx.addIssue({ code: 'custom', path: [g], message: `${k} on ${keys.get(k)} and ${a.id}` });
+          if (keys.has(k))
+            ctx.addIssue({ code: 'custom', path: [g], message: `${k} on ${keys.get(k)} and ${a.id}` });
           keys.set(k, a.id);
         }
       }

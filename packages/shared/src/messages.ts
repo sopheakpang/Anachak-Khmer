@@ -95,9 +95,18 @@ export interface CommandMessage {
   ts: number;
 }
 
+/** PK 2026-10-20 (D157): the Royal Orders now (after a change in the host dashboard, or on connect). */
+export interface OrdersMessage {
+  kind: 'orders';
+  orders: import('./orders').Orders;
+  /** Why the last change was refused (shown in the dashboard). */
+  error?: string;
+  ts: number;
+}
+
 /** Everything the bridge sends to the game and host panel. */
 export type BridgeMessage =
-  StonePlaced | FeedLine | GameState | StatusMessage | CommandMessage | NamesMessage;
+  StonePlaced | FeedLine | GameState | StatusMessage | CommandMessage | NamesMessage | OrdersMessage;
 
 /** Messages the host panel sends to the bridge. */
 export type HostMessage =
@@ -106,6 +115,8 @@ export type HostMessage =
   | { kind: 'control'; action: 'safeZones'; on: boolean }
   | { kind: 'control'; action: 'removeName'; userId: string }
   | { kind: 'control'; action: 'setMode'; mode: GameMode }
+  | { kind: 'control'; action: 'orders'; op: 'add'; order: unknown }
+  | { kind: 'control'; action: 'orders'; op: 'remove'; id: string }
   | {
       kind: 'control';
       action: 'kingdom';

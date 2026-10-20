@@ -1,0 +1,234 @@
+{
+  "$comment": "PK 2026-10-20 (D157): ព្រះរាជបញ្ជា · Royal Orders — the king's daily orders for whoever is played in the 3D hero mode, like a city sim's daily duties: duties to do (gather, store, defeat, hunt, heal, build, or visit a building) and questions to answer (history and culture). One at a time, picked at random among those for the played hero (kits: empty = everyone), never the same one twice in a row; a duty's count grows by `grow` each time round. PK adds or removes orders in the host dashboard (localhost:7421 → ព្រះរាជបញ្ជា); the bridge writes them to this file and sends them to the game at once. Answers: `answer` is the index of the right option (0 = the first).",
+  "grow": 1.25,
+  "questionEvery": 3,
+  "list": [
+    {
+      "id": "gather",
+      "type": "duty",
+      "kits": ["worker", "cart"],
+      "duty": "gather",
+      "n": 20,
+      "km": "ប្រមូលធនធាន",
+      "en": "Gather goods",
+      "reward": { "gold": 15 }
+    },
+    {
+      "id": "store",
+      "type": "duty",
+      "kits": ["worker", "cart"],
+      "duty": "store",
+      "n": 2,
+      "km": "ដឹកចូលឃ្លាំង",
+      "en": "Bring loads to a store",
+      "reward": { "gold": 15 }
+    },
+    {
+      "id": "defeat",
+      "type": "duty",
+      "kits": ["spear", "sword", "rider", "elephant", "commander", "king"],
+      "duty": "defeat",
+      "n": 3,
+      "km": "កម្ចាត់សត្រូវ",
+      "en": "Defeat raiders",
+      "reward": { "gold": 20 }
+    },
+    {
+      "id": "hunt",
+      "type": "duty",
+      "kits": ["bow", "hunter"],
+      "duty": "hunt",
+      "n": 2,
+      "km": "បរបាញ់សត្វ",
+      "en": "Hunt game",
+      "reward": { "food": 30 }
+    },
+    {
+      "id": "heal",
+      "type": "duty",
+      "kits": ["commander", "king", "cart"],
+      "duty": "heal",
+      "n": 5,
+      "km": "ព្យាបាលប្រជារាស្ត្រ",
+      "en": "Heal your people",
+      "reward": { "gold": 15 }
+    },
+    {
+      "id": "build",
+      "type": "duty",
+      "kits": ["worker", "king"],
+      "duty": "build",
+      "n": 10,
+      "km": "ជួយសាងសង់",
+      "en": "Help build",
+      "reward": { "stone": 20 }
+    },
+    {
+      "id": "visit-granary",
+      "type": "duty",
+      "kits": [],
+      "duty": "visit",
+      "place": "storehouse",
+      "n": 1,
+      "km": "ពិនិត្យជង្រុក",
+      "en": "Inspect the granary",
+      "reward": { "food": 15 }
+    },
+    {
+      "id": "visit-market",
+      "type": "duty",
+      "kits": [],
+      "duty": "visit",
+      "place": "market",
+      "n": 1,
+      "km": "សួរសុខទុក្ខឈ្មួញនៅផ្សារ",
+      "en": "Greet the merchants at the market",
+      "reward": { "gold": 10 }
+    },
+    {
+      "id": "visit-hall",
+      "type": "duty",
+      "kits": [],
+      "duty": "visit",
+      "place": "townCentre",
+      "n": 1,
+      "km": "ចូលគាល់នៅព្រះរាជវាំង",
+      "en": "Report at the royal hall",
+      "reward": { "gold": 10 }
+    },
+    {
+      "id": "visit-barracks",
+      "type": "duty",
+      "kits": ["spear", "sword", "bow", "rider", "commander", "king"],
+      "duty": "visit",
+      "place": "barracks",
+      "n": 1,
+      "km": "ពិនិត្យទាហាននៅបន្ទាយ",
+      "en": "Inspect the soldiers at the barracks",
+      "reward": { "gold": 10 }
+    },
+    {
+      "id": "visit-landing",
+      "type": "duty",
+      "kits": ["worker", "cart", "hunter", "king"],
+      "duty": "visit",
+      "place": "port",
+      "n": 1,
+      "km": "ពិនិត្យកំពង់ផែ",
+      "en": "Check the river landing",
+      "reward": { "food": 10 }
+    },
+    {
+      "id": "q-founder",
+      "type": "question",
+      "kits": [],
+      "km": "ព្រះមហាក្សត្រអង្គណាធ្វើពិធីនៅភ្នំគូលែនឆ្នាំ ៨០២ ដើម្បីប្រកាសខ្លួនជាចក្រពត្តិ?",
+      "en": "Which king held the ceremony on Phnom Kulen in 802 to become universal monarch?",
+      "options": [
+        { "km": "ព្រះបាទជ័យវរ្ម័នទី២", "en": "Jayavarman II" },
+        { "km": "ព្រះបាទសូរ្យវរ្ម័នទី២", "en": "Suryavarman II" },
+        { "km": "ព្រះបាទយសោវរ្ម័នទី១", "en": "Yasovarman I" }
+      ],
+      "answer": 0,
+      "reward": { "gold": 10 }
+    },
+    {
+      "id": "q-preahko-year",
+      "type": "question",
+      "kits": [],
+      "km": "ប្រាសាទព្រះគោត្រូវបានឧទ្ទិសនៅឆ្នាំណា?",
+      "en": "In which year was Preah Ko dedicated?",
+      "options": [
+        { "km": "៨៧៩ គ.ស.", "en": "879 CE" },
+        { "km": "១១១៣ គ.ស.", "en": "1113 CE" },
+        { "km": "៩៦៧ គ.ស.", "en": "967 CE" }
+      ],
+      "answer": 0,
+      "reward": { "gold": 10 }
+    },
+    {
+      "id": "q-nandi",
+      "type": "question",
+      "kits": [],
+      "km": "គោដែលដេកនៅមុខប្រាសាទព្រះគោ ជាយានរបស់ព្រះអាទិទេពអង្គណា?",
+      "en": "The bulls lying before Preah Ko are the mount of which god?",
+      "options": [
+        { "km": "ព្រះឥសូរ (ព្រះសិវៈ)", "en": "Shiva" },
+        { "km": "ព្រះវិស្ណុ", "en": "Vishnu" },
+        { "km": "ព្រះព្រហ្ម", "en": "Brahma" }
+      ],
+      "answer": 0,
+      "reward": { "gold": 10 }
+    },
+    {
+      "id": "q-indratataka",
+      "type": "question",
+      "kits": [],
+      "km": "បារាយណ៍ឥន្ទ្រតដាកនៅហរិហរាល័យ ត្រូវបានសាងដោយព្រះមហាក្សត្រអង្គណា?",
+      "en": "Which king built the Indratataka reservoir at Hariharalaya?",
+      "options": [
+        { "km": "ព្រះបាទជ័យវរ្ម័នទី៧", "en": "Jayavarman VII" },
+        { "km": "ព្រះបាទឥន្ទ្រវរ្ម័នទី១", "en": "Indravarman I" },
+        { "km": "ព្រះបាទរាជេន្ទ្រវរ្ម័ន", "en": "Rajendravarman" }
+      ],
+      "answer": 1,
+      "reward": { "gold": 10 }
+    },
+    {
+      "id": "q-angkorwat",
+      "type": "question",
+      "kits": [],
+      "km": "ប្រាសាទអង្គរវត្តត្រូវបានសាងក្នុងរជ្ជកាលព្រះមហាក្សត្រអង្គណា?",
+      "en": "Angkor Wat was built in the reign of which king?",
+      "options": [
+        { "km": "ព្រះបាទឥន្ទ្រវរ្ម័នទី១", "en": "Indravarman I" },
+        { "km": "ព្រះបាទជ័យវរ្ម័នទី៧", "en": "Jayavarman VII" },
+        { "km": "ព្រះបាទសូរ្យវរ្ម័នទី២", "en": "Suryavarman II" }
+      ],
+      "answer": 2,
+      "reward": { "gold": 10 }
+    },
+    {
+      "id": "q-bayon",
+      "type": "question",
+      "kits": [],
+      "km": "ប្រាសាទបាយ័នដែលមានព្រះភក្ត្រធំៗ ត្រូវបានសាងដោយព្រះមហាក្សត្រអង្គណា?",
+      "en": "Which king built the Bayon with its great faces?",
+      "options": [
+        { "km": "ព្រះបាទជ័យវរ្ម័នទី៧", "en": "Jayavarman VII" },
+        { "km": "ព្រះបាទជ័យវរ្ម័នទី២", "en": "Jayavarman II" },
+        { "km": "ព្រះបាទសូរ្យវរ្ម័នទី២", "en": "Suryavarman II" }
+      ],
+      "answer": 0,
+      "reward": { "gold": 10 }
+    },
+    {
+      "id": "q-laterite",
+      "type": "question",
+      "kits": [],
+      "km": "ថ្មបាយក្រៀមត្រូវបានប្រើភាគច្រើនសម្រាប់អ្វីនៅក្នុងប្រាសាទ?",
+      "en": "What was laterite mostly used for in the temples?",
+      "options": [
+        { "km": "គ្រឹះ និងជញ្ជាំងខាងក្នុង", "en": "Foundations and inner walls" },
+        { "km": "ចម្លាក់ទេពធីតា", "en": "Carving the devatas" },
+        { "km": "ដំបូលឈើ", "en": "Wooden roofs" }
+      ],
+      "answer": 0,
+      "reward": { "stone": 10 }
+    },
+    {
+      "id": "q-rice",
+      "type": "question",
+      "kits": [],
+      "km": "ស្រែនៅជុំវិញបារាយណ៍ ភាគច្រើនដាំដំណាំអ្វី?",
+      "en": "What grew in most fields around the reservoirs?",
+      "options": [
+        { "km": "ស្រូវ", "en": "Rice" },
+        { "km": "ស្រូវសាលី", "en": "Wheat" },
+        { "km": "កាហ្វេ", "en": "Coffee" }
+      ],
+      "answer": 0,
+      "reward": { "food": 15 }
+    }
+  ]
+}

@@ -4,6 +4,16 @@ import type { Anachak, Cost, HeroKit, HeroSkill, KingdomData } from '@temples/sh
 import { PLAYER, type KingdomSim, type Unit } from '../sim/sim';
 import { WATER_Y, type KingdomScene } from '../view/scene';
 import { Ripples, smoothDepth, wadeDrop, wakeDue } from './wading';
+import {
+  answerKey,
+  dutyNeed,
+  dutyProgress,
+  liveOrders,
+  nextOrder,
+  orderHtml,
+  ordersVersion,
+  type ActiveOrder,
+} from './royalOrders';
 import { SFX_NAMES, type KingdomSound, type SfxName } from '../view/sound';
 import { tileToWorld, worldToTile, type XZ } from '../sim/map';
 import { HeroCore, NO_INPUT, kitFor, kitSkills, type HeroAct, type HeroInput } from './heroCore';
@@ -14,7 +24,7 @@ import { PALETTE } from '../../engine/look';
 import { GroundDetail, type GroundKind } from './ground';
 import { Slashes } from './slash';
 import { TigerModel } from './tiger';
-import { heroModelFor, phoneModels, preloadModels } from './glbModel';
+import { heroModelFor, phoneModels, preloadGear, preloadModels, setGear } from './glbModel';
 import { YantraFx, yantraFor } from './yantra';
 import { SkillFx } from './skillFx';
 import { fxWeaponFor, planSkillVfx } from './skillVfx';
@@ -23,6 +33,7 @@ import {
   doWork,
   heal,
   heroOpen,
+  heroPace,
   heroWaterDepth,
   hitFoe,
   nearestFoe,
@@ -48,7 +59,6 @@ import { disposeAndRemove } from '../../engine/dispose';
  */
 
 type Cfg = Anachak['hero'];
-type Quest = Cfg['quests']['list'][number] & { have: number; need: number };
 
 export interface HeroHost {
   readonly data: KingdomData;
@@ -110,6 +120,9 @@ export class HeroMode {
   private splashAt = 0;
   /** How far below the land his feet stand now (m; 0 on dry land), eased. */
   private drop = 0;
+  /** D158: swimming in water deeper than his chest; how far the body lies forward (rad). */
+  private swimming = false;
+  private lean = 0;
   /** Yantra light for the skills (PK: Khmer yantra magic), in the air, never underfoot. */
   readonly yantra = new YantraFx();
   /** The skills' effects (D151): weapon rains, waves, guardian spirits, pillars, rings. */
@@ -143,7 +156,9 @@ export class HeroMode {
   private readonly keys = new Set<string>();
   private readonly keymap: Keymap;
   /** Presses waiting for the next step (edge-triggered actions). */
-  private readonly press = new Set<'attack' | 'skill' | 'skill2' | 'skill3' | 'skill4' | 'jump' | 'dash' | 'work'>();
+  private readonly press = new Set<
+    'attack' | 'skill' | 'skill2' | 'skill3' | 'skill4' | 'jump' | 'dash' | 'work'
+  >();
   private stick = { x: 0, y: 0, id: -1, ox: 0, oy: 0 };
   private look: { id: number; x: number; y: number } | null = null;
   /** A right press that may be a click (walk there) rather than a camera drag. */
@@ -153,10 +168,26 @@ export class HeroMode {
   private cursorAt = 0;
   private hoverFoe: Foe | null = null;
   /** Gold/red ring under the foe the mouse points at; a small gold ring where he walks to. */
-  private readonly aimMat = new THREE.MeshBasicMaterial({ color: 0xffc83d, transparent: true, opacity: 0.85, depthWrite: false });
-  private readonly goalMat = new THREE.MeshBasicMaterial({ color: 0xffd54a, transparent: true, opacity: 0.7, depthWrite: false });
-  private readonly aimRingMesh = new THREE.Mesh(new THREE.RingGeometry(0.75, 0.95, 40).rotateX(-Math.PI / 2), this.aimMat);
-  private readonly goalRingMesh = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.42, 32).rotateX(-Math.PI / 2), this.goalMat);
+  private readonly aimMat = new THREE.MeshBasicMaterial({
+    color: 0xffc83d,
+    transparent: true,
+    opacity: 0.85,
+    depthWrite: false,
+  });
+  private readonly goalMat = new THREE.MeshBasicMaterial({
+    color: 0xffd54a,
+    transparent: true,
+    opacity: 0.7,
+    depthWrite: false,
+  });
+  private readonly aimRingMesh = new THREE.Mesh(
+    new THREE.RingGeometry(0.75, 0.95, 40).rotateX(-Math.PI / 2),
+    this.aimMat,
+  );
+  private readonly goalRingMesh = new THREE.Mesh(
+    new THREE.RingGeometry(0.3, 0.42, 32).rotateX(-Math.PI / 2),
+    this.goalMat,
+  );
   private kingHp = 0;
   private lastHp = 0;
   private shots: Shot[] = [];
@@ -171,8 +202,13 @@ export class HeroMode {
   private flashHurt = 0;
   private target: WorkTarget | null = null;
   private targetAt = 0;
-  private quest: Quest | null = null;
-  private questDone = 0;
+  /** PK 2026-10-20 (D157): the Royal Order being carried out (a duty or a question). */
+  private order: ActiveOrder | null = null;
+  private orderRound = 0;
+  private lastOrder: string | null = null;
+  private ordersSeen = -1;
+  /** Building types the hero has reached since the order came (visits). */
+  private visited = false;
   private stats = { defeat: 0, hunt: 0, heal: 0, gather: 0, store: 0, build: 0 };
   private readonly el: HTMLDivElement;
   private prevFog: THREE.Scene['fog'] = null;
@@ -192,6 +228,11 @@ export class HeroMode {
     // out (D146 ខ១): it keeps the ones outside models/heroes/ (the king).
     this.models = host.mobile ? phoneModels(this.cfg.models) : this.cfg.models;
     void preloadModels(this.models);
+    // PK 2026-10-20 (D158): the Blender weapons and gear (PC: the phone build has no models/real/).
+    if (!host.mobile) {
+      setGear(host.data.props.people?.gear);
+      void preloadGear();
+    }
     this.el = document.createElement('div');
     this.el.className = 'k-hero';
     this.el.hidden = true;
@@ -315,8 +356,8 @@ export class HeroMode {
     this.host.hudRoot.classList.add('k-hero-on');
     this.press.clear();
     this.keys.clear();
-    this.quest = null;
-    this.nextQuest();
+    this.order = null;
+    this.nextOrder(sim);
     this.parts.clear();
     this.host.sound.play('discover');
     return true;
@@ -452,12 +493,32 @@ export class HeroMode {
   private bind(): void {
     // Keys by position (e.code), so a Khmer keyboard layout plays the same (UI review), and
     // as the player set them (PK 1.8.0: year bar 🎮, config/kingdom/controls.json).
-    const presses = new Set(['attack', 'skill', 'skill2', 'skill3', 'skill4', 'jump', 'dash', 'work'] as const);
+    const presses = new Set([
+      'attack',
+      'skill',
+      'skill2',
+      'skill3',
+      'skill4',
+      'jump',
+      'dash',
+      'work',
+    ] as const);
     const moves = new Set(['forward', 'back', 'left', 'right', 'work']);
     window.addEventListener(
       'keydown',
       (e) => {
         if (!this.active || this.host.keysWaiting?.()) return;
+        // D157: while the king's question is up, 1–4 answer it (the skills wait).
+        const q = this.order?.o;
+        if (q && q.type === 'question' && !this.watching) {
+          const i = answerKey(e.code, q.options.length);
+          if (i >= 0) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            if (!e.repeat) this.answer(i);
+            return;
+          }
+        }
         const a = this.keymap.action('hero', e.code);
         if (a === 'exit') {
           e.preventDefault();
@@ -518,6 +579,7 @@ export class HeroMode {
           else if (a === 'take') this.takeControl();
           else if (a === 'auto') this.toggleAuto();
           else if (a === 'stick') this.stick = { x: 0, y: 0, id: e.pointerId, ox: p.x, oy: p.y };
+          else if (a.startsWith('ans')) this.answer(Number(a.slice(3)));
           else this.press.add(a as 'attack');
           return;
         }
@@ -541,14 +603,23 @@ export class HeroMode {
         if (!this.active) return;
         const p = this.host.toStage(e);
         if (e.pointerType === 'mouse') this.cursor = p;
-        if (this.rpress) this.rpress.moved = Math.max(this.rpress.moved, Math.hypot(p.x - this.rpress.x, p.y - this.rpress.y));
+        if (this.rpress)
+          this.rpress.moved = Math.max(
+            this.rpress.moved,
+            Math.hypot(p.x - this.rpress.x, p.y - this.rpress.y),
+          );
         if (e.pointerId === this.stick.id) {
           const r = 90;
           this.stick.x = Math.max(-1, Math.min(1, (p.x - this.stick.ox) / r));
           this.stick.y = Math.max(-1, Math.min(1, -(p.y - this.stick.oy) / r));
           return;
         }
-        if (this.look && e.pointerId === this.look.id && this.core && (!this.rpress || this.rpress.moved >= this.cfg.mouse.clickPx)) {
+        if (
+          this.look &&
+          e.pointerId === this.look.id &&
+          this.core &&
+          (!this.rpress || this.rpress.moved >= this.cfg.mouse.clickPx)
+        ) {
           this.core.orbit(-(p.x - this.look.x) * 0.006, (p.y - this.look.y) * 0.004);
           this.look.x = p.x;
           this.look.y = p.y;
@@ -707,7 +778,11 @@ export class HeroMode {
         const g = view.groundAt(this.cursor.x, this.cursor.y);
         if (g) core.faceTo(g[0], g[1]);
       }
-      acts = core.step(step, this.input(), { open: (x, z) => heroOpen(sim, x, z) });
+      acts = core.step(step, this.input(), {
+        open: (x, z) => heroOpen(sim, x, z),
+        pace: (x, z) => heroPace(sim, x, z),
+        swimming: () => this.swimming,
+      });
     }
     // The camera drifts behind the hero while he walks ahead (or to a clicked point) and nobody
     // turns it. Never while he walks sideways or toward it: that chased him round in circles (PK).
@@ -754,26 +829,57 @@ export class HeroMode {
       smoothDepth((x, z) => heroWaterDepth(sim, x, z, W.fordDepth), core.x, core.z, sim.map.tile),
       WATER_Y - view.groundY(core.x, core.z),
     );
-    const want = wadeDrop(depth, WATER_Y, sim.data.rules.water.chestDepth, W.sink) * (model.lift > 0 ? 0.4 : 1);
-    this.drop += (want - this.drop) * Math.min(1, dt * 8);
+    const chest = sim.data.rules.water.chestDepth;
+    // D158: deeper than his chest he swims — the crawl when he moves (laid flat at the surface),
+    // treading water upright when he stops (the head above it). Riders keep wading.
+    this.swimming = depth > chest + 0.05 && core.y < 0.05 && model.lift === 0;
+    const crawl = this.swimming && core.speed > 0.2;
+    const want = this.swimming
+      ? crawl
+        ? WATER_Y - 0.3
+        : WATER_Y - 1.32
+      : wadeDrop(depth, WATER_Y, chest, W.sink) * (model.lift > 0 ? 0.4 : 1);
+    this.drop += (want - this.drop) * Math.min(1, dt * 6);
+    this.lean += ((crawl ? 1.35 : this.swimming ? 0.15 : 0) - this.lean) * Math.min(1, dt * 5);
     this.ripples.update(dt);
     if (depth > 0.05 && core.y < 0.05) {
       const moving = core.speed > 0.3;
-      const due = wakeDue(W, moving, core.speed > 3.2);
+      // Running throws drops from the feet; the crawl from the hands, a body length ahead.
+      const due = wakeDue(W, moving, core.speed > 3.2 || crawl);
       const t = now / 1000;
       if (t - this.ringAt > due.ring) {
         this.ringAt = t;
         this.ripples.spawn(core.x, WATER_Y, core.z, W.ringSize * (moving ? 1 : 0.6));
+        // Walking: a few fine drops off the shins with each step (D158).
+        if (moving) view.particles.burst('droplets', core.x, WATER_Y + 0.08, core.z, 3);
       }
       if (t - this.splashAt > due.splash) {
         this.splashAt = t;
-        const f = 0.5;
-        view.particles.burst('splash', core.x + Math.sin(core.heading) * f, WATER_Y + 0.05, core.z + Math.cos(core.heading) * f, W.splash);
+        const f = crawl ? 1.3 : 0.5;
+        const sx = core.x + Math.sin(core.heading) * f;
+        const sz = core.z + Math.cos(core.heading) * f;
+        // Running: a kick of small drops and a breath of mist, a small ring where they fall.
+        view.particles.burst('droplets', sx, WATER_Y + 0.05, sz, W.splash * 2);
+        view.particles.burst('splash', sx, WATER_Y + 0.05, sz, Math.ceil(W.splash / 2));
+        view.particles.burst('spray', sx, WATER_Y + 0.15, sz, 1);
+        this.ripples.spawn(
+          sx + Math.sin(core.heading) * 0.6,
+          WATER_Y,
+          sz + Math.cos(core.heading) * 0.6,
+          W.ringSize * 0.5,
+          0.7,
+        );
       }
     }
-    // Pose and place the model.
-    model.group.position.set(core.x, core.y + this.drop, core.z);
-    model.group.rotation.y = core.heading;
+    // Pose and place the model (laid forward when he swims: the figure pivots at its feet, so
+    // it steps back as it tips over).
+    const tip = this.lean / 1.35;
+    model.group.position.set(
+      core.x - Math.sin(core.heading) * 0.85 * tip,
+      core.y + this.drop,
+      core.z - Math.cos(core.heading) * 0.85 * tip,
+    );
+    model.group.rotation.set(this.lean, core.heading, 0, 'YXZ');
     model.pose({
       state: core.state,
       stateT: core.stateT,
@@ -784,6 +890,7 @@ export class HeroMode {
       t: core.t,
       strikeSec: core.strikeSec(),
       skillKind: core.skillNow.kind,
+      swim: this.swimming ? (crawl ? 'crawl' : 'tread') : undefined,
     });
     // Camera, with a little shake on hits.
     const C = this.cfg.camera;
@@ -829,7 +936,7 @@ export class HeroMode {
       this.targetAt = now;
       this.target = workTarget(sim, this.cfg, body);
     }
-    this.checkQuest(sim, now);
+    this.checkOrder(sim, body, now);
     if (now - this.lastUi > 66) {
       this.lastUi = now;
       this.renderHud(sim, u ?? null, now);
@@ -860,6 +967,12 @@ export class HeroMode {
       // A ring of dust clear of the lawn, the colour of the ground; a splash in shallow water.
       const d = landDust(dustGround(sim, body.x, body.z), a.impact, this.cfg);
       fx.burst(d.kind, body.x, d.lift, body.z, d.n, { colors: d.colors, ring: d.ring });
+      // D158: into water — a crown of fine drops, a breath of mist and a wide ring.
+      if (d.kind === 'splash' || this.drop < -0.05) {
+        fx.burst('droplets', body.x, WATER_Y + 0.05, body.z, d.n, { ring: true });
+        fx.burst('spray', body.x, WATER_Y + 0.2, body.z, 3);
+        this.ripples.spawn(body.x, WATER_Y, body.z, this.cfg.fx.water.ringSize * 2, 1.4);
+      }
     }
     if (a.kind === 'dash') fx.burst('dust', body.x, 0.2, body.z, 8);
     if (a.kind === 'strike') {
@@ -906,7 +1019,8 @@ export class HeroMode {
     this.yantraFor(S, body, ahead);
     const from = [core.x, core.z] as const;
     // Its own sound first (D146 ខ៥), then the kind's usual one below.
-    if (S.sound && SFX_NAMES.includes(S.sound as SfxName)) this.host.sound.play(S.sound as SfxName, { gain: 0.9 });
+    if (S.sound && SFX_NAMES.includes(S.sound as SfxName))
+      this.host.sound.play(S.sound as SfxName, { gain: 0.9 });
     switch (S.kind) {
       case 'ultimate': {
         // The great skill: everything round him is struck under a great yantra canopy.
@@ -1078,7 +1192,14 @@ export class HeroMode {
     const kind = S.yantra ?? yantraFor(skill);
     const bx = body.x - Math.sin(body.heading) * 0.45;
     const bz = body.z - Math.cos(body.heading) * 0.45;
-    this.yantra.spawn(kind, bx, 1.45 + lift, bz, kit.id === 'king' || skill === 'ultimate' ? 3.2 : 2.6, color);
+    this.yantra.spawn(
+      kind,
+      bx,
+      1.45 + lift,
+      bz,
+      kit.id === 'king' || skill === 'ultimate' ? 3.2 : 2.6,
+      color,
+    );
     if (skill === 'heal' || skill === 'spin' || skill === 'chop')
       this.yantra.spawn(kind, body.x, 3.4 + lift, body.z, Math.max(3, radius * 2), color, true);
     else if (skill === 'ultimate') {
@@ -1090,7 +1211,6 @@ export class HeroMode {
       this.yantra.spawn(S.yantra ?? 'grid', x, 3.6, z, Math.max(4, radius * 2), color, true);
     }
   }
-
 
   /** A sword-slash crescent for this swing (gold for the king's sacred sword). */
   private slash(body: HeroBody, combo: number, size: number): void {
@@ -1342,37 +1462,77 @@ export class HeroMode {
 
   // ------------------------------------------------------------------ the king's tasks
 
-  private nextQuest(): void {
-    const Q = this.cfg.quests;
-    const mine = Q.list.filter((q) => q.kits.includes(this.kit!.id));
-    if (!mine.length) {
-      this.quest = null;
+  private nextOrder(sim: KingdomSim): void {
+    const has = (place: string) =>
+      [...sim.buildings.values()].some((b) => b.team === PLAYER && b.type === place && b.progress >= 1);
+    const o = nextOrder(liveOrders(), this.kit!.id, this.lastOrder, has);
+    this.ordersSeen = ordersVersion();
+    this.visited = false;
+    if (!o) {
+      this.order = null;
       return;
     }
-    const q = mine[this.questDone % mine.length]!;
-    const grow = Math.pow(Q.grow, Math.floor(this.questDone / mine.length));
-    this.quest = { ...q, need: Math.round(q.n * grow), have: this.stats[q.kind] };
+    const round = Math.floor(this.orderRound / 6);
+    const need = dutyNeed(o, round, liveOrders().grow);
+    this.order = { o, need, have: o.type === 'duty' && o.duty !== 'visit' ? this.stats[o.duty] : 0 };
   }
 
-  private checkQuest(sim: KingdomSim, now: number): void {
-    const q = this.quest;
-    if (!q) return;
-    const got = this.stats[q.kind] - q.have;
-    if (got < q.need) return;
-    const reward: Cost = {};
-    for (const [r, n] of Object.entries(q.reward))
-      reward[r as keyof Cost] = Math.round(
-        (n ?? 0) * Math.pow(this.cfg.quests.grow, Math.floor(this.questDone / 3)),
-      );
-    sim.addResources(reward);
-    const pay = Object.entries(reward)
-      .map(([r, n]) => `+${km(n ?? 0)} ${RES_ICON[r] ?? r}`)
-      .join(' ');
-    this.host.toast(`📜 <b>${esc(q.km)}</b> · ${esc(q.en)} ✓ ${pay}`, 5);
-    this.host.view().flash(this.core!.x, this.core!.z, 2.5, now / 1000);
-    this.host.sound.play('complete');
-    this.questDone++;
-    this.nextQuest();
+  /** Has the hero reached a finished building of this type (within a few metres of its walls)? */
+  private atPlace(sim: KingdomSim, body: HeroBody, place: string): boolean {
+    const T = sim.map.tile;
+    for (const b of sim.buildings.values()) {
+      if (b.team !== PLAYER || b.type !== place || b.progress < 1) continue;
+      const [cx, cz] = sim.center(b);
+      const dx = Math.max(0, Math.abs(body.x - cx) - (b.w * T) / 2);
+      const dz = Math.max(0, Math.abs(body.z - cz) - (b.d * T) / 2);
+      if (Math.hypot(dx, dz) < this.cfg.ordersReach) return true;
+    }
+    return false;
+  }
+
+  private checkOrder(sim: KingdomSim, body: HeroBody, now: number): void {
+    // PK changed the orders in the dashboard and this one is gone: the next one.
+    if (this.ordersSeen !== ordersVersion()) {
+      this.ordersSeen = ordersVersion();
+      if (!this.order || !liveOrders().list.some((o) => o.id === this.order!.o.id)) this.nextOrder(sim);
+    }
+    const a = this.order;
+    if (!a || a.o.type !== 'duty') return;
+    if (a.o.duty === 'visit' && a.o.place && !this.visited) this.visited = this.atPlace(sim, body, a.o.place);
+    if (dutyProgress(a, this.stats, this.visited) < a.need) return;
+    this.finishOrder(sim, now, true);
+  }
+
+  /** PK 2026-10-20 (D157): answer the king's question (option `i`, 0-based). */
+  answer(i: number): void {
+    const a = this.order;
+    if (!a || a.o.type !== 'question' || i < 0 || i >= a.o.options.length || !this.core) return;
+    const sim = this.host.sim();
+    const right = i === a.o.answer;
+    if (!right) {
+      const r = a.o.options[a.o.answer]!;
+      this.host.toast(`❓ ✗ ចម្លើយត្រូវ · The answer: <b>${esc(r.km)}</b> · ${esc(r.en)}`, 6);
+      this.host.sound.play('click');
+    }
+    this.finishOrder(sim, performance.now(), right);
+  }
+
+  private finishOrder(sim: KingdomSim, now: number, paid: boolean): void {
+    const a = this.order!;
+    if (paid) {
+      const reward: Cost = {};
+      for (const [r, n] of Object.entries(a.o.reward)) reward[r as keyof Cost] = Math.round(n ?? 0);
+      sim.addResources(reward);
+      const pay = Object.entries(reward)
+        .map(([r, n]) => `+${km(n ?? 0)} ${RES_ICON[r] ?? r}`)
+        .join(' ');
+      this.host.toast(`📜 <b>${esc(a.o.km)}</b> · ${esc(a.o.en)} ✓ ${pay}`, 5);
+      this.host.view().flash(this.core!.x, this.core!.z, 2.5, now / 1000);
+      this.host.sound.play('complete');
+    }
+    this.lastOrder = a.o.id;
+    this.orderRound++;
+    this.nextOrder(sim);
   }
 
   // ------------------------------------------------------------------ HUD
@@ -1387,7 +1547,8 @@ export class HeroMode {
     const kit = this.kit!;
     // The hints name the player's own keys (PK 1.8.0).
     const key = (id: string) => this.keymap.keys('hero', id).map(keyLabel).join('/') || '—';
-    const first = (id: string) => (this.keymap.keys('hero', id)[0] ? keyLabel(this.keymap.keys('hero', id)[0]!) : '—');
+    const first = (id: string) =>
+      this.keymap.keys('hero', id)[0] ? keyLabel(this.keymap.keys('hero', id)[0]!) : '—';
     const move = ['forward', 'left', 'back', 'right'].map(first).join('');
     // PK 2026-10-20 (D156): on the PC the buttons sit in one bar along the bottom, each with its
     // key on it (the phone keeps the thumb fan).
@@ -1439,7 +1600,12 @@ export class HeroMode {
       (bar
         ? // The bar reads like a game's hotbar: strike and skills first, then moves, then work.
           btn('attack', kit.weapon === 'bow' ? '🏹' : '⚔️', 'វាយ', `Strike · Click/${esc(key('attack'))}`) +
-          btn('skill', skillIcon[kit.skill.kind] ?? '⭐', esc(kit.skill.km), `${esc(kit.skill.en)} · ${esc(key('skill'))}`) +
+          btn(
+            'skill',
+            skillIcon[kit.skill.kind] ?? '⭐',
+            esc(kit.skill.km),
+            `${esc(kit.skill.en)} · ${esc(key('skill'))}`,
+          ) +
           more +
           btn('dash', '💨', 'គេច', `Dash · ${esc(key('dash'))}`) +
           btn('jump', '⤒', 'លោត', `Jump · ${esc(key('jump'))}`) +
@@ -1447,7 +1613,12 @@ export class HeroMode {
           btn('auto', '🤖', 'ស្វ័យប្រវត្តិ', `Auto · ${esc(key('auto'))}`)
         : btn('auto', '🤖', 'ស្វ័យប្រវត្តិ', `Auto · ${esc(key('auto'))}`) +
           btn('work', '🛠️', 'ធ្វើការ', `Work · ${esc(key('work'))}`) +
-          btn('skill', skillIcon[kit.skill.kind] ?? '⭐', esc(kit.skill.km), `${esc(kit.skill.en)} · ${esc(key('skill'))}`) +
+          btn(
+            'skill',
+            skillIcon[kit.skill.kind] ?? '⭐',
+            esc(kit.skill.km),
+            `${esc(kit.skill.en)} · ${esc(key('skill'))}`,
+          ) +
           more +
           btn('dash', '💨', 'គេច', `Dash · ${esc(key('dash'))}`) +
           btn('jump', '⤒', 'លោត', `Jump · ${esc(key('jump'))}`) +
@@ -1524,7 +1695,11 @@ export class HeroMode {
         core.faceTo(o.x, o.z);
         // A ready fighting skill first (the great one when foes crowd round), else a strike.
         const slot = kitSkills(kit).findIndex(
-          (S, i) => S.kind !== 'heal' && S.kind !== 'dog' && core.skillLeft(i) === 0 && d <= Math.max(kit.reach, S.radius),
+          (S, i) =>
+            S.kind !== 'heal' &&
+            S.kind !== 'dog' &&
+            core.skillLeft(i) === 0 &&
+            d <= Math.max(kit.reach, S.radius),
         );
         this.press.add(slot < 0 ? 'attack' : slot ? (`skill${slot + 1}` as 'skill2') : 'skill');
       } else core.setGoal(o.x, o.z, kit.reach * 0.8, true);
@@ -1553,8 +1728,7 @@ export class HeroMode {
       u?.carry && u.carry.n >= 1
         ? `${RES_ICON[u.carry.res]} ${km(Math.floor(u.carry.n))}/${km(sim.def(u.type).carry ?? 10)}`
         : '';
-    const q = this.quest;
-    const qGot = q ? Math.min(q.need, this.stats[q.kind] - q.have) : 0;
+    const q = this.order;
     this.flashHurt = Math.max(0, this.flashHurt - 0.12);
     this.parts.get('vig')!.style.opacity = this.flashHurt.toFixed(2);
     this.setPart('danger', this.dangerHtml(sim));
@@ -1565,12 +1739,7 @@ export class HeroMode {
         `<div class="k-hero-bar k-hero-st"><i style="width:${(st * 100).toFixed(0)}%"></i></div>` +
         (carry ? `<div class="k-hero-carry">${carry}</div>` : ''),
     );
-    this.setPart(
-      'quest',
-      q
-        ? `<div class="k-hero-quest"><b>📜 ${esc(q.km)}</b><span>${esc(q.en)}</span><em>${km(qGot)} / ${km(q.need)}</em></div>`
-        : '',
-    );
+    this.setPart('quest', q ? orderHtml(q, dutyProgress(q, this.stats, this.visited), this.host.mobile) : '');
     this.setPart(
       'prompt',
       lbl ? `<div class="k-hero-prompt"><kbd>E</kbd> ${esc(lbl.km)} · ${esc(lbl.en)}</div>` : '',

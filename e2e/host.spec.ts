@@ -43,3 +43,39 @@ test('host panel drives the bridge end to end (AC-01, AC-02 via UI)', async ({ p
 
   await page.screenshot({ path: 'docs/screens/06-host.png', fullPage: true });
 });
+
+test('PK 2026-10-20 (D157): ព្រះរាជបញ្ជា · Royal Orders — add and remove an order in the dashboard', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page.locator('#pill-bridge')).toHaveText('Bridge: connected');
+  await page.getByRole('button', { name: /Royal Orders/ }).click();
+  await expect(page.locator('#tab-orders')).toBeVisible();
+  await expect(page.locator('#tab-panel')).toBeHidden();
+  const rows = page.locator('#orders-list tr');
+  await expect(rows.first()).toBeVisible();
+  const n0 = await rows.count();
+  expect(n0).toBeGreaterThan(10);
+  // A question with three answers, the second one right, for the king and the commander.
+  await page.locator('input[name="otype"][value="question"]').check();
+  await page.fill('#o-km', 'ស្ដេចអង្គណាសាងប្រាសាទបាគង?');
+  await page.fill('#o-en', 'Which king built Bakong?');
+  const opt = page.locator('#o-options .opt');
+  await opt.nth(0).locator('.o-oen').fill('Jayavarman VII');
+  await opt.nth(1).locator('.o-oen').fill('Indravarman I');
+  await opt.nth(2).locator('.o-oen').fill('Suryavarman II');
+  await opt.nth(1).locator('input[type="radio"]').check();
+  await page.locator('#o-kits input[value="king"]').check();
+  await page.locator('#o-kits input[value="commander"]').check();
+  await page.getByRole('button', { name: /Add the order/ }).click();
+  await expect(rows).toHaveCount(n0 + 1);
+  const row = page.locator('#orders-list tr[data-id="which-king-built-bakong"]');
+  await expect(row).toContainText('Indravarman I ✓');
+  await page.screenshot({ path: 'docs/screens/host-royal-orders.png', fullPage: true });
+  page.once('dialog', (d) => void d.accept());
+  await row.getByRole('button', { name: 'Remove' }).click();
+  await expect(rows).toHaveCount(n0);
+  // A visit with no text is refused by the form itself (required fields).
+  await page.getByRole('button', { name: /Add the order/ }).click();
+  await expect(rows).toHaveCount(n0);
+});
