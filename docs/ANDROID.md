@@ -24,7 +24,7 @@ The Kingdom tab as an offline, single-player Android game (no TikTok LIVE): touc
 2. បើក Android Studio → **Open** → ជ្រើសថត `the-temples\apps\android\android` · Open that folder in Android Studio (or run `npm run android:open`). The first time, Android Studio downloads Gradle and the SDK parts it needs; wait until "Gradle sync" finishes.
 3. ម៉ឺនុយ **Build → Build App Bundle(s) / APK(s) → Build APK(s)**.
 4. ពេលរួច ឯកសារនៅក្នុងថត `the-temples\apk\` · When it finishes, the file is copied to
-   `the-temples\apk\KhmerKingdoms-1.4.0-debug.apk` (the name comes from `versionName` in `app/build.gradle`; the original stays in `app\build\outputs\apk\debug\`).
+   `the-temples\apk\KhmerKingdoms-1.9.0-debug.apk` (the name comes from `versionName` in `app/build.gradle`; the original stays in `app\build\outputs\apk\debug\`).
 
 ## ៣. ដំឡើងលើទូរស័ព្ទ · Install on a phone
 
