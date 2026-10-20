@@ -825,6 +825,27 @@ export class KingdomScene {
       this.temple.setProgress(kit!.slots.length, 0);
       this.temple.snap();
       this.scene.add(this.temple.group);
+      // D161: the finished Preah Ko from PK's textured model (PC look).
+      const M = sim.data.props.monuments?.['preah-ko'];
+      if (M && this.gfx.meshyModels) {
+        void loadProp(modelUrl(M.file)).then((m) => {
+          const src = m && meshOf(m);
+          if (!src || this.disposed || !this.temple) return;
+          const mesh = new THREE.Mesh(
+            src.geometry.clone().applyMatrix4(src.matrixWorld),
+            realMaterial(src.material as THREE.Material),
+          );
+          mesh.rotation.y = M.turn;
+          mesh.position.copy(this.temple.group.position).add(new THREE.Vector3(...M.offset));
+          mesh.castShadow = true;
+          mesh.receiveShadow = true;
+          mesh.visible = false;
+          mesh.userData.seeThrough = true;
+          this.templeModel = mesh;
+          this.scene.add(mesh);
+          this.propsOn++;
+        });
+      }
     }
 
     // The other temples of the campaign, each on its site; they rise course by course
@@ -1604,20 +1625,6 @@ export class KingdomScene {
     NA?.begin();
     for (const a of this.sim.animals.values()) {
       if (!this.sim.isVisible(a.x, a.z) || a.id === this.hiddenAnimal) continue;
-      if (NA && nearIds?.has(a.id)) {
-        const was = this.animalWas.get(a.id);
-        const speed = was && dt > 0 ? Math.hypot(a.x - was[0], a.z - was[1]) / dt : 0;
-        this.animalWas.set(a.id, [a.x, a.z]);
-        if (
-          NA.place(
-            a.id,
-            a.kind,
-            { x: a.x, y: 0, z: a.z, heading: a.heading, speed: a.moving ? speed : 0 },
-            dt,
-          )
-        )
-          continue;
-      }
       const list = groups.get(a.kind) ?? [];
       const { x, z, heading, moving } = a;
       const perch = ANIMAL_LOOK[a.kind]?.perch;
@@ -1627,6 +1634,16 @@ export class KingdomScene {
         const was = this.perchY.get(a.id) ?? goal;
         y = was + Math.sign(goal - was) * Math.min(Math.abs(goal - was), PERCH_RATE * dt);
         this.perchY.set(a.id, y);
+      }
+      if (NA && nearIds?.has(a.id)) {
+        const was = this.animalWas.get(a.id);
+        const speed = was && dt > 0 ? Math.hypot(a.x - was[0], a.z - was[1]) / dt : 0;
+        this.animalWas.set(a.id, [a.x, a.z]);
+        // Up in the canopy too (D161: the gibbons and langurs rest in the trees).
+        if (
+          NA.place(a.id, a.kind, { x: a.x, y, z: a.z, heading: a.heading, speed: a.moving ? speed : 0 }, dt)
+        )
+          continue;
       }
       list.push({ place: () => ({ x, y, z, heading, act: moving ? ACT.crowd : ACT.stand }) });
       groups.set(a.kind, list);
@@ -1773,7 +1790,10 @@ export class KingdomScene {
     // Temples with no building (a new game, a loaded save) are hidden.
     const standing = new Set<string>();
     for (const b of s.buildings.values()) if (b.type === 'monument') standing.add(this.templeOf(b));
-    if (this.temple && !standing.has('preah-ko')) this.temple.group.visible = false;
+    if (this.temple && !standing.has('preah-ko')) {
+      this.temple.group.visible = false;
+      if (this.templeModel) this.templeModel.visible = false;
+    }
     for (const [id, t] of this.temples) if (!standing.has(id)) t.mesh.visible = false;
     this.syncSite(standing);
   }
@@ -2202,6 +2222,8 @@ export class KingdomScene {
   }
 
   private monumentShown = -1;
+  /** D161: PK's finished Preah Ko (PC look), shown once the temple is complete. */
+  private templeModel: THREE.Mesh | null = null;
   private syncMonument(b: Building, now: number): void {
     const other = this.temples.get(this.templeOf(b));
     if (other) {
@@ -2211,7 +2233,11 @@ export class KingdomScene {
       return;
     }
     if (!this.temple) return;
-    this.temple.group.visible = true;
+    // D161: finished, PK's textured Preah Ko stands in for the kit (when its model is in).
+    const done = b.progress >= 1 && !!this.templeModel;
+    if (this.templeModel) this.templeModel.visible = done;
+    this.temple.group.visible = !done;
+    if (done) return;
     const target = this.temple.kit.slots.length;
     const shown = Math.round(b.progress * target);
     const step = growStep(this.monumentShown, shown, b.progress);

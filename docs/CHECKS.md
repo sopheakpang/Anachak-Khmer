@@ -777,3 +777,13 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | Battle sounds (drum, block, axe, cheer) mapped from events | ✅ | `view/sound.test.ts` |
 | `npm run verify` (99 test files / 836 tests, build) | ✅ | |
 | e2e KG-01 (inbox, vote), KG-03 (chapter card from the inbox), KG-14 (half-size hero bar; the open Royal Order question closed first, since 1–4 answer it) | ✅ | software renderer, 7.2 min + 1.7 min; `docs/screens/k-inbox.png`, `k-hero-ultimate.png` |
+
+## 1.9.0-26 Blender work (D161) — 2026-10-20
+
+| Check | Result | How |
+| --- | --- | --- |
+| Preah Ko baked (brick, stucco, weathering, laterite), upright, ≈ 12 m, one texture; rows matched to the kit | ✅ | `view/props.test.ts`, Blender renders on PK's PC and here |
+| Noble house: 5 tall apex finials cut, height ≤ 8.5 m, ground leftovers gone | ✅ | `view/props.test.ts`, render |
+| Every wild kind has a model (primates made in Blender), placed in the canopy where they perch | ✅ | `view/nearAnimals.test.ts`, render |
+| `npm run verify` (99 test files / 838 tests, build) | ✅ | |
+| Finished Preah Ko seen in the game | ⚠️ not yet | needs a game played to the end of chapter 1 on the PC look |

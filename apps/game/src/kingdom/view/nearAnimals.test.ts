@@ -24,7 +24,7 @@ function fakeAnimal(): THREE.Object3D {
 }
 
 describe('PK’s animals near the view', () => {
-  it('every kind with a model has its file; the primates keep their figures', () => {
+  it('every kind with a model has its file; every wild kind has its model', () => {
     const shipped = Object.keys(import.meta.glob('../../../public-mobile/models/real/**/*.glb'));
     for (const [kind, k] of Object.entries(AC.byKind)) {
       expect(
@@ -35,7 +35,8 @@ describe('PK’s animals near the view', () => {
     }
     for (const kind of ['tiger', 'elephant', 'deer', 'crocodile', 'python', 'peafowl'])
       expect(animalFile(AC, kind)).not.toBeNull();
-    expect(animalFile(AC, 'gibbon')).toBeNull();
+    // D161: every wild kind has a model now (the primates made in Blender).
+    for (const k of loadKingdom().world.animals.kinds) expect(animalFile(AC, k.id), k.id).not.toBeNull();
     // More round the hero in the 3D mode.
     expect(AC.hero!.max).toBeGreaterThanOrEqual(AC.max);
     expect(data.props.people!.hero!.max).toBeGreaterThan(data.props.people!.max);

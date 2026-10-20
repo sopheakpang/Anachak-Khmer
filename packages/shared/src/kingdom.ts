@@ -1268,6 +1268,18 @@ export const PropsSchema = z.object({
       }),
     })
     .optional(),
+  /** PK 2026-10-20 (D161): finished temples drawn from PK's models (PC presets), by temple id. */
+  monuments: z
+    .object({ $comment: z.string().optional() })
+    .catchall(
+      z.object({
+        file: z.string(),
+        source: z.string(),
+        offset: z.tuple([z.number(), z.number(), z.number()]),
+        turn: z.number(),
+      }),
+    )
+    .optional(),
   /** PK 2026-10-20 (D160, D155 step 3): PK's animals near the view (PC presets). */
   animals: z
     .object({

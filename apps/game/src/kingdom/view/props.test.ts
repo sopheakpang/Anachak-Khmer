@@ -222,9 +222,7 @@ describe('PK 2026-10-20 (D160): the storehouse has its own look', () => {
       if (type !== 'storehouse') expect(slot!.file).not.toBe(store.file);
     const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
       existsSync(p: string): boolean;
-      readFileSync(
-        p: string,
-      ): Uint8Array & {
+      readFileSync(p: string): Uint8Array & {
         readUInt32LE(o: number): number;
         subarray(a: number, b: number): { toString(): string };
       };
@@ -241,5 +239,47 @@ describe('PK 2026-10-20 (D160): the storehouse has its own look', () => {
       .flatMap((m) => m.primitives)
       .reduce((a, p) => a + j.accessors[p.indices]!.count / 3, 0);
     expect(tris).toBeLessThanOrEqual(store.tris * 1.05);
+  });
+});
+
+describe('PK 2026-10-20 (D161): Blender jobs — Preah Ko textured, the noble house trimmed', () => {
+  const glbJson = async (file: string) => {
+    const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
+      existsSync(p: string): boolean;
+      readFileSync(p: string): Uint8Array & {
+        readUInt32LE(o: number): number;
+        subarray(a: number, b: number): { toString(): string };
+      };
+    };
+    const path = new URL(`../../../public-mobile/${file}`, import.meta.url).pathname;
+    if (!fs.existsSync(path)) return null; // a checkout without the PC models
+    const buf = fs.readFileSync(path);
+    return JSON.parse(buf.subarray(20, 20 + buf.readUInt32LE(12)).toString()) as {
+      accessors: Array<{ min?: number[]; max?: number[] }>;
+      meshes: Array<{ primitives: Array<{ attributes: { POSITION: number } }> }>;
+      images?: unknown[];
+    };
+  };
+
+  it('Preah Ko stands upright, textured, its six towers where the kit has them', async () => {
+    const M = data.props.monuments!['preah-ko']!;
+    expect(M.offset[2]).toBeGreaterThan(0);
+    const j = await glbJson(M.file);
+    if (!j) return;
+    expect(j.images?.length).toBe(1);
+    const pos = j.accessors[j.meshes[0]!.primitives[0]!.attributes.POSITION]!;
+    const [w, h, d] = [0, 1, 2].map((i) => pos.max![i]! - pos.min![i]!);
+    // Upright on the ground: the height is its shortest side, about 12 m.
+    expect(h).toBeCloseTo(12.1, 0);
+    expect(h).toBeLessThan(w!);
+    expect(h).toBeLessThan(d!);
+    expect(pos.min![1]).toBeCloseTo(0, 1);
+  });
+
+  it('the noble house keeps its height after its tall Thai finials were cut', async () => {
+    const j = await glbJson(data.props.buildings!.nobleHouse!.file);
+    if (!j) return;
+    const pos = j.accessors[j.meshes[0]!.primitives[0]!.attributes.POSITION]!;
+    expect(pos.max![1]! - pos.min![1]!).toBeLessThan(8.5);
   });
 });

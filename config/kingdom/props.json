@@ -147,6 +147,15 @@
       "scaleY": 1.3
     }
   },
+  "monuments": {
+    "$comment": "PK 2026-10-20 (D161): the finished temple drawn from PK's model on the PC look (the construction kit still shows it going up, block by block). preah-ko: PK's 'Preah_Ko Temple.glb', its brick, lime stucco, weathering and laterite platform baked in Blender (4096 px, kept at 2048); fitted so its two rows of three towers stand on the kit's (offset m: x, y, z from the kit's centre; turn rad).",
+    "preah-ko": {
+      "file": "models/real/buildings/preah-ko.glb",
+      "source": "Preah_Ko Temple.glb (PK), textured in Blender",
+      "offset": [0, 0, 3.0],
+      "turn": 0
+    }
+  },
   "trees": [
     {
       "id": "a",
@@ -434,7 +443,7 @@
     }
   },
   "animals": {
-    "$comment": "PK 2026-10-20 (D160, D155 step 3): the wild animals nearest the middle of the view (round the hero in the 3D mode) are PK's Meshy animals, sized to their real height or length (byKind: file, fit height|length, size m; from scripts/models/library.json). Those with a walk clip walk it (walkSpeed = the pace in m/s the clip was made for) and stand when they stop. max within radius m, only with the camera nearer than maxDist m; hero = the 3D hero mode's own max and radius. Kinds not listed (the primates) keep their figures until they have models.",
+    "$comment": "PK 2026-10-20 (D160, D155 step 3): the wild animals nearest the middle of the view (round the hero in the 3D mode) are PK's Meshy animals, sized to their real height or length (byKind: file, fit height|length, size m; from scripts/models/library.json). Those with a walk clip walk it (walkSpeed = the pace in m/s the clip was made for) and stand when they stop. max within radius m, only with the camera nearer than maxDist m; hero = the 3D hero mode's own max and radius. PK 2026-10-20 (D161): the primates (gibbon, langur, douc, macaque, slow loris) and the binturong made in Blender (scripts/models/blender/make_primates.py), no walk clip: they glide.",
     "max": 12,
     "radius": 45,
     "maxDist": 70,
@@ -543,6 +552,36 @@
         "file": "models/real/animals/python.glb",
         "fit": "length",
         "size": 4
+      },
+      "gibbon": {
+        "file": "models/real/animals/gibbon.glb",
+        "fit": "height",
+        "size": 0.8
+      },
+      "langur": {
+        "file": "models/real/animals/langur.glb",
+        "fit": "length",
+        "size": 1.2
+      },
+      "douc": {
+        "file": "models/real/animals/douc.glb",
+        "fit": "length",
+        "size": 1.3
+      },
+      "macaque": {
+        "file": "models/real/animals/macaque.glb",
+        "fit": "length",
+        "size": 0.95
+      },
+      "slowLoris": {
+        "file": "models/real/animals/slow-loris.glb",
+        "fit": "length",
+        "size": 0.32
+      },
+      "binturong": {
+        "file": "models/real/animals/binturong.glb",
+        "fit": "length",
+        "size": 1.5
       }
     }
   },
