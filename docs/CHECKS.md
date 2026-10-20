@@ -787,3 +787,11 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | Every wild kind has a model (primates made in Blender), placed in the canopy where they perch | ✅ | `view/nearAnimals.test.ts`, render |
 | `npm run verify` (99 test files / 838 tests, build) | ✅ | |
 | Finished Preah Ko seen in the game | ⚠️ not yet | needs a game played to the end of chapter 1 on the PC look |
+
+## 1.9.0-27 Android APK 1.9.0 — 2026-10-20
+
+| Check | Result | How |
+| --- | --- | --- |
+| Phone build (Kingdom + Anachak Khmer) synced into the Android project (60 files, ≈ 10 MB; PC-only models left out) | ✅ | `npm run android` |
+| `gradlew assembleDebug` on PK's PC: BUILD SUCCESSFUL, `apk\KhmerKingdoms-1.9.0-debug.apk` (13.6 MB) holds the new `index.html` and game bundle | ✅ | Gradle 8.14.3 with Java 21 (`.jdks\jbr-21.0.11`; Android Studio's own Java 25 is too new for Gradle 8.14) |
+| Installed and played on a phone | ⚠️ not yet | PK's phone |
