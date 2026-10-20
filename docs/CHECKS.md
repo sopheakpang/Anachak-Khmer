@@ -803,3 +803,15 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | Banteng, serow, moon bear and clouded leopard recoloured; render side by side reads as four different animals | ✅ | `recolor_animals.py` (bpy 4.2, Cycles render) |
 | No wild kind shares a model file with its cousin | ✅ | `nearAnimals.test.ts` D162 |
 | Glowcap, crystal tree, red mushrooms: textures still smear (UVs shredded by the decimation) | ⚠️ kept | render `fantasy.png` |
+
+## 1.9.0-29 / 1.9.0-30 the phone with the PC's 3D models (D163), Android APK 1.9.1 — 2026-10-20
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 845 unit tests in 100 files, build) | ✅ | |
+| Phone build: 176 PC models in `models/real` and `models/buildings`, textures over 1024 px shrunk (only Preah Ko: 1.57 → 1.16 MB); second build reuses the cache (0 made) | ✅ | `npm run android` |
+| Phone page in software GL (SwiftShader, 915 × 412), 2 min after start: 587 723 triangles, 77 draw calls, heap 125 MB, no page errors. Before D163: 186 712 triangles, 25 draw calls, heap 73 MB. About 3 × the drawing work: still under the phone budget (600 000 / 120) but close to it | ⚠️ | probe on `vite preview`, `window.__temples.stats` |
+| e2e `mobile.spec.ts`: KM-02 ✅; KM-01 and KM-03 time out in this container's software GL (KM-01 had failed here before, line 521); KM-04 did not run | ⚠️ | `npx playwright test e2e/mobile.spec.ts` |
+| `gradlew assembleDebug` on PK's PC: BUILD SUCCESSFUL, `apk\KhmerKingdoms-1.9.1-debug.apk` 100.0 MB; it holds the new game bundle, 237 web files, 178 models in `models/real` (2 old files left in PK's PC folder: emerald-tree, lone-tree) | ✅ | Gradle 8.14.3 with Java 21 |
+| Installed and played on a phone (frame rate, memory) | ⚠️ not yet | PK's phone |
+
