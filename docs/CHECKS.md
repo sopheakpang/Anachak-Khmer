@@ -776,4 +776,4 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | Raid: raiders go for the storehouse; the line forms (shields, spears, bows); pairs; theft, loot dropped back; cheer; blocks ≈ 35 %; push back; a Royal Order calls a raid; the hurt rest | ✅ | `sim/battle.test.ts` |
 | Battle sounds (drum, block, axe, cheer) mapped from events | ✅ | `view/sound.test.ts` |
 | `npm run verify` (99 test files / 836 tests, build) | ✅ | |
-| e2e KG-01 (inbox, vote), KG-03 (chapter card from the inbox), KG-14 (half-size hero bar) | ⏳ running | software renderer |
+| e2e KG-01 (inbox, vote), KG-03 (chapter card from the inbox), KG-14 (half-size hero bar; the open Royal Order question closed first, since 1–4 answer it) | ✅ | software renderer, 7.2 min + 1.7 min; `docs/screens/k-inbox.png`, `k-hero-ultimate.png` |

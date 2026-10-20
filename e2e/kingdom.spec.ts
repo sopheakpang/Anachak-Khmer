@@ -1202,9 +1202,12 @@ test('KG-14: PK 1.9.0 (D146 ខ៥, D150): the king’s four skills, the great o
   expect(bar.width).toBeLessThan(stage.width * 0.4);
   expect(bar.height).toBeLessThan(stage.height * 0.1);
   await page.evaluate(() => {
-    const c = window.__temples.anachak!.hero!.core!;
+    const h = window.__temples.anachak!.hero!;
+    const c = h.core!;
     c.camYaw = c.heading + 0.6;
     c.camDist = 7;
+    // D157: while a Royal Order question is open, 1–4 answer it; the skills are tested here.
+    (h as unknown as { order: unknown }).order = null;
   });
   await page.keyboard.press('Digit3');
   await page.waitForFunction(() => window.__temples.anachak!.hero!.core!.skillSlot === 3, null, {
