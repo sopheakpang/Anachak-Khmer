@@ -24,6 +24,12 @@ describe('phone-sized PC models', () => {
     expect(cacheKey(1, 1, '1024/3000')).not.toBe(cacheKey(1, 1, 1024));
   });
 
+  it('D166: the old stump stays whole on the phone (it smears when cut)', () => {
+    const keep = (qualityJson.mobile as { modelKeepWhole?: string[] }).modelKeepWhole!;
+    expect(keep).toContain('models/real/plants/old-stump.glb');
+    for (const f of keep) expect(PHONE_MODEL_DIRS.some((d) => f.startsWith(d + '/'))).toBe(true);
+  });
+
   it('only new or changed models are made again', () => {
     const k = cacheKey(100, 5.4, 1024);
     expect(k).toBe('100:5:1024');

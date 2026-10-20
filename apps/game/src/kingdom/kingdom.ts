@@ -32,7 +32,7 @@ import './view/ancientMap.css';
 import { KingdomSound, panFor, sfxForEvent } from './view/sound';
 import { MoodTracker, anyNear } from './view/music';
 import { CAM_YAW } from './view/scene';
-import { TouchGestures } from './touch';
+import { TouchGestures, touchTime } from './touch';
 import creditsJson from '../../../../config/credits.json';
 
 /** Who made the game (config/credits.json; PK: credit the developer). */
@@ -745,13 +745,13 @@ export class Kingdom {
     window.addEventListener('pointerup', (e) => {
       if (!touchOf(e)) return;
       const p = this.toStage(e);
-      this.touch.up(e.pointerId, p.x, p.y, performance.now());
+      this.touch.up(e.pointerId, p.x, p.y, touchTime(e.timeStamp, performance.now()));
     });
     st.addEventListener('pointermove', (e) => {
       if (!this.active) return;
       if (e.pointerType === 'touch') {
         const p = this.toStage(e);
-        this.touch.move(e.pointerId, p.x, p.y, performance.now());
+        this.touch.move(e.pointerId, p.x, p.y, touchTime(e.timeStamp, performance.now()));
         return;
       }
       const p = this.toStage(e);
@@ -767,7 +767,7 @@ export class Kingdom {
       this.sound.unlock();
       if (e.pointerType === 'touch') {
         const p = this.toStage(e);
-        this.touch.down(e.pointerId, p.x, p.y, performance.now());
+        this.touch.down(e.pointerId, p.x, p.y, touchTime(e.timeStamp, performance.now()));
         return;
       }
       const p = this.toStage(e);

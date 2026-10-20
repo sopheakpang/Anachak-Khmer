@@ -44,6 +44,7 @@ import { repeated, textures } from '../../engine/textures';
 import { TempleView } from '../../world/temple';
 import { bigsDue, growStep } from '../../world/templeGrow';
 import { DangerRings } from './dangerRings';
+import { TreeShade } from './treeShade';
 import { ScatterView, scatterCentre, scatterForPreset, scatterPlan } from './scatter';
 import { makeRealWater } from './realWater';
 import { NearPeople, personFile, pickNear } from './nearPeople';
@@ -588,6 +589,11 @@ export class KingdomScene {
     if (this.gfx.props && treeCfg?.length && sim.data.props.treePlacement) {
       this.models = new ModelTrees(treeCfg, this.gfx.wind ? this.sway.uniforms : null, TREE_CAP, true);
       this.scene.add(this.models.group);
+      // D166: no real shadows (the phone): a soft shade painted under every tree instead.
+      if (this.gfx.shade && !this.sun.castShadow) {
+        this.models.groundShade = new TreeShade(this.gfx.shade, TREE_CAP);
+        this.scene.add(this.models.groundShade.mesh);
+      }
       void this.models.load(modelUrl).then(() => {
         this.treesAt = [NaN, NaN, NaN]; // redraw with the models
       });
@@ -760,6 +766,13 @@ export class KingdomScene {
         modelUrl,
       );
       this.scene.add(this.scatter.group);
+      if (this.gfx.shade && !this.sun.castShadow) {
+        this.scatter.groundShade = new TreeShade(
+          this.gfx.shade,
+          P.kinds.reduce((a, k) => a + k.maxVisible, 0),
+        );
+        this.scene.add(this.scatter.groundShade.mesh);
+      }
     }
     // PK 1.9.0 (D155): the people nearest the middle of the view move like people.
     const PC = sim.data.props.people;
@@ -1287,14 +1300,11 @@ export class KingdomScene {
       for (const t of this.yardTrees)
         if (Math.abs(t.x - cx) < reach && Math.abs(t.z - cz) < reach && this.exploredAt(t.x, t.z))
           spots.push(t);
-      const mid = place.midTris;
-      models.draw(
-        spots,
-        cx,
-        cz,
-        this.heroView ? place.nearTris.hero : place.nearTris.rts,
-        mid ? (this.heroView ? mid.hero : mid.rts) : 0,
-      );
+      // D166: the phone's own forest budgets (config/quality.json kingdom.forestTris).
+      const FT = this.gfx.forestTris;
+      const near = FT?.near ?? place.nearTris;
+      const mid = FT?.mid ?? place.midTris;
+      models.draw(spots, cx, cz, this.heroView ? near.hero : near.rts, mid ? (this.heroView ? mid.hero : mid.rts) : 0);
     }
     // Windy days: leaves fall from the nearest crowns (PK), not from the sky.
     const crowns: number[] = [];
@@ -1419,6 +1429,8 @@ export class KingdomScene {
     this.wear?.texture.dispose();
     this.fogTex.dispose();
     this.scatter?.dispose();
+    this.scatter?.groundShade?.dispose();
+    this.models?.groundShade?.dispose();
     this.people?.dispose();
     this.animals?.dispose();
     this.courtPeople?.dispose();

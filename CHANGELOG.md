@@ -37,6 +37,9 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.9.0-29 | **The phone has the PC's 3D models** (PK; D163): trees, plants, rocks, the people and animals near the view, boats, fish, PK's buildings, the finished Preah Ko and the 3D heroes with their weapons are the same models as on the PC, in the same places; the phone keeps its lighter look. The app is bigger (about 90 MB). |
 | 1.9.0-30 | **Android APK 1.9.1** (versionCode 11): everything up to 1.9.0-29, built in Android Studio's Gradle on PK's PC (`apk\KhmerKingdoms-1.9.1-debug.apk`). |
 | 1.9.0-31 | **The fantasy plants no longer smear** (D164): the glowcap, the crystal tree and the red mushrooms are repainted in clean colours (violet, teal, red caps on pale stems) instead of the broken streaky textures. |
+| 1.9.0-32 | **Phone: taps answer the first time** (D166): a quick tap while the phone is busy is no longer taken for a press-and-hold, so you do not have to tap twice. |
+| 1.9.0-33 | **Phone: a lighter forest** (D165, D166): plants and rocks are simpler on the phone and fewer are drawn far from the view; the fan palm is a lighter palm there; fewer detailed forest trees at once (the rest stay pictures); a soft shade lies under every tree. All the people and animals stay. About 40 % less for the phone to draw. |
+| 1.9.0-34 | **Android APK 1.9.2** (versionCode 12): everything up to 1.9.0-33. |
 
 ## 1.8.0 — 2026-10-09
 

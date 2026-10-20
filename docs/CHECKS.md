@@ -823,3 +823,15 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | The files carry vertex colours and no texture; the game material keeps vertex colours, textured models unchanged | ✅ | `props.test.ts` D164 |
 | Seen in the game on the PC | ⚠️ not yet | PK |
 
+
+## 1.9.0-32 / 1.9.0-33 / 1.9.0-34 lighter phone, taps, Android 1.9.2 (D165, D166) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 859 unit tests in 101 files, build) | ✅ | |
+| A quick tap during a slow frame is a tap (not a hold); a late-handled jiggle is not a hold; a real hold still is | ✅ | `touch.test.ts` D166 |
+| Phone build: still models over 3 000 triangles simplified (9.4 MB smaller), old stump whole; Blender trees look the same, the fan palm fell apart (so it is swapped on the phone) | ✅ | Cycles/EEVEE renders PC vs phone copy |
+| Phone build, Anachak Khmer, software GL: RTS 570 388 → 344 739 triangles (draw calls 72 → 70); 3D hero 800 936 → 459 067 (91 → 81); heap 117 → 111 MB; no page errors | ✅ | probe on `vite preview` of dist-mobile vs the 1.9.1 settings |
+| Painted shade under every forest tree drawn (179 in the 3D hero view, one draw call) and the bigger plants | ✅ placed | magenta debug render |
+| How the shade looks on the phone (strength 0.55, `config/quality.json` mobile.kingdom.shade) | ⚠️ not judged | fog of war and the canopy hid the ground in the software-GL shots |
+| Frame rate and taps on PK's phone | ⚠️ not yet | PK |

@@ -10,6 +10,7 @@
  * simply not drawn by this module (the built-in trees stand in until the models are in).
  */
 import * as THREE from 'three';
+import { shadeRadius, type TreeShade } from './treeShade';
 import type { KingdomData } from '@temples/shared';
 import { hash } from './detail';
 import { meshOf } from './props';
@@ -356,6 +357,9 @@ interface Kind {
   /** Infinity until the lighter copy is in (or when the tree has none). */
   midTris: number;
   ready: boolean;
+  /** D166: the fitted tree's height and crown width (m), for its painted shade. */
+  height: number;
+  width: number;
 }
 
 /**
@@ -440,6 +444,8 @@ export class ModelTrees {
         nearTris: cfg.hi,
         midTris: Infinity,
         ready: false,
+        height: cfg.height,
+        width: cfg.width,
       });
     }
   }
@@ -498,6 +504,10 @@ export class ModelTrees {
         kind.near.customDepthMaterial = nd;
       }
       kind.nearTris = (fitted.index ? fitted.index.count : fitted.getAttribute('position').count) / 3;
+      fitted.computeBoundingBox();
+      const fb = fitted.boundingBox!;
+      kind.height = fb.max.y - fb.min.y;
+      kind.width = Math.max(fb.max.x - fb.min.x, fb.max.z - fb.min.z);
       // Middle: the lighter copy, fitted the same way, in the near model's material (its texture).
       if (lighter) {
         const lg = lighter.geometry.clone();
@@ -555,7 +565,11 @@ export class ModelTrees {
    * Draw these trees: the nearest in detail within `budget` triangles, the next lighter within
    * `midBudget`, the rest as picture cards.
    */
+  /** D166: the painted shade under every tree drawn (the phone: no real shadows). */
+  groundShade: TreeShade | null = null;
+
   draw(spots: readonly TreeSpot[], cx: number, cz: number, budget: number, midBudget = 0): void {
+    this.groundShade?.begin();
     const level = treeLevels(
       spots,
       cx,
@@ -579,7 +593,10 @@ export class ModelTrees {
       mesh.setColorAt(n, this.c.setScalar(t.shade));
       if (far) k.variant.setX(n, hash(Math.round(t.x * 3), Math.round(t.z * 3), 7) < 0.5 ? 0 : 1);
       counts.set(mesh, n + 1);
+      if (this.groundShade)
+        this.groundShade.add(t.x, t.y, t.z, shadeRadius(k.height * t.scale, k.width * t.scale, this.groundShade.cfg));
     });
+    this.groundShade?.end();
     for (const k of this.kinds.values())
       for (const mesh of [k.near, k.mid, k.far]) {
         mesh.count = counts.get(mesh) ?? 0;

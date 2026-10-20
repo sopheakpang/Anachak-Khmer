@@ -63,6 +63,12 @@ export interface KingdomGfx {
   scatterRadius?: number;
   /** D165: and this share of each kind's count (at least one). */
   scatterShare?: number;
+  /** D166: kinds the phone draws with a lighter model: id → { file, scale }. */
+  scatterSwap?: Record<string, { file: string; scale: number }>;
+  /** D166: a soft shade painted under the trees where there are no real shadows (view/treeShade.ts). */
+  shade?: { strength: number; size: number; minHeight: number; color: string };
+  /** D166: the forest's detailed-tree budgets on this preset (props.json treePlacement nearTris / midTris otherwise). */
+  forestTris?: { near: { rts: number; hero: number }; mid: { rts: number; hero: number } };
 }
 
 /** Whether this preset draws PK's 3D models as the PC does (the PC look, or the phone's D163). */

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { shadeRadius, type TreeShade } from './treeShade';
 import type { ScatterKind } from '@temples/shared';
 import type { MapData, Terrain } from '../sim/map';
 import { loadProp, meshOf, realMaterial } from './props';
@@ -34,18 +35,31 @@ export function rng(seed: number): () => number {
 
 type Map = Pick<MapData, 'size' | 'tile' | 'terrain' | 'road' | 'start'>;
 
+/** D166: a kind the phone draws with another, lighter model (its size × `scale`). */
+export interface ScatterSwap {
+  file: string;
+  scale: number;
+}
+
 /**
  * D165: the phone's lighter scenery — the same kinds in the same places (the plan does not
  * change), drawn within `radius` m of the view and `share` of each kind's count (at least one).
+ * D166: `swap` draws a kind with a lighter model (the fan palm's 46 581 triangles fall apart
+ * when cut to the phone's budget).
  */
-export function scatterForPreset<K extends { maxVisible: number }, C extends { radius: number }>(
+export function scatterForPreset<K extends { id: string; file: string; maxVisible: number }, C extends { radius: number }>(
   kinds: readonly K[],
   cfg: C,
-  g: { scatterRadius?: number; scatterShare?: number },
-): { kinds: K[]; cfg: C } {
+  g: { scatterRadius?: number; scatterShare?: number; scatterSwap?: Record<string, ScatterSwap> },
+): { kinds: Array<K & { drawScale?: number }>; cfg: C } {
   const share = g.scatterShare ?? 1;
   return {
-    kinds: kinds.map((k) => (share >= 1 ? k : { ...k, maxVisible: Math.max(1, Math.round(k.maxVisible * share)) })),
+    kinds: kinds.map((k) => {
+      let out: K & { drawScale?: number } = share >= 1 ? k : { ...k, maxVisible: Math.max(1, Math.round(k.maxVisible * share)) };
+      const sw = g.scatterSwap?.[k.id];
+      if (sw) out = { ...out, file: sw.file, drawScale: sw.scale };
+      return out;
+    }),
     cfg: g.scatterRadius ? { ...cfg, radius: Math.min(cfg.radius, g.scatterRadius) } : cfg,
   };
 }
@@ -188,9 +202,13 @@ export class ScatterView {
   private readonly v = new THREE.Vector3();
   private readonly sv = new THREE.Vector3();
   private last = -1e9;
+  /** D166: the painted shade under the bigger plants (the phone: no real shadows). */
+  groundShade: TreeShade | null = null;
+  /** Each kind's model size once loaded (m): height and crown width. */
+  private readonly dims: Array<[number, number]>;
 
   constructor(
-    readonly kinds: readonly ScatterKind[],
+    readonly kinds: ReadonlyArray<ScatterKind & { drawScale?: number }>,
     spots: readonly Spot[],
     private readonly cfg: { radius: number; everySec: number; clearBuilding: number },
     private readonly url: (file: string) => string,
@@ -199,6 +217,7 @@ export class ScatterView {
     this.byKind = kinds.map(() => []);
     for (const s of spots) this.byKind[s.kind]!.push(s);
     this.meshes = kinds.map(() => null);
+    this.dims = kinds.map(() => [0, 0]);
     kinds.forEach((k, i) => {
       if (!this.byKind[i]!.length) return;
       void loadProp(this.url(k.file)).then((model) => {
@@ -208,6 +227,7 @@ export class ScatterView {
         geo.applyMatrix4(src.matrixWorld);
         geo.computeBoundingBox();
         const bb = geo.boundingBox!;
+        this.dims[i] = [bb.max.y - bb.min.y, Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z)];
         // Base on the ground, centred on its trunk; sunk by `sink` of its height.
         geo.translate(
           -(bb.min.x + bb.max.x) / 2,
@@ -244,6 +264,7 @@ export class ScatterView {
   ): void {
     if (now - this.last < this.cfg.everySec) return;
     this.last = now;
+    this.groundShade?.begin();
     this.kinds.forEach((k, i) => {
       const mesh = this.meshes[i];
       if (!mesh) return;
@@ -258,15 +279,21 @@ export class ScatterView {
       );
       near.forEach((s, j) => {
         this.q.setFromAxisAngle(this.v.set(0, 1, 0), s.rot);
-        this.sv.setScalar(s.scale);
+        this.sv.setScalar(s.scale * (k.drawScale ?? 1));
         this.m.compose(this.v.set(s.x, groundY(s.x, s.z), s.z), this.q, this.sv);
         mesh.setMatrixAt(j, this.m);
+        if (this.groundShade) {
+          const sc = s.scale * (k.drawScale ?? 1);
+          const [h, w] = this.dims[i]!;
+          this.groundShade.add(this.v.x, this.v.y, this.v.z, shadeRadius(h * sc, w * sc, this.groundShade.cfg));
+        }
       });
       mesh.count = near.length;
       // D165: a kind with none near costs no draw call.
       mesh.visible = near.length > 0;
       mesh.instanceMatrix.needsUpdate = true;
     });
+    this.groundShade?.end();
   }
 
   dispose(): void {

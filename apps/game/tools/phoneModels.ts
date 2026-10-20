@@ -60,6 +60,8 @@ export async function shrinkModels(
   cacheDir: string,
   maxTexture: number,
   maxTris = Infinity,
+  /** D166: models kept whole however many triangles (they smear when cut: the old stump). */
+  keepWhole: readonly string[] = [],
 ): Promise<{ made: number; files: number; saved: number }> {
   const indexFile = join(cacheDir, 'index.json');
   const cache: Record<string, string> = existsSync(indexFile)
@@ -69,7 +71,11 @@ export async function shrinkModels(
   for (const d of PHONE_MODEL_DIRS)
     for (const p of walkGlb(join(src, d))) {
       const st = statSync(p);
-      files[relative(src, p).replace(/\\/g, '/')] = cacheKey(st.size, st.mtimeMs, Number.isFinite(maxTris) ? `${maxTexture}/${maxTris}` : maxTexture);
+      files[relative(src, p).replace(/\\/g, '/')] = cacheKey(
+        st.size,
+        st.mtimeMs,
+        Number.isFinite(maxTris) ? `${maxTexture}/${keepWhole.includes(relative(src, p).replace(/\\/g, '/')) ? 'whole' : maxTris}` : maxTexture,
+      );
     }
   const redo = toRedo(files, cache);
   const missing = Object.keys(files).filter((f) => !existsSync(join(cacheDir, f)));
@@ -92,7 +98,7 @@ export async function shrinkModels(
       const prims = () => root.listMeshes().flatMap((m) => m.listPrimitives());
       const tris = () => prims().reduce((a, p) => a + (p.getIndices()?.getCount() ?? 0) / 3, 0);
       const rigged = root.listSkins().length > 0 || root.listAnimations().length > 0;
-      if (keepRatio(tris(), maxTris, rigged) < 1) {
+      if (!keepWhole.includes(f) && keepRatio(tris(), maxTris, rigged) < 1) {
         // As scripts/models/heavy.mjs: a tight error first, then more, then meshopt's sloppy
         // simplifier for scans cut into many texture islands (it merges by position only).
         await doc.transform(F.weld());
