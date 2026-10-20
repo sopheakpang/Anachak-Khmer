@@ -44,7 +44,7 @@ import { repeated, textures } from '../../engine/textures';
 import { TempleView } from '../../world/temple';
 import { bigsDue, growStep } from '../../world/templeGrow';
 import { DangerRings } from './dangerRings';
-import { ScatterView, scatterCentre, scatterPlan } from './scatter';
+import { ScatterView, scatterCentre, scatterForPreset, scatterPlan } from './scatter';
 import { makeRealWater } from './realWater';
 import { NearPeople, personFile, pickNear } from './nearPeople';
 import { NearAnimals, animalFile } from './nearAnimals';
@@ -751,10 +751,12 @@ export class KingdomScene {
     // PK 1.9.0 (D153): the rest of PK's models scattered over the land in natural patterns.
     const SC = sim.data.props.scatter;
     if (pcModels(this.gfx) && SC) {
+      // D165: the phone draws fewer, nearer (same places: the plan uses the full kinds).
+      const P = scatterForPreset(SC.kinds, SC, this.gfx);
       this.scatter = new ScatterView(
-        SC.kinds,
+        P.kinds,
         scatterPlan(sim.map, SC.kinds, sim.map.seed, SC.clearHall),
-        SC,
+        P.cfg,
         modelUrl,
       );
       this.scene.add(this.scatter.group);

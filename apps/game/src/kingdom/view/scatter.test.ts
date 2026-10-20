@@ -164,3 +164,26 @@ describe('PK 2026-10-20 (D156): trees keep out of the water; the hero sees the t
     expect(big.dry).toBeGreaterThanOrEqual(3);
   });
 });
+
+describe('PK 2026-10-20 (D165): the phone draws less scenery, in the same places', () => {
+  it('a nearer ring and half of each kind, at least one; the PC keeps it all', async () => {
+    const { scatterForPreset } = await import('./scatter');
+    const q = (await import('../../../../../config/quality.json')).default as unknown as Record<
+      string,
+      { kingdom: { scatterRadius?: number; scatterShare?: number } }
+    >;
+    const phone = scatterForPreset(SC.kinds, SC, q.mobile!.kingdom);
+    expect(phone.cfg.radius).toBeLessThan(SC.radius);
+    expect(phone.kinds.length).toBe(SC.kinds.length);
+    SC.kinds.forEach((k, i) => {
+      expect(phone.kinds[i]!.id).toBe(k.id);
+      expect(phone.kinds[i]!.maxVisible).toBeGreaterThanOrEqual(1);
+      expect(phone.kinds[i]!.maxVisible).toBeLessThanOrEqual(k.maxVisible);
+    });
+    const sum = (ks: readonly { maxVisible: number }[]) => ks.reduce((a, k) => a + k.maxVisible, 0);
+    expect(sum(phone.kinds)).toBeLessThan(sum(SC.kinds) * 0.75);
+    const pc = scatterForPreset(SC.kinds, SC, q.pc1660!.kingdom);
+    expect(pc.cfg).toBe(SC);
+    expect(pc.kinds).toEqual(SC.kinds);
+  });
+});

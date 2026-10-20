@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PC_ONLY } from '../vite.mobile.config';
-import { PHONE_MODEL_DIRS, cacheKey, fitTexture, shrinkModels, toRedo } from '../tools/phoneModels';
+import { PHONE_MODEL_DIRS, cacheKey, fitTexture, keepRatio, shrinkModels, toRedo } from '../tools/phoneModels';
 import qualityJson from '../../../config/quality.json';
 
 /** PK 2026-10-20 (D163): the phone build carries the PC's 3D models, phone-sized. */
@@ -13,6 +13,15 @@ describe('phone-sized PC models', () => {
     expect(fitTexture(2048, 1024, 1024)).toEqual([1024, 512]);
     expect(fitTexture(512, 512, 1024)).toEqual([512, 512]);
     expect((qualityJson.mobile as { modelTextureMax?: number }).modelTextureMax).toBe(1024);
+  });
+
+  it('D165: still models over the phone budget are simplified; rigged ones keep their shape', () => {
+    const max = (qualityJson.mobile as { modelMaxTris?: number }).modelMaxTris!;
+    expect(max).toBeGreaterThanOrEqual(1000);
+    expect(keepRatio(46_581, 3000, false)).toBeCloseTo(3000 / 46_581);
+    expect(keepRatio(2000, 3000, false)).toBe(1);
+    expect(keepRatio(46_581, 3000, true)).toBe(1);
+    expect(cacheKey(1, 1, '1024/3000')).not.toBe(cacheKey(1, 1, 1024));
   });
 
   it('only new or changed models are made again', () => {

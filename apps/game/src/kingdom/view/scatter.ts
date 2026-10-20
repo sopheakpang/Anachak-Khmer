@@ -34,6 +34,22 @@ export function rng(seed: number): () => number {
 
 type Map = Pick<MapData, 'size' | 'tile' | 'terrain' | 'road' | 'start'>;
 
+/**
+ * D165: the phone's lighter scenery — the same kinds in the same places (the plan does not
+ * change), drawn within `radius` m of the view and `share` of each kind's count (at least one).
+ */
+export function scatterForPreset<K extends { maxVisible: number }, C extends { radius: number }>(
+  kinds: readonly K[],
+  cfg: C,
+  g: { scatterRadius?: number; scatterShare?: number },
+): { kinds: K[]; cfg: C } {
+  const share = g.scatterShare ?? 1;
+  return {
+    kinds: kinds.map((k) => (share >= 1 ? k : { ...k, maxVisible: Math.max(1, Math.round(k.maxVisible * share)) })),
+    cfg: g.scatterRadius ? { ...cfg, radius: Math.min(cfg.radius, g.scatterRadius) } : cfg,
+  };
+}
+
 /** Does a tile belong to a habitat? */
 export function inHabitat(map: Map, tx: number, tz: number, habitat: ScatterKind['habitat']): boolean {
   const N = map.size;
@@ -247,6 +263,8 @@ export class ScatterView {
         mesh.setMatrixAt(j, this.m);
       });
       mesh.count = near.length;
+      // D165: a kind with none near costs no draw call.
+      mesh.visible = near.length > 0;
       mesh.instanceMatrix.needsUpdate = true;
     });
   }

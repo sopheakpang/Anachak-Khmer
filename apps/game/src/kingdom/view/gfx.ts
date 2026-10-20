@@ -59,6 +59,10 @@ export interface KingdomGfx {
    * and animals, boats) without the semi-realistic look — the phone. `real` implies it.
    */
   models?: boolean;
+  /** D165: the phone draws the scattered plants and rocks this near the view (m; props.json radius otherwise). */
+  scatterRadius?: number;
+  /** D165: and this share of each kind's count (at least one). */
+  scatterShare?: number;
 }
 
 /** Whether this preset draws PK's 3D models as the PC does (the PC look, or the phone's D163). */

@@ -48,8 +48,14 @@ export default defineConfig({
         renameSync(resolve(out, 'mobile.html'), resolve(out, 'index.html'));
         for (const dir of PC_ONLY) rmSync(resolve(out, dir), { recursive: true, force: true });
         // D163: the PC's 3D models, at the phone's texture size (cached in .phone-models/).
-        const max = (qualityJson.mobile as { modelTextureMax?: number }).modelTextureMax ?? 1024;
-        const r = await shrinkModels(resolve(__dirname, 'public-mobile'), out, resolve(__dirname, '.phone-models'), max);
+        const M = qualityJson.mobile as { modelTextureMax?: number; modelMaxTris?: number };
+        const r = await shrinkModels(
+          resolve(__dirname, 'public-mobile'),
+          out,
+          resolve(__dirname, '.phone-models'),
+          M.modelTextureMax ?? 1024,
+          M.modelMaxTris ?? Infinity,
+        );
         console.log(`phone models: ${r.files} (${r.made} made), ${(r.saved / 1e6).toFixed(1)} MB smaller`);
         const files = walk(out).map((p) => [relative(out, p).replace(/\\/g, '/'), statSync(p).size] as const);
         const list = offlineFiles(files.map(([f]) => f));

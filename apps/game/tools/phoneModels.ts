@@ -5,6 +5,11 @@
  * untouched. Shrunk copies are kept in a cache folder (apps/game/.phone-models/) keyed by the
  * source file's size and time, so a build only redoes the models that changed.
  *
+ * PK 2026-10-20 (D165, "dragging map not smoothly"): still models (no rig, no clips) with more
+ * than `maxTris` triangles (mobile.modelMaxTris) are also simplified for the phone — the scenery
+ * was over half of what the phone drew, one fan palm alone 46 581 triangles. People and animals
+ * (rigged, animated) keep their full shape.
+ *
  * Uses @gltf-transform and sharp, already in the repo for the model pipeline (scripts/models/).
  */
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
@@ -20,8 +25,14 @@ export function fitTexture(w: number, h: number, max: number): [number, number] 
 }
 
 /** The cache key of a source model: its size and change time (a changed model is redone). */
-export function cacheKey(size: number, mtimeMs: number, max: number): string {
+export function cacheKey(size: number, mtimeMs: number, max: number | string): string {
   return `${size}:${Math.round(mtimeMs)}:${max}`;
+}
+
+/** The share of triangles a still model keeps on the phone (1 = untouched). */
+export function keepRatio(tris: number, maxTris: number, rigged: boolean): number {
+  if (rigged || tris <= maxTris) return 1;
+  return maxTris / tris;
 }
 
 /** Which models must be (re)made: those whose cached key is missing or different. */
@@ -48,6 +59,7 @@ export async function shrinkModels(
   out: string,
   cacheDir: string,
   maxTexture: number,
+  maxTris = Infinity,
 ): Promise<{ made: number; files: number; saved: number }> {
   const indexFile = join(cacheDir, 'index.json');
   const cache: Record<string, string> = existsSync(indexFile)
@@ -57,15 +69,17 @@ export async function shrinkModels(
   for (const d of PHONE_MODEL_DIRS)
     for (const p of walkGlb(join(src, d))) {
       const st = statSync(p);
-      files[relative(src, p).replace(/\\/g, '/')] = cacheKey(st.size, st.mtimeMs, maxTexture);
+      files[relative(src, p).replace(/\\/g, '/')] = cacheKey(st.size, st.mtimeMs, Number.isFinite(maxTris) ? `${maxTexture}/${maxTris}` : maxTexture);
     }
   const redo = toRedo(files, cache);
   const missing = Object.keys(files).filter((f) => !existsSync(join(cacheDir, f)));
   const todo = [...new Set([...redo, ...missing])].sort();
   if (todo.length) {
-    const [{ NodeIO }, { ALL_EXTENSIONS }, sharp] = await Promise.all([
+    const [{ NodeIO }, { ALL_EXTENSIONS }, F, { MeshoptSimplifier }, sharp] = await Promise.all([
       import('@gltf-transform/core'),
       import('@gltf-transform/extensions'),
+      import('@gltf-transform/functions'),
+      import('meshoptimizer'),
       import('sharp').then((m) => m.default),
     ]);
     const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
@@ -74,6 +88,43 @@ export async function shrinkModels(
       const to = join(cacheDir, f);
       mkdirSync(dirname(to), { recursive: true });
       let shrunk = 0;
+      const root = doc.getRoot();
+      const prims = () => root.listMeshes().flatMap((m) => m.listPrimitives());
+      const tris = () => prims().reduce((a, p) => a + (p.getIndices()?.getCount() ?? 0) / 3, 0);
+      const rigged = root.listSkins().length > 0 || root.listAnimations().length > 0;
+      if (keepRatio(tris(), maxTris, rigged) < 1) {
+        // As scripts/models/heavy.mjs: a tight error first, then more, then meshopt's sloppy
+        // simplifier for scans cut into many texture islands (it merges by position only).
+        await doc.transform(F.weld());
+        await doc.transform(
+          F.simplify({ simplifier: MeshoptSimplifier, ratio: maxTris / tris(), error: 0.03, lockBorder: false }),
+        );
+        if (tris() > maxTris * 1.5)
+          await doc.transform(
+            F.simplify({ simplifier: MeshoptSimplifier, ratio: maxTris / tris(), error: 0.1, lockBorder: false }),
+          );
+        if (tris() > maxTris * 1.5) {
+          await MeshoptSimplifier.ready;
+          const ratio = maxTris / tris();
+          for (const prim of prims()) {
+            const idx = prim.getIndices();
+            const pos = prim.getAttribute('POSITION');
+            if (!idx || !pos) continue;
+            const want = Math.max(3, Math.floor((idx.getCount() * ratio) / 3) * 3);
+            const [cut] = MeshoptSimplifier.simplifySloppy(
+              Uint32Array.from(idx.getArray()!),
+              Float32Array.from(pos.getArray()!),
+              3,
+              null,
+              want,
+              0.05,
+            );
+            idx.setArray(cut);
+          }
+        }
+        await doc.transform(F.prune());
+        shrunk++;
+      }
       for (const t of doc.getRoot().listTextures()) {
         const size = t.getSize();
         const img = t.getImage();
