@@ -380,7 +380,8 @@
       "size": ["h", 1.65],
       "tris": 4000,
       "stand": true,
-      "status": "pk"
+      "status": "pk",
+      "recolour": "kouprey recoloured chestnut (scripts/models/recolor_animals.py, D162)"
     },
     {
       "game": "animal.junglefowl",
@@ -444,7 +445,8 @@
       "size": ["h", 0.95],
       "tris": 8000,
       "stand": true,
-      "status": "pk"
+      "status": "pk",
+      "recolour": "muntjac recoloured charcoal-grey (scripts/models/recolor_animals.py, D162)"
     },
     {
       "game": "animal.leopard",
@@ -458,12 +460,13 @@
     {
       "game": "animal.cloudedLeopard",
       "src": "04-animals/leopard/leopard.glb",
-      "out": "animals/leopard.glb",
+      "out": "animals/clouded-leopard.glb",
       "kind": "animal",
       "size": ["l", 1.7],
       "tris": 4000,
       "stand": true,
-      "status": "pk"
+      "status": "pk",
+      "recolour": "leopard recoloured: greyer, darker blotches (scripts/models/recolor_animals.py, D162)"
     },
     {
       "game": "animal.sunBear",
@@ -477,12 +480,13 @@
     {
       "game": "animal.moonBear",
       "src": "04-animals/bear/bear.glb",
-      "out": "animals/bear.glb",
+      "out": "animals/moon-bear.glb",
       "kind": "animal",
       "size": ["h", 1.1],
       "tris": 4000,
       "stand": true,
-      "status": "pk"
+      "status": "pk",
+      "recolour": "bear recoloured: cream chest crescent (scripts/models/recolor_animals.py, D162)"
     },
     {
       "game": "animal.dhole",

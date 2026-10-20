@@ -42,6 +42,27 @@ describe('PK’s animals near the view', () => {
     expect(data.props.people!.hero!.max).toBeGreaterThan(data.props.people!.max);
   });
 
+  it('D162: no wild kind shares its look with a cousin (stand-ins recoloured)', async () => {
+    const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
+      existsSync(p: string): boolean;
+      readFileSync(p: string): Uint8Array;
+    };
+    const path = (f: string) => new URL(`../../../public-mobile/${f}`, import.meta.url).pathname;
+    for (const [a, b] of [
+      ['banteng', 'kouprey'],
+      ['moonBear', 'sunBear'],
+      ['cloudedLeopard', 'leopard'],
+    ] as const) {
+      const fa = AC.byKind[a]!.file;
+      const fb = AC.byKind[b]!.file;
+      if (!fs.existsSync(path(fa)) || !fs.existsSync(path(fb))) continue;
+      const x = fs.readFileSync(path(fa));
+      const y = fs.readFileSync(path(fb));
+      const same = x.length === y.length && x.every((v, k) => v === y[k]);
+      expect(same, `${a} vs ${b}`).toBe(false);
+    }
+  });
+
   it('the walk clip runs at the animal’s pace and stops when it stands', () => {
     expect(walkRate(0, AC)).toBe(0);
     expect(walkRate(AC.walkSpeed, AC)).toBeCloseTo(1);

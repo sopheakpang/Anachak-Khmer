@@ -443,7 +443,7 @@
     }
   },
   "animals": {
-    "$comment": "PK 2026-10-20 (D160, D155 step 3): the wild animals nearest the middle of the view (round the hero in the 3D mode) are PK's Meshy animals, sized to their real height or length (byKind: file, fit height|length, size m; from scripts/models/library.json). Those with a walk clip walk it (walkSpeed = the pace in m/s the clip was made for) and stand when they stop. max within radius m, only with the camera nearer than maxDist m; hero = the 3D hero mode's own max and radius. PK 2026-10-20 (D161): the primates (gibbon, langur, douc, macaque, slow loris) and the binturong made in Blender (scripts/models/blender/make_primates.py), no walk clip: they glide.",
+    "$comment": "PK 2026-10-20 (D160, D155 step 3): the wild animals nearest the middle of the view (round the hero in the 3D mode) are PK's Meshy animals, sized to their real height or length (byKind: file, fit height|length, size m; from scripts/models/library.json). Those with a walk clip walk it (walkSpeed = the pace in m/s the clip was made for) and stand when they stop. max within radius m, only with the camera nearer than maxDist m; hero = the 3D hero mode's own max and radius. PK 2026-10-20 (D161): the primates (gibbon, langur, douc, macaque, slow loris) and the binturong made in Blender (scripts/models/blender/make_primates.py), no walk clip: they glide. PK 2026-10-20 (D162): the banteng, serow, moon bear and clouded leopard no longer share a cousin's look: their stand-in models are recoloured (scripts/models/recolor_animals.py).",
     "max": 12,
     "radius": 45,
     "maxDist": 70,
@@ -509,7 +509,7 @@
         "size": 2
       },
       "cloudedLeopard": {
-        "file": "models/real/animals/leopard.glb",
+        "file": "models/real/animals/clouded-leopard.glb",
         "fit": "length",
         "size": 1.7
       },
@@ -519,7 +519,7 @@
         "size": 1
       },
       "moonBear": {
-        "file": "models/real/animals/bear.glb",
+        "file": "models/real/animals/moon-bear.glb",
         "fit": "height",
         "size": 1.1
       },

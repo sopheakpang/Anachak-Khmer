@@ -795,3 +795,11 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | Phone build (Kingdom + Anachak Khmer) synced into the Android project (60 files, ≈ 10 MB; PC-only models left out) | ✅ | `npm run android` |
 | `gradlew assembleDebug` on PK's PC: BUILD SUCCESSFUL, `apk\KhmerKingdoms-1.9.0-debug.apk` (13.6 MB) holds the new `index.html` and game bundle | ✅ | Gradle 8.14.3 with Java 21 (`.jdks\jbr-21.0.11`; Android Studio's own Java 25 is too new for Gradle 8.14) |
 | Installed and played on a phone | ⚠️ not yet | PK's phone |
+
+## 1.9.0-28 animal coats (D162) — 2026-10-20
+
+| Check | Result | How |
+| --- | --- | --- |
+| Banteng, serow, moon bear and clouded leopard recoloured; render side by side reads as four different animals | ✅ | `recolor_animals.py` (bpy 4.2, Cycles render) |
+| No wild kind shares a model file with its cousin | ✅ | `nearAnimals.test.ts` D162 |
+| Glowcap, crystal tree, red mushrooms: textures still smear (UVs shredded by the decimation) | ⚠️ kept | render `fantasy.png` |
