@@ -876,3 +876,5 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | 30 / 60 switch: URL wins, then the player's choice, then 30; at 60 a 60 Hz display renders every frame; the panel lights the rate chosen and reads red under it | ✅ | `pacing.test.ts`, `gfxPanel.test.ts` |
 | The spear is hidden while the gesture holds him and back after | ✅ | `gesture.test.ts` |
 | 60 FPS held on PK's GTX 1660 Super (PC 1660) | ⚠️ not yet | PK reads it in 🖥 |
+| APK 1.9.3 (versionCode 13) built on PK's PC: `npm run android` here, assets copied, `gradlew assembleDebug` BUILD SUCCESSFUL, `apk/KhmerKingdoms-1.9.3-debug.apk` 82 MB | ✅ | Gradle on PK's PC |
+| Merge to main | ⏳ pull request #1 open for PK | a direct push to main is blocked from here |
