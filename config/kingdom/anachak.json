@@ -241,7 +241,8 @@
       "pillars": 10,
       "petals": 36,
       "orbit": 6,
-      "maxLive": 220
+      "maxLive": 220,
+      "beamModel": "models/real/vfx/spear-beam.glb"
     },
     "auto": {
       "$comment": "PK decision k6 (D148): the 🤖 button lets the hero play by himself — fight a raider or a dangerous beast within fightRange m, else work what is at hand, else walk to the nearest work within searchRadius m; he rethinks every thinkSec s. Any move key, action key or click takes control back.",
@@ -318,7 +319,7 @@
             "yantra": "spiral",
             "color": "#9fd8ff",
             "sound": "spear",
-            "vfx": ["trail", "spirit"]
+            "vfx": ["energyBeam", "spirit"]
           },
           {
             "id": "javelins",

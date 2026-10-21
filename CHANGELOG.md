@@ -42,6 +42,7 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.9.0-34 | **Android APK 1.9.2** (versionCode 12): everything up to 1.9.0-33. |
 | 1.9.0-35 | **Trees stay in their place** (PK; D167): the palms, rain, mango and tropical trees, big rocks and cliffs are always there (before, only the nearest one or two of each kind showed and they blinked in and out as you walked); the forest reaches out into the haze; a near tree turns into its far picture with a soft fade instead of a jump; small plants and stones fade in instead of popping up. |
 | 1.9.0-36 | **Broken models gone or remade** (PK; D168): the wagon, the scale tree, the wisteria, the dead tree and a shredded plant are gone; the dense shrub, the purple bush, the reeds, the lily pads, the red lily, the wildflowers, the banyan and a broadleaf tree are new, made in Blender, whole. |
+| 1.9.0-37 | **Spearman's energy beam** (PK; D169): the Lunge (ចាក់ស្ទុះ) now fires a glowing blue beam from the spear — a bright core, the beam, twisting flames round it, rings at its far end and streaking sparks — designed in Blender (the scene `energy_beam.blend`, every colour and speed on one control) and played in the game with the same five layers. |
 
 ## 1.8.0 — 2026-10-09
 

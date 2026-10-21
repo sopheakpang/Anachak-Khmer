@@ -24,7 +24,9 @@ import { PALETTE } from '../../engine/look';
 import { GroundDetail, type GroundKind } from './ground';
 import { Slashes } from './slash';
 import { TigerModel } from './tiger';
-import { heroModelFor, phoneModels, preloadGear, preloadModels, setGear } from './glbModel';
+import { heroModelFor, modelUrl, phoneModels, preloadGear, preloadModels, setGear } from './glbModel';
+import { loadProp } from '../view/props';
+import { shapesFromModel } from './energyBeam';
 import { YantraFx, yantraFor } from './yantra';
 import { SkillFx } from './skillFx';
 import { fxWeaponFor, planSkillVfx } from './skillVfx';
@@ -291,6 +293,14 @@ export class HeroMode {
     view.scene.add(this.yantra.group);
     this.skillFx = new SkillFx(() => this.host.view().particles, this.cfg.vfx.maxLive);
     view.scene.add(this.skillFx.group);
+    // D169: the energy beam's Blender meshes (the same shapes are built in code until they load).
+    const BM = this.cfg.vfx.beamModel;
+    if (BM) {
+      const fx = this.skillFx;
+      void loadProp(modelUrl(BM)).then((m) => {
+        if (this.skillFx === fx) fx.beamShapes = shapesFromModel(m);
+      });
+    }
     for (const r of [this.aimRingMesh, this.goalRingMesh]) {
       r.visible = false;
       r.renderOrder = 5;

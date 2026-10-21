@@ -83,10 +83,11 @@ describe('planning the effects', () => {
   });
 
   it('a dash: the streak runs from where he started to where he stopped; the guardian rushes on ahead', () => {
-    const ps = plan('spear', 'lunge', [0, 0], [0, 3.6]);
-    const [beam] = of(ps, 'beam');
+    // D169: the spearman's Lunge fires the energy beam now; the rider's charge keeps the streak.
+    const [beam] = of(plan('rider', 'charge', [0, 0], [0, 3.6]), 'beam');
     expect(beam!.from).toEqual([0, 0]);
     expect(beam!.to).toEqual([0, 3.6]);
+    const ps = plan('spear', 'lunge', [0, 0], [0, 3.6]);
     const spirit = of(ps, 'sprite').find((p) => p.art === 'emblem:garuda')!;
     expect(spirit.vz).toBeGreaterThan(0);
     expect(spirit.z + spirit.vz * spirit.dur).toBeGreaterThan(3.6);

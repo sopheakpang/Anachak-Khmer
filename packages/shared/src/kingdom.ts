@@ -779,7 +779,8 @@ export const GUARDIANS = ['naga', 'garuda', 'tiger', 'gaja', 'singha', 'hongsa']
  * the hero's guardian rushing out (or rising over him); pillars = columns of script rising
  * round him; shock = rings of force on the ground; dome = a bell of light over him; petals =
  * lotus petals falling; orbit = spectral weapons wheeling round him; trail = a streak of light
- * along a dash or a shot.
+ * along a dash or a shot; energyBeam = PK's Blender energy beam (D169: a glowing core, the beam,
+ * twisting flames round it, rings at its far end and streaking sparks) fired from the weapon.
  */
 export const SKILL_VFX = [
   'wave',
@@ -791,6 +792,7 @@ export const SKILL_VFX = [
   'petals',
   'orbit',
   'trail',
+  'energyBeam',
 ] as const;
 
 export const HeroSkillSchema = z.object({
@@ -1056,6 +1058,8 @@ export const AnachakSchema = z.object({
       petals: z.number().int().positive(),
       orbit: z.number().int().positive(),
       maxLive: z.number().int().positive(),
+      /** D169: the energy beam's meshes made in Blender (scripts/models/blender/make_energy_beam.py). */
+      beamModel: z.string().optional(),
     }),
     /** The 🤖 auto mode (PK k6). */
     auto: z.object({

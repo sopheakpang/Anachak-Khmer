@@ -847,3 +847,13 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | Every scatter model rendered in Blender; 13 broken ones found: 5 removed, 8 made again in Blender (all under 6 000 triangles, painted or leaf atlas) | ✅ | contact sheet renders, `treesFixed.test.ts` D168 |
 | In the game (PC 1660 preset, Anachak Khmer, 3D hero, software GL): no shader or page errors; 27 tree models near, 715 picture trees out to 169 m (the haze edge), 640 of them PK's scattered trees (before: 1–2 of each kind); 668 547 triangles, 76 draw calls | ✅ | probe on `vite preview` |
 | Seen moving on PK's PC: no tree blinking in or out; frame rate on the GTX 1660 | ⚠️ not yet | PK |
+
+## 1.9.0-37 spearman's energy beam (D169) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 880 unit tests in 103 files, build) | ✅ | |
+| Blender script builds the 5 layers (core, beam, flames, impact wave, particles) with drivers on `BeamFX_Controls`, its own scene, in Blender 4.2 (here) and 5.2.2 (PK's PC, through the MCP); glow = compositor Glare (Bloom) | ✅ | `make_energy_beam.py`, EEVEE preview on PK's PC, Cycles here |
+| The Lunge plans the beam from the spear's point where the thrust ends, along his heading, ≥ 6 m, sparks at its end; it shoots out, holds, fades; SkillFx plays and frees it; the Blender meshes load from `spear-beam.glb` by name | ✅ | `energyBeam.test.ts` |
+| In the game: the beam plays with no shader or page errors (Lite preset, 3D hero); the effect alone with the game's bloom reads as the Blender design | ✅ | probe + standalone render |
+| Seen in play on PK's PC (the court round the hero can hide it from the chase camera) | ⚠️ not yet | PK |
