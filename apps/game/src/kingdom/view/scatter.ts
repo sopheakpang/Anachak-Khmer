@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { shadeRadius, type TreeShade } from './treeShade';
+import { addLodFade, lodEye, lodRange, type LodRange } from './lodFade';
 import type { ScatterKind } from '@temples/shared';
 import type { MapData, Terrain } from '../sim/map';
 import { loadProp, meshOf, realMaterial } from './props';
@@ -62,6 +63,108 @@ export function scatterForPreset<K extends { id: string; file: string; maxVisibl
     }),
     cfg: g.scatterRadius ? { ...cfg, radius: Math.min(cfg.radius, g.scatterRadius) } : cfg,
   };
+}
+
+/** D167: a tall scatter kind as one of the forest's tree kinds (view/treeModels.ts TreeCfg). */
+export interface ScatterTreeCfg {
+  id: string;
+  en: string;
+  source: string;
+  file: string;
+  cards: string;
+  card: number;
+  height: number;
+  width: number;
+  hi: number;
+  tex: number;
+  /** Its size × (the phone's lighter stand-in model may be another size). */
+  drawScale: number;
+  /** Its index in the scatter's kinds. */
+  index: number;
+}
+
+/**
+ * D167: the scatter kinds drawn with the forest (those with `tree`), as tree kinds — with the
+ * preset's stand-in model where one is set (`scatterSwap`, the phone): then that model's cards.
+ */
+export function scatterTreeKinds(
+  kinds: readonly ScatterKind[],
+  g: { scatterSwap?: Record<string, { file: string; scale: number }> },
+): ScatterTreeCfg[] {
+  const out: ScatterTreeCfg[] = [];
+  kinds.forEach((k, index) => {
+    if (!k.tree) return;
+    const sw = g.scatterSwap?.[k.id];
+    const to = sw ? kinds.find((x) => x.file === sw.file && x.tree) : k;
+    if (!to?.tree) return;
+    out.push({
+      id: `sc:${k.id}`,
+      en: k.en,
+      source: 'props.json scatter',
+      file: to.file,
+      cards: to.tree.cards,
+      card: to.tree.card,
+      // Fitted at its own height (spots scale it as the scatter plan says), never cut narrower.
+      height: to.tree.height,
+      width: 1000,
+      hi: 6000,
+      tex: 1024,
+      drawScale: sw?.scale ?? 1,
+      index,
+    });
+  });
+  return out;
+}
+
+/** D167: the plan's spots of those kinds, as trees to draw (ground height set when drawn). */
+export function scatterTreeSpots(
+  plan: readonly Spot[],
+  kinds: readonly ScatterKind[],
+  trees: readonly ScatterTreeCfg[],
+): Array<{ id: string; x: number; y: number; z: number; rot: number; scale: number; shade: number; kind: number }> {
+  const by = new Map(trees.map((t) => [t.index, t]));
+  const out = [];
+  for (const p of plan) {
+    const t = by.get(p.kind);
+    if (!t || !kinds[p.kind]) continue;
+    out.push({ id: t.id, x: p.x, y: 0, z: p.z, rot: p.rot, scale: p.scale * t.drawScale, shade: 1, kind: p.kind });
+  }
+  return out;
+}
+
+/** D167: the fade settings (props.json scatter.fade). */
+export interface ScatterFade {
+  perMetre: number;
+  min: number;
+  max: number;
+  rts: number;
+  band: number;
+}
+
+/**
+ * D167: how far a kind is drawn (m from the view's centre): its own `drawDist`, or its height
+ * (× its middle size) × `perMetre`, between `min` and `max`; never past the scatter's `radius`.
+ * The RTS view looks from high up, so there everything reaches `rts` times further.
+ */
+export function drawDistance(
+  k: { drawDist?: number; scale: readonly [number, number] },
+  height: number,
+  f: ScatterFade,
+  radius: number,
+  rts: boolean,
+): number {
+  const own = k.drawDist ?? Math.min(f.max, Math.max(f.min, height * ((k.scale[0] + k.scale[1]) / 2) * f.perMetre));
+  return Math.min(own, radius) * (rts ? f.rts : 1);
+}
+
+/**
+ * D167: where a kind's fade sits now: at its draw distance, or — if only `maxVisible` of them
+ * could be drawn and the furthest of those is nearer — just inside that one, so nothing past the
+ * last drawn plant is ever expected; `margin` = how far the view may move before the next pick.
+ */
+export function fadeAt(dist: number, picked: number, max: number, lastD: number, margin: number, band: number): number {
+  if (picked < max) return dist;
+  return Math.max(0, Math.min(dist, (lastD - margin) / (1 + band)));
 }
 
 /** Does a tile belong to a habitat? */
@@ -206,11 +309,16 @@ export class ScatterView {
   groundShade: TreeShade | null = null;
   /** Each kind's model size once loaded (m): height and crown width. */
   private readonly dims: Array<[number, number]>;
+  /** D167: the view's centre for the fade, and each kind's fade distance. */
+  readonly eye = lodEye();
+  private readonly ranges: LodRange[];
+  /** D167: the RTS view (things reach further, see drawDistance). */
+  rts = false;
 
   constructor(
     readonly kinds: ReadonlyArray<ScatterKind & { drawScale?: number }>,
     spots: readonly Spot[],
-    private readonly cfg: { radius: number; everySec: number; clearBuilding: number },
+    private readonly cfg: { radius: number; everySec: number; clearBuilding: number; fade?: ScatterFade },
     private readonly url: (file: string) => string,
   ) {
     this.group.name = 'scatter';
@@ -218,6 +326,7 @@ export class ScatterView {
     for (const s of spots) this.byKind[s.kind]!.push(s);
     this.meshes = kinds.map(() => null);
     this.dims = kinds.map(() => [0, 0]);
+    this.ranges = kinds.map(() => lodRange());
     kinds.forEach((k, i) => {
       if (!this.byKind[i]!.length) return;
       void loadProp(this.url(k.file)).then((model) => {
@@ -234,7 +343,20 @@ export class ScatterView {
           -bb.min.y - k.sink * (bb.max.y - bb.min.y),
           -(bb.min.z + bb.max.z) / 2,
         );
-        const mesh = new THREE.InstancedMesh(geo, realMaterial(src.material as THREE.Material), k.maxVisible);
+        const mat = realMaterial(src.material as THREE.Material);
+        const mesh = new THREE.InstancedMesh(geo, mat, k.maxVisible);
+        if (this.cfg.fade) {
+          // D167: it fades in and out at its distance (its shadow with it) instead of popping.
+          addLodFade(mat, this.eye, this.ranges[i]!, 'near');
+          const depth = new THREE.MeshDepthMaterial({
+            depthPacking: THREE.RGBADepthPacking,
+            map: mat.alphaTest > 0 ? mat.map : null,
+            alphaTest: mat.alphaTest,
+            side: mat.side,
+          });
+          addLodFade(depth, this.eye, this.ranges[i]!, 'near');
+          mesh.customDepthMaterial = depth;
+        }
         mesh.count = 0;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -262,21 +384,34 @@ export class ScatterView {
     groundY: (x: number, z: number) => number,
     buildings: ReadonlyArray<readonly [number, number, number]>,
   ): void {
+    this.eye.uLodEye.value.set(cx, cz);
     if (now - this.last < this.cfg.everySec) return;
     this.last = now;
     this.groundShade?.begin();
+    const F = this.cfg.fade;
+    // D167: how far the view may move before the next pick (a running hero).
+    const margin = this.cfg.everySec * 9;
     this.kinds.forEach((k, i) => {
       const mesh = this.meshes[i];
       if (!mesh) return;
+      const dist = F ? drawDistance(k, this.dims[i]![0], F, this.cfg.radius, this.rts) : this.cfg.radius;
       const near = nearestSpots(
         this.byKind[i]!,
         cx,
         cz,
-        this.cfg.radius,
+        F ? dist * (1 + F.band) + margin : this.cfg.radius,
         k.maxVisible,
         buildings,
         this.cfg.clearBuilding,
       );
+      if (F) {
+        const last = near[near.length - 1];
+        const lastD = last ? Math.hypot(last.x - cx, last.z - cz) : 0;
+        const at = fadeAt(dist, near.length, k.maxVisible, lastD, margin, F.band);
+        const R = this.ranges[i]!;
+        R.uLodS.value = at;
+        R.uLodBand.value = at * F.band;
+      }
       near.forEach((s, j) => {
         this.q.setFromAxisAngle(this.v.set(0, 1, 0), s.rot);
         this.sv.setScalar(s.scale * (k.drawScale ?? 1));
@@ -301,6 +436,7 @@ export class ScatterView {
       if (!m) continue;
       m.geometry.dispose();
       (m.material as THREE.Material).dispose();
+      m.customDepthMaterial?.dispose();
       m.dispose();
     }
     this.group.clear();

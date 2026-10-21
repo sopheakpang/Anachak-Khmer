@@ -69,6 +69,8 @@ export interface KingdomGfx {
   shade?: { strength: number; size: number; minHeight: number; color: string };
   /** D166: the forest's detailed-tree budgets on this preset (props.json treePlacement nearTris / midTris otherwise). */
   forestTris?: { near: { rts: number; hero: number }; mid: { rts: number; hero: number } };
+  /** D167: how many forest trees (models and picture cards) are drawn at most. */
+  treeCap?: number;
 }
 
 /** Whether this preset draws PK's 3D models as the PC does (the PC look, or the phone's D163). */

@@ -42,9 +42,12 @@ describe('scatter config', () => {
     if (trisOf(SC.kinds[0]!.file) === null) return; // a checkout without the PC models
     let worst = 0;
     for (const k of SC.kinds) {
+      // D167: the tall kinds are drawn with the forest (its model budget and picture cards).
+      if (k.tree) continue;
       const t = trisOf(k.file)!;
-      // No kind alone takes more than its share (a heavy scan shows fewer copies).
-      expect(t * k.maxVisible, k.id).toBeLessThanOrEqual(Math.max(t, k.rare ? 6000 : 10_000));
+      // No kind alone takes more than its share (a heavy scan shows fewer copies; D167: the
+      // small plants show more of them, fading in by distance instead of the nearest few).
+      expect(t * k.maxVisible, k.id).toBeLessThanOrEqual(Math.max(t, k.rare ? 6000 : 50_000));
       worst += t * k.maxVisible;
     }
     expect(worst).toBeLessThan(550_000);

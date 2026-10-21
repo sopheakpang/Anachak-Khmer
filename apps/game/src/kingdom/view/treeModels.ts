@@ -11,6 +11,7 @@
  */
 import * as THREE from 'three';
 import { shadeRadius, type TreeShade } from './treeShade';
+import { addLodFade, lodSides, type LodEye, type LodRange } from './lodFade';
 import type { KingdomData } from '@temples/shared';
 import { hash } from './detail';
 import { meshOf } from './props';
@@ -416,10 +417,11 @@ export class ModelTrees {
   constructor(
     readonly trees: readonly TreeCfg[],
     readonly sway: { uTime: { value: number }; uWind: { value: number } } | null,
-    capacity: number,
+    capacity: number | ((id: string) => number),
     shadows: boolean,
   ) {
     for (const cfg of trees) {
+      const cap = typeof capacity === 'number' ? capacity : capacity(cfg.id);
       const mk = (cap: number) => {
         const mesh = new THREE.InstancedMesh(
           new THREE.BufferGeometry(),
@@ -437,10 +439,10 @@ export class ModelTrees {
       };
       this.kinds.set(cfg.id, {
         cfg,
-        near: mk(Math.min(capacity, 400)),
-        mid: mk(Math.min(capacity, 800)),
-        far: mk(capacity),
-        variant: new THREE.InstancedBufferAttribute(new Float32Array(capacity), 1),
+        near: mk(Math.min(cap, 400)),
+        mid: mk(Math.min(cap, 800)),
+        far: mk(cap),
+        variant: new THREE.InstancedBufferAttribute(new Float32Array(cap), 1),
         nearTris: cfg.hi,
         midTris: Infinity,
         ready: false,
@@ -491,6 +493,7 @@ export class ModelTrees {
         alphaTest: cut,
       });
       if (this.sway) addSway(mat, this.sway, 'tree-model');
+      if (this.lod) addLodFade(mat, this.lod.eye, this.lod.range, 'near');
       (kind.near.material as THREE.Material).dispose();
       kind.near.material = mat;
       if (cut > 0 && map) {
@@ -501,6 +504,7 @@ export class ModelTrees {
           side: THREE.DoubleSide,
         });
         if (this.sway) addSway(nd, this.sway, 'tree-model-depth');
+        if (this.lod) addLodFade(nd, this.lod.eye, this.lod.range, 'near');
         kind.near.customDepthMaterial = nd;
       }
       kind.nearTris = (fitted.index ? fitted.index.count : fitted.getAttribute('position').count) / 3;
@@ -541,6 +545,7 @@ export class ModelTrees {
         vertexColors: true,
       });
       cardPatch(cm, this.sway, 'tree-cards');
+      if (this.lod) addLodFade(cm, this.lod.eye, this.lod.range, 'far');
       (kind.far.material as THREE.Material).dispose();
       kind.far.material = cm;
       const depth = new THREE.MeshDepthMaterial({
@@ -549,6 +554,7 @@ export class ModelTrees {
         alphaTest: 0.5,
       });
       cardPatch(depth, this.sway, 'tree-cards-depth');
+      if (this.lod) addLodFade(depth, this.lod.eye, this.lod.range, 'far');
       kind.far.customDepthMaterial = depth;
       kind.ready = true;
       this.loaded++;
@@ -567,6 +573,76 @@ export class ModelTrees {
    */
   /** D166: the painted shade under every tree drawn (the phone: no real shadows). */
   groundShade: TreeShade | null = null;
+  /**
+   * D167: the soft switch between the model and its cards, by distance (set before `load`).
+   * Without it the old rule holds: the triangle budget picks the nearest for the model.
+   */
+  lod: { eye: LodEye; range: LodRange } | null = null;
+
+  /**
+   * D167: draw these trees with the distance fade: the model within `s` m of the view's centre
+   * (fewer if the `budget` runs out first), its cards beyond, crossing over `band` m; the cards
+   * fade out at `out` m (± `outBand`). `margin` = how far the view may move before the next call.
+   */
+  drawFaded(
+    spots: readonly TreeSpot[],
+    cx: number,
+    cz: number,
+    budget: number,
+    f: { s: number; band: number; margin: number; out: number; outBand: number },
+  ): number {
+    const R = this.lod!.range;
+    const d = spots.map((t) => Math.hypot(t.x - cx, t.z - cz));
+    const order = d.map((v, i) => [v, i] as const).sort((a, b) => a[0] - b[0]);
+    // The budget may bring the switch nearer (never further than `s`).
+    let s = f.s;
+    let used = 0;
+    for (const [v, i] of order) {
+      if (!lodSides(v, s, f.band, f.margin).near) break;
+      const k = this.kinds.get(spots[i]!.id);
+      if (!k?.ready) continue;
+      used += k.nearTris;
+      if (used > budget) {
+        s = Math.max(0, v - f.band - f.margin);
+        break;
+      }
+    }
+    R.uLodS.value = s;
+    R.uLodBand.value = f.band;
+    R.uLodOut.value = f.out;
+    R.uLodOutBand.value = f.outBand;
+    const counts = new Map<THREE.InstancedMesh, number>();
+    const put = (mesh: THREE.InstancedMesh, t: TreeSpot, far: boolean, k: Kind) => {
+      const n = counts.get(mesh) ?? 0;
+      if (n >= mesh.instanceMatrix.count) return;
+      this.q.setFromAxisAngle(this.up, t.rot);
+      this.m.compose(this.p.set(t.x, t.y, t.z), this.q, this.s.setScalar(t.scale));
+      mesh.setMatrixAt(n, this.m);
+      mesh.setColorAt(n, this.c.setScalar(t.shade));
+      if (far) k.variant.setX(n, hash(Math.round(t.x * 3), Math.round(t.z * 3), 7) < 0.5 ? 0 : 1);
+      counts.set(mesh, n + 1);
+    };
+    this.groundShade?.begin();
+    for (const [v, i] of order) {
+      const t = spots[i]!;
+      const k = this.kinds.get(t.id);
+      if (!k?.ready) continue;
+      const side = lodSides(v, s, f.band, f.margin);
+      if (side.near) put(k.near, t, false, k);
+      if (side.far && v < f.out + f.outBand + f.margin) put(k.far, t, true, k);
+      if (this.groundShade)
+        this.groundShade.add(t.x, t.y, t.z, shadeRadius(k.height * t.scale, k.width * t.scale, this.groundShade.cfg));
+    }
+    this.groundShade?.end();
+    for (const k of this.kinds.values())
+      for (const mesh of [k.near, k.mid, k.far]) {
+        mesh.count = counts.get(mesh) ?? 0;
+        mesh.instanceMatrix.needsUpdate = true;
+        if (mesh === k.far) k.variant.needsUpdate = true;
+        if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
+      }
+    return s;
+  }
 
   draw(spots: readonly TreeSpot[], cx: number, cz: number, budget: number, midBudget = 0): void {
     this.groundShade?.begin();

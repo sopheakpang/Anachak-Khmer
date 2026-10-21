@@ -45,7 +45,8 @@ import { TempleView } from '../../world/temple';
 import { bigsDue, growStep } from '../../world/templeGrow';
 import { DangerRings } from './dangerRings';
 import { TreeShade } from './treeShade';
-import { ScatterView, scatterCentre, scatterForPreset, scatterPlan } from './scatter';
+import { ScatterView, scatterCentre, scatterForPreset, scatterPlan, scatterTreeKinds, scatterTreeSpots } from './scatter';
+import { lodEye, lodRange } from './lodFade';
 import { makeRealWater } from './realWater';
 import { NearPeople, personFile, pickNear } from './nearPeople';
 import { NearAnimals, animalFile } from './nearAnimals';
@@ -157,6 +158,8 @@ export const WATER_Y = -0.12;
  */
 export const GRASS_DRY = 0.03;
 const TREE_CAP = 1600;
+/** D167: the forest is re-picked when the view has moved this far (m). */
+const TREE_STEP = 12;
 /** The RTS camera's lens (degrees). */
 const RTS_FOV = 32;
 
@@ -317,6 +320,15 @@ export class KingdomScene {
   /** PK 1.8.0: PK's own trees (near and far models), and the yard and wayside trees. */
   models: ModelTrees | null = null;
   yardTrees: TreeSpot[] = [];
+  /**
+   * D167: PK's tall scattered trees and rocks, drawn with the forest (every one in its place):
+   * where they stand, which model, turned and sized as the scatter plan put them.
+   */
+  scatterTrees: Array<TreeSpot & { kind: number }> = [];
+  /** D167: the view's centre for the forest's distance fade (set every frame). */
+  private readonly treeEye = lodEye();
+  /** D167: how many forest trees are drawn at most on this preset. */
+  private readonly treeCap: number;
   private yardKey = '';
   private yardAt = -1e9;
   private yards!: THREE.InstancedMesh;
@@ -565,6 +577,7 @@ export class KingdomScene {
     // Tree kinds (D79): the common tree, then banyan, bamboo, sugar palm and mango as the
     // preset allows; with wind on, every crown sways (harder on windy and stormy days).
     const leaves = this.gfx.wind ? this.sway.material : figureMaterial;
+    this.treeCap = this.gfx.treeCap ?? TREE_CAP;
     // Anachak Khmer: a lush anime forest (PK's reference image) — broadleaf trees and great banyans.
     const anachak = sim.variant === 'anachak' && sim.data.anachak.look === 'anime';
     const kinds = [
@@ -575,7 +588,7 @@ export class KingdomScene {
       mangoGeometry(),
     ];
     this.treeSets = kinds.slice(0, Math.max(1, Math.min(5, this.gfx.treeKinds))).map((g) => {
-      const m = new THREE.InstancedMesh(g, leaves, TREE_CAP);
+      const m = new THREE.InstancedMesh(g, leaves, this.treeCap);
       m.count = 0;
       m.castShadow = true;
       m.frustumCulled = false;
@@ -586,12 +599,25 @@ export class KingdomScene {
     for (const m of this.treeSets.slice(1)) this.scene.add(m);
     // PK 1.8.0: PK's own trees, loaded in the background (props on: not on lite or the phone).
     const treeCfg = sim.data.props.trees;
+    // D167: the tall kinds of PK's scatter join the forest (see scatterTreeKinds).
+    const SC0 = sim.data.props.scatter;
+    const scPlan = pcModels(this.gfx) && SC0 ? scatterPlan(sim.map, SC0.kinds, sim.map.seed, SC0.clearHall) : [];
+    const scKinds = SC0 && scPlan.length ? scatterTreeKinds(SC0.kinds, this.gfx) : [];
     if (this.gfx.props && treeCfg?.length && sim.data.props.treePlacement) {
-      this.models = new ModelTrees(treeCfg, this.gfx.wind ? this.sway.uniforms : null, TREE_CAP, true);
+      this.scatterTrees = scatterTreeSpots(scPlan, SC0?.kinds ?? [], scKinds);
+      const scIds = new Set(scKinds.map((k) => k.id));
+      this.models = new ModelTrees(
+        [...treeCfg, ...scKinds],
+        this.gfx.wind ? this.sway.uniforms : null,
+        (id) => (scIds.has(id) ? Math.min(this.treeCap, 2000) : this.treeCap),
+        true,
+      );
+      if (sim.data.props.treePlacement.lod)
+        this.models.lod = { eye: this.treeEye, range: lodRange() };
       this.scene.add(this.models.group);
       // D166: no real shadows (the phone): a soft shade painted under every tree instead.
       if (this.gfx.shade && !this.sun.castShadow) {
-        this.models.groundShade = new TreeShade(this.gfx.shade, TREE_CAP);
+        this.models.groundShade = new TreeShade(this.gfx.shade, this.treeCap);
         this.scene.add(this.models.groundShade.mesh);
       }
       void this.models.load(modelUrl).then(() => {
@@ -759,10 +785,12 @@ export class KingdomScene {
     if (pcModels(this.gfx) && SC) {
       // D165: the phone draws fewer, nearer (same places: the plan uses the full kinds).
       const P = scatterForPreset(SC.kinds, SC, this.gfx);
+      // D167: the tall kinds are drawn with the forest when it is PK's; the rest here, fading.
+      const asTree = new Set(this.models ? this.scatterTrees.map((t) => t.kind) : []);
       this.scatter = new ScatterView(
         P.kinds,
-        scatterPlan(sim.map, SC.kinds, sim.map.seed, SC.clearHall),
-        P.cfg,
+        scPlan.filter((p) => !asTree.has(p.kind)),
+        { ...P.cfg, fade: SC.fade },
         modelUrl,
       );
       this.scene.add(this.scatter.group);
@@ -1220,15 +1248,28 @@ export class KingdomScene {
   private treesAt: [number, number, number] = [NaN, NaN, NaN];
   /** Tiles from open water, per tile (D156: bank trees drawn smaller). */
   private wetDist: Uint8Array | null = null;
+  /** D167: buildings when the trees were last drawn (a new one clears the trees under it). */
+  private treesBuildings = -1;
   private syncTrees(force: boolean): void {
     const [cx, cz, dist] = this.view;
     const [ax, az, ad] = this.treesAt;
-    if (!force && Math.hypot(cx - ax, cz - az) < 12 && Math.abs(dist - ad) < 15) return;
+    const nb = this.sim.buildings.size;
+    if (!force && nb === this.treesBuildings && Math.hypot(cx - ax, cz - az) < TREE_STEP && Math.abs(dist - ad) < 15)
+      return;
     this.treesAt = [cx, cz, dist];
+    this.treesBuildings = nb;
     const s = this.sim;
     const size = s.fog.size;
     const T = s.map.tile;
-    const reach = dist * 1.9 + 20;
+    // D167: the forest reaches out to where the haze is whole (3D hero), or further round the
+    // RTS view, so no tree is seen to blink in or out at the edge of what is drawn.
+    const L = s.data.props.treePlacement?.lod;
+    const fog = this.scene.fog as THREE.Fog | null;
+    const reach = L
+      ? this.heroView && fog
+        ? Math.max(dist * 1.9 + 20, fog.far + L.fogMargin)
+        : (dist * 1.9 + 20) * 1.25
+      : dist * 1.9 + 20;
     // The RTS camera looks north-west over the land; the hero looks every way.
     const [north, south] = this.heroView ? [1, 1] : [1.2, 0.6];
     const x0 = Math.floor((cx - reach) / T + size / 2);
@@ -1244,7 +1285,12 @@ export class KingdomScene {
       const [x, z] = s.nodePos(n);
       list.push([Math.hypot(x - cx, z - cz), x, z, n.tx * 7 + n.tz * 13, n.tz * size + n.tx]);
     }
-    if (list.length > TREE_CAP) list.sort((a, b) => a[0] - b[0]).length = TREE_CAP;
+    // At most the preset's cap, nearest first; past the last one the cards fade out (D167).
+    let capDist = Infinity;
+    if (list.length > this.treeCap) {
+      list.sort((a, b) => a[0] - b[0]).length = this.treeCap;
+      capDist = list[list.length - 1]![0];
+    }
     // Which kind grows where: fixed per tree (from its tile), common trees most often.
     const weights = [42, 12, 10, 12, 24].slice(0, this.treeSets.length);
     const total = weights.reduce((a, b) => a + b, 0);
@@ -1300,11 +1346,31 @@ export class KingdomScene {
       for (const t of this.yardTrees)
         if (Math.abs(t.x - cx) < reach && Math.abs(t.z - cz) < reach && this.exploredAt(t.x, t.z))
           spots.push(t);
+      // D167: PK's tall scattered trees and rocks, every one in reach (clear of buildings).
+      if (this.scatterTrees.length) {
+        const blds = this.buildingClear();
+        const clear = s.data.props.scatter?.clearBuilding ?? 0;
+        for (const t of this.scatterTrees) {
+          if (Math.abs(t.x - cx) > reach || t.z < cz - reach * north || t.z > cz + reach * south) continue;
+          if (blds.some(([bx, bz, h]) => Math.abs(t.x - bx) < h + clear && Math.abs(t.z - bz) < h + clear)) continue;
+          t.y = this.groundY(t.x, t.z);
+          spots.push(t);
+        }
+      }
       // D166: the phone's own forest budgets (config/quality.json kingdom.forestTris).
       const FT = this.gfx.forestTris;
       const near = FT?.near ?? place.nearTris;
       const mid = FT?.mid ?? place.midTris;
-      models.draw(spots, cx, cz, this.heroView ? near.hero : near.rts, mid ? (this.heroView ? mid.hero : mid.rts) : 0);
+      const budget = this.heroView ? near.hero : near.rts;
+      if (L && models.lod) {
+        // D167: the model gives way to its cards by distance, softly; the cards fade out at the
+        // edge of what is drawn (where the haze is whole, or the last tree the cap allows).
+        const B = this.heroView ? L.hero : L.rts;
+        const margin = TREE_STEP + 2;
+        const edge = Math.min(this.heroView ? reach : Infinity, capDist);
+        const out = Number.isFinite(edge) ? Math.max(0, edge - margin - L.outBand) : 1e9;
+        models.drawFaded(spots, cx, cz, budget, { s: B.near, band: B.band, margin, out, outBand: L.outBand });
+      } else models.draw(spots, cx, cz, budget, mid ? (this.heroView ? mid.hero : mid.rts) : 0);
     }
     // Windy days: leaves fall from the nearest crowns (PK), not from the sky.
     const crowns: number[] = [];
@@ -2796,6 +2862,12 @@ export class KingdomScene {
     // Where the view meets the ground (or 40 m ahead when it looks level).
     // PK 2026-10-20 (D156): round the hero himself in the 3D mode (see scatterCentre).
     const [cx, cz] = scatterCentre(this.heroView, [this.view[0], this.view[1]], cam, this.ray);
+    this.scatter!.rts = !this.heroView;
+    this.scatter!.update(t, cx, cz, (x, z) => this.groundY(x, z), this.buildingClear());
+  }
+
+  /** Every building's ground (centre, half-size m) and the royal hall's open court, kept clear. */
+  private buildingClear(): Array<[number, number, number]> {
     const T = this.sim.map.tile;
     const blds: Array<[number, number, number]> = [];
     for (const b of this.sim.buildings.values()) {
@@ -2806,7 +2878,7 @@ export class KingdomScene {
       const F = this.sim.data.props.treePlacement?.village.hallFront;
       if (F && b.type === 'townCentre') blds.push([bx, bz + F.depth / 2, Math.max(F.halfWidth, F.depth / 2)]);
     }
-    this.scatter!.update(t, cx, cz, (x, z) => this.groundY(x, z), blds);
+    return blds;
   }
 
   /** Point the camera: target (x, z), distance along a fixed RTS angle (diagonal, AoE II-like: D67). */
@@ -2873,6 +2945,7 @@ export class KingdomScene {
 
   update(t: number, now: number, selected: Set<number>): void {
     this.applyShake(t);
+    this.treeEye.uLodEye.value.set(this.view[0], this.view[1]);
     if (this.scatter) this.updateScatter(t);
     let fresh = false;
     if (this.sim.fogVersion !== this.fogAt) {

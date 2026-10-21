@@ -1,4 +1,4 @@
-/* global process, console, Buffer, document */
+/* global process, console, Buffer, document, URL */
 // Bake PK's Meshy grass model into grass cards (PK 1.8.0): the model is drawn from 3 sides
 // (0°, 60°, 120°) with flat light onto a transparent atlas, twice — whole (with its plumes) and
 // cut below the plumes — so the game can plant thousands of crossed cards that look like the
@@ -32,9 +32,11 @@ const b = await chromium.launch({ args: ['--use-gl=swiftshader', '--enable-unsaf
 const page = await b.newPage({ viewport: { width: VIEW, height: VIEW } });
 page.on('pageerror', (e) => console.log('ERR', e.message));
 await page.goto(`http://localhost:${port}/_bake/blank.html`);
+// three.js from this checkout's node_modules (served by the dev server's /@fs).
+const THREE_ROOT = '/@fs' + new URL('../../node_modules/three', import.meta.url).pathname;
 const shots = await page.evaluate(
-  async ([VIEW, model, mode, top]) => {
-    const root = '/@fs' + '/home/claude/the-temples/node_modules/three';
+  async ([VIEW, model, mode, top, THREE_ROOT]) => {
+    const root = THREE_ROOT;
     const T = await import(`${root}/build/three.module.js`);
     const { GLTFLoader } = await import(`${root}/examples/jsm/loaders/GLTFLoader.js`);
     const r = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -86,7 +88,7 @@ const shots = await page.evaluate(
     // Frame size (a card is this wide and tall, the grass is H tall), for the game.
     return { out, frame: 2 * half, height: H };
   },
-  [VIEW, model, mode, top],
+  [VIEW, model, mode, top, THREE_ROOT],
 );
 await b.close();
 // Meshy's albedo is an olive yellow: turn the leaves toward the game's greens (hue +shift),
