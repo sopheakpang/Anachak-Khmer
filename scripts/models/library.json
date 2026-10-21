@@ -1032,7 +1032,8 @@
       "kind": "prop",
       "size": ["l", 3.5],
       "tris": 3000,
-      "status": "pk"
+      "status": "removed",
+      "note": "D168: removed (its scan broke when cut to a game budget)"
     },
     {
       "game": "prop.slateSlab",
@@ -1068,7 +1069,8 @@
       "kind": "plant",
       "size": ["l", 2.5],
       "tris": 1200,
-      "status": "pk"
+      "status": "pk",
+      "remade": "D168: made again in Blender (scripts/models/blender/make_plants.py), the scan broke when cut"
     },
     {
       "game": "plant.bush",
@@ -1095,7 +1097,8 @@
       "kind": "plant",
       "size": ["h", 14],
       "tris": 4500,
-      "status": "confident"
+      "status": "confident",
+      "remade": "D168: made again in Blender (scripts/models/blender/make_bigtree.py), the scan broke when cut"
     },
     {
       "game": "plant.riceTuft",
@@ -1140,7 +1143,8 @@
       "kind": "plant",
       "size": ["h", 1.4],
       "tris": 1200,
-      "status": "pk"
+      "status": "pk",
+      "remade": "D168: made again in Blender (scripts/models/blender/make_plants.py), the scan broke when cut"
     },
     {
       "game": "plant.denseShrub",
@@ -1149,7 +1153,8 @@
       "kind": "plant",
       "size": ["h", 1.6],
       "tris": 1200,
-      "status": "pk"
+      "status": "pk",
+      "remade": "D168: made again in Blender (scripts/models/blender/make_shrub.py), the scan broke when cut"
     },
     {
       "game": "plant.flowerBush",
@@ -1167,7 +1172,8 @@
       "kind": "plant",
       "size": ["h", 0.6],
       "tris": 1200,
-      "status": "pk"
+      "status": "pk",
+      "remade": "D168: made again in Blender (scripts/models/blender/make_plants.py), the scan broke when cut"
     },
     {
       "game": "plant.botanical",
@@ -1176,7 +1182,8 @@
       "kind": "plant",
       "size": ["h", 0.8],
       "tris": 1200,
-      "status": "pk"
+      "status": "removed",
+      "note": "D168: removed (its scan broke when cut to a game budget)"
     },
     {
       "game": "plant.redLily",
@@ -1185,7 +1192,8 @@
       "kind": "plant",
       "size": ["h", 0.6],
       "tris": 1200,
-      "status": "pk"
+      "status": "pk",
+      "remade": "D168: made again in Blender (scripts/models/blender/make_plants.py), the scan broke when cut"
     },
     {
       "game": "plant.sunflower",
@@ -1267,7 +1275,8 @@
       "size": ["h", 6],
       "tris": 4000,
       "rare": true,
-      "status": "pk"
+      "status": "removed",
+      "note": "D168: removed (its scan broke when cut to a game budget)"
     },
     {
       "game": "plant.purpleBush",
@@ -1276,7 +1285,8 @@
       "kind": "plant",
       "size": ["h", 2.5],
       "tris": 1200,
-      "status": "pk"
+      "status": "pk",
+      "remade": "D168: made again in Blender (scripts/models/blender/make_shrub.py), the scan broke when cut"
     },
     {
       "game": "plant.grassBloom",
@@ -1303,7 +1313,8 @@
       "kind": "plant",
       "size": ["h", 7],
       "tris": 3000,
-      "status": "pk"
+      "status": "removed",
+      "note": "D168: removed (its scan broke when cut to a game budget)"
     },
     {
       "game": "tree.bare",
@@ -1377,7 +1388,8 @@
       "kind": "plant",
       "size": ["h", 8],
       "tris": 1200,
-      "status": "pk"
+      "status": "pk",
+      "remade": "D168: made again in Blender (scripts/models/blender/make_bigtree.py), the scan broke when cut"
     },
     {
       "game": "tree.broadleafB",
@@ -1405,7 +1417,8 @@
       "size": ["h", 4],
       "tris": 3000,
       "rare": true,
-      "status": "pk"
+      "status": "removed",
+      "note": "D168: removed (its scan broke when cut to a game budget)"
     },
     {
       "game": "tree.palmA",

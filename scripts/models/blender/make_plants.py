@@ -131,6 +131,24 @@ elif KIND == 'red-lily':
             pa = 2 * math.pi * k / 7 + random.uniform(-0.2, 0.2)
             blade(top, random.uniform(0.07, 0.1), 0.018, random.uniform(0.07, 0.1), pa - math.pi / 2,
                   (0.75, 0.08, 0.06), (0.92, 0.2, 0.12), segs=3, droop=0.5)
+elif KIND == 'wildflowers':
+    # 0.6 m tall, 1 m across: grass tufts with small flower heads (white, yellow, blue, pink).
+    heads = [(0.95, 0.95, 0.9), (0.95, 0.8, 0.2), (0.35, 0.45, 0.9), (0.9, 0.5, 0.65)]
+    for t in range(11):
+        c = Vector((random.uniform(-0.4, 0.4), random.uniform(-0.4, 0.4), 0))
+        for i in range(12):
+            a = random.uniform(0, 2 * math.pi)
+            base = c + Vector((math.cos(a), math.sin(a), 0)) * random.uniform(0, 0.08)
+            blade(base, random.uniform(0.14, 0.3), random.uniform(0.012, 0.022), random.uniform(0.04, 0.12), a + math.pi / 2,
+                  GREEN, YGREEN, segs=2)
+        hc = random.choice(heads)
+        for i in range(random.randint(2, 4)):
+            a = random.uniform(0, 2 * math.pi)
+            top = c + Vector((math.cos(a), math.sin(a), 0)) * random.uniform(0, 0.1) + Vector((0, 0, random.uniform(0.2, 0.36)))
+            blade(Vector((top.x, top.y, 0)), top.z, 0.008, 0.02, a, GREEN, GREEN, segs=2)
+            for k in range(5):  # a little five-petalled flower facing up
+                pa = 2 * math.pi * k / 5
+                blade(top, 0.05, 0.035, 0.045, pa - math.pi / 2, hc, hc, segs=1, droop=0.6)
 else:
     raise SystemExit('unknown kind ' + KIND)
 

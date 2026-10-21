@@ -836,3 +836,14 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | How the shade looks on the phone (strength 0.55, `config/quality.json` mobile.kingdom.shade) | ⚠️ not judged | fog of war and the canopy hid the ground in the software-GL shots |
 | `gradlew assembleDebug` on PK's PC: BUILD SUCCESSFUL, `apk\KhmerKingdoms-1.9.2-debug.apk` 89.6 MB (1.9.1: 100.0 MB), new game bundle, phone-cut models inside | ✅ | Gradle 8.14.3, Java 21 |
 | Frame rate and taps on PK's phone | ⚠️ not yet | PK |
+
+## 1.9.0-35 / 1.9.0-36 trees fixed in place, broken models gone or remade (D167, D168) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 873 unit tests in 102 files, build) | ✅ | |
+| Fade rule: between the model and its cards every pixel drawn exactly once; the cards' far edge fades over its band; the budget can only bring the switch nearer; cards past the edge never handed out | ✅ | `treesFixed.test.ts` |
+| Every tall scatter tree on the Anachak map (over 5 000) is a forest tree spot, ids never clash with the forest's; the phone's stand-in palm brings its own cards | ✅ | `treesFixed.test.ts` |
+| Every scatter model rendered in Blender; 13 broken ones found: 5 removed, 8 made again in Blender (all under 6 000 triangles, painted or leaf atlas) | ✅ | contact sheet renders, `treesFixed.test.ts` D168 |
+| In the game (PC 1660 preset, Anachak Khmer, 3D hero, software GL): no shader or page errors; 27 tree models near, 715 picture trees out to 169 m (the haze edge), 640 of them PK's scattered trees (before: 1–2 of each kind); 668 547 triangles, 76 draw calls | ✅ | probe on `vite preview` |
+| Seen moving on PK's PC: no tree blinking in or out; frame rate on the GTX 1660 | ⚠️ not yet | PK |

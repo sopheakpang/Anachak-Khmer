@@ -598,7 +598,7 @@
     }
   },
   "scatter": {
-    "$comment": "PK 1.9.0 (D153): PK's plants, rocks, flowers and small life laid over the land in natural patterns on the PC presets (view/scatter.ts). per1k = clumps per 1000 tiles of the habitat; clump = how many in a clump; spread m; scale range; the nearest maxVisible of each kind are drawn within radius of the view. rare = one clump on the whole map (PK asked to use every model, the fantasy ones too: kept rare, deep in the forest). PK 2026-10-21 (D167, \"tree that disappeared and appeared, just make it fixed like reality\"): kinds with `tree` (the tall ones: palms, broadleafs, rain, mango and tropical trees, bamboo, dead trees, big rocks and cliffs) are drawn with the forest: every one in its place, the model near, its picture cards (`tree.cards`, baked by scripts/models/grassCards.mjs) far — no longer only the nearest one or two of each kind. The rest fade in and out by distance (`fade`: height × perMetre m, between min and max, × rts in the RTS view, or nearer when maxVisible runs out; a soft dither over band of it) instead of popping.",
+    "$comment": "PK 1.9.0 (D153): PK's plants, rocks, flowers and small life laid over the land in natural patterns on the PC presets (view/scatter.ts). per1k = clumps per 1000 tiles of the habitat; clump = how many in a clump; spread m; scale range; the nearest maxVisible of each kind are drawn within radius of the view. rare = one clump on the whole map (PK asked to use every model, the fantasy ones too: kept rare, deep in the forest). PK 2026-10-21 (D167, \"tree that disappeared and appeared, just make it fixed like reality\"): kinds with `tree` (the tall ones: palms, broadleafs, rain, mango and tropical trees, bamboo, dead trees, big rocks and cliffs) are drawn with the forest: every one in its place, the model near, its picture cards (`tree.cards`, baked by scripts/models/grassCards.mjs) far — no longer only the nearest one or two of each kind. The rest fade in and out by distance (`fade`: height × perMetre m, between min and max, × rts in the RTS view, or nearer when maxVisible runs out; a soft dither over band of it) instead of popping. PK 2026-10-21 (D168, \"incomplete shape and physical broken trees or objects from blending triangles\"): the scans that broke when cut to a game budget are gone (the wagon, the scale tree, the wisteria, the botanical plant, the dead tree) or made again in Blender (dense shrub, purple bush, reeds, lily pads, red lily, wildflowers: scripts/models/blender/make_shrub.py, make_plants.py; the banyan and broadleaf A: make_bigtree.py).",
     "radius": 120,
     "everySec": 0.6,
     "clearHall": 5,
@@ -615,19 +615,6 @@
         "scale": [0.7, 1.1],
         "sink": 0.02,
         "maxVisible": 24,
-        "rare": false
-      },
-      {
-        "id": "botanical",
-        "en": "Meadow herbs",
-        "file": "models/real/plants/botanical.glb",
-        "habitat": "forestEdge",
-        "per1k": 20,
-        "clump": [1, 3],
-        "spread": 1.5,
-        "scale": [0.8, 1.1],
-        "sink": 0.02,
-        "maxVisible": 1,
         "rare": false
       },
       {
@@ -881,8 +868,8 @@
         "rare": false,
         "tree": {
           "cards": "models/trees/sc-broadleaf-a-cards.webp",
-          "card": 1.02,
-          "height": 8.03
+          "card": 1.343,
+          "height": 8
         }
       },
       {
@@ -976,27 +963,8 @@
         "rare": false,
         "tree": {
           "cards": "models/trees/sc-banyan-cards.webp",
-          "card": 1.128,
+          "card": 1.449,
           "height": 14
-        }
-      },
-      {
-        "id": "deadTree",
-        "en": "Dead tree",
-        "file": "models/real/plants/dead-tree.glb",
-        "habitat": "forest",
-        "per1k": 6,
-        "clump": [1, 1],
-        "spread": 0,
-        "scale": [1.0, 1.5],
-        "sink": 0.02,
-        "maxVisible": 1,
-        "dry": 3,
-        "rare": false,
-        "tree": {
-          "cards": "models/trees/sc-dead-tree-cards.webp",
-          "card": 1.02,
-          "height": 7
         }
       },
       {
@@ -1330,19 +1298,6 @@
         "rare": false
       },
       {
-        "id": "wagon",
-        "en": "Old cart",
-        "file": "models/real/props/wagon.glb",
-        "habitat": "village",
-        "per1k": 2,
-        "clump": [1, 1],
-        "spread": 0,
-        "scale": [0.9, 1.1],
-        "sink": 0.02,
-        "maxVisible": 1,
-        "rare": false
-      },
-      {
         "id": "duck",
         "en": "Duck",
         "file": "models/real/birds/duck.glb",
@@ -1484,44 +1439,6 @@
         "sink": 0.02,
         "maxVisible": 1,
         "rare": true
-      },
-      {
-        "id": "wisteria",
-        "en": "Purple hanging tree (rare)",
-        "file": "models/real/plants/wisteria.glb",
-        "habitat": "forest",
-        "per1k": 1,
-        "clump": [1, 1],
-        "spread": 0,
-        "scale": [1.0, 1.3],
-        "sink": 0.02,
-        "maxVisible": 1,
-        "dry": 3,
-        "rare": true,
-        "tree": {
-          "cards": "models/trees/sc-wisteria-cards.webp",
-          "card": 1.02,
-          "height": 6
-        }
-      },
-      {
-        "id": "scaleTree",
-        "en": "Scale-leaf tree (rare)",
-        "file": "models/real/plants/scale-tree.glb",
-        "habitat": "forest",
-        "per1k": 1,
-        "clump": [1, 1],
-        "spread": 0,
-        "scale": [1.0, 1.3],
-        "sink": 0.02,
-        "maxVisible": 1,
-        "dry": 3,
-        "rare": true,
-        "tree": {
-          "cards": "models/trees/sc-scale-tree-cards.webp",
-          "card": 1.02,
-          "height": 4
-        }
       },
       {
         "id": "mangoTree",

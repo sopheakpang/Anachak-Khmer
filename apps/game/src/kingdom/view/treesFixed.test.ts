@@ -175,3 +175,33 @@ describe('the small plants fade in', () => {
     expect(fadeAt(30, 24, 24, 2, 5, 0.2)).toBe(0);
   });
 });
+
+describe('PK 2026-10-21 (D168): no broken models in the scatter', () => {
+  it('the scans that broke when cut are gone; their remade Blender copies are whole and light', async () => {
+    const fs = (await import(/* @vite-ignore */ 'node:fs' as string)) as {
+      existsSync(p: string): boolean;
+      readFileSync(p: string): Uint8Array;
+    };
+    const pub = (f: string) => new URL(`../../../public-mobile/${f}`, import.meta.url).pathname;
+    for (const id of ['wagon', 'scaleTree', 'wisteria', 'botanical', 'deadTree'])
+      expect(SC.kinds.some((k) => k.id === id), id).toBe(false);
+    for (const f of ['plants/botanical', 'plants/dead-tree', 'props/wagon', 'plants/wisteria', 'plants/scale-tree'])
+      expect(fs.existsSync(pub(`models/real/${f}.glb`)), f).toBe(false);
+    // Every kind left has its model; the remade ones stay under 6 000 triangles.
+    for (const k of SC.kinds) expect(fs.existsSync(pub(k.file)), k.id).toBe(true);
+    for (const id of ['denseShrub', 'purpleBush', 'reeds', 'lilyPads', 'redLily', 'wildflowers', 'banyan', 'broadleafA']) {
+      const k = SC.kinds.find((x) => x.id === id)!;
+      const b = fs.readFileSync(pub(k.file));
+      const len = new DataView(b.buffer, b.byteOffset).getUint32(12, true);
+      const j = JSON.parse(new TextDecoder().decode(b.subarray(20, 20 + len))) as {
+        meshes: Array<{ primitives: Array<{ indices: number; attributes: Record<string, number> }> }>;
+        accessors: Array<{ count: number }>;
+        textures?: unknown[];
+      };
+      const p = j.meshes[0]!.primitives[0]!;
+      expect(j.accessors[p.indices]!.count / 3, id).toBeLessThan(6000);
+      // Painted (vertex colours) or the tree maker's leaf atlas: never a smeared scan texture.
+      expect(p.attributes.COLOR_0 !== undefined || (j.textures?.length ?? 0) > 0, id).toBe(true);
+    }
+  });
+});

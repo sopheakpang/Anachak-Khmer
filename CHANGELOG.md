@@ -40,6 +40,8 @@ Every update, newest first. Each change has a code (`<version>-<number>`) so it 
 | 1.9.0-32 | **Phone: taps answer the first time** (D166): a quick tap while the phone is busy is no longer taken for a press-and-hold, so you do not have to tap twice. |
 | 1.9.0-33 | **Phone: a lighter forest** (D165, D166): plants and rocks are simpler on the phone and fewer are drawn far from the view; the fan palm is a lighter palm there; fewer detailed forest trees at once (the rest stay pictures); a soft shade lies under every tree. All the people and animals stay. About 40 % less for the phone to draw. |
 | 1.9.0-34 | **Android APK 1.9.2** (versionCode 12): everything up to 1.9.0-33. |
+| 1.9.0-35 | **Trees stay in their place** (PK; D167): the palms, rain, mango and tropical trees, big rocks and cliffs are always there (before, only the nearest one or two of each kind showed and they blinked in and out as you walked); the forest reaches out into the haze; a near tree turns into its far picture with a soft fade instead of a jump; small plants and stones fade in instead of popping up. |
+| 1.9.0-36 | **Broken models gone or remade** (PK; D168): the wagon, the scale tree, the wisteria, the dead tree and a shredded plant are gone; the dense shrub, the purple bush, the reeds, the lily pads, the red lily, the wildflowers, the banyan and a broadleaf tree are new, made in Blender, whole. |
 
 ## 1.8.0 — 2026-10-09
 
