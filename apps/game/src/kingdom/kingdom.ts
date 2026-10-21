@@ -26,6 +26,7 @@ import { templeShortfall } from './sim/decree';
 import { currentCeremony } from './sim/ceremony';
 import { KingdomHud, RES_LABEL, gfxPanelHtml, km, monumentProgressHtml, type Button } from './view/hud';
 import { PRESET_KEY } from '../engine/app';
+import { storeFps } from '../pacing';
 import type { FrameStats } from '../meter';
 import { AncientMap, mapViewOf } from './view/ancientMap';
 import './view/ancientMap.css';
@@ -1043,7 +1044,15 @@ export class Kingdom {
       if (this.gfxOpen) this.keysOpen = false;
       return;
     }
-    if (kind === 'gfx-set') {
+    if (kind === 'gfx-fps') {
+      // 30 FPS (the stream, D16) or 60 on a strong PC: at once, and kept for next time.
+      const f = id === '60' ? 60 : 30;
+      storeFps(f);
+      const T = (window as { __temples?: { fps?: number } }).__temples;
+      if (T) T.fps = f;
+      return;
+    }
+        if (kind === 'gfx-set') {
       // Another preset (D149): save the game, keep the choice, and start again with it.
       this.save('quick');
       try {

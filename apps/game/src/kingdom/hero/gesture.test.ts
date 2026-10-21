@@ -109,9 +109,12 @@ describe('the spearman’s energy-beam gesture (D170)', () => {
     // …the clip has the hips: forward at the thrust.
     const hips = m.rig!.root.getObjectByName('mixamorigHips')!;
     expect(hips.position.z).toBeGreaterThan(30);
+    // Both palms push: the spear is put away while the gesture holds him (PK "ok all").
+    expect(m.weaponShowing).toBe(false);
     // Standing still after the skill: it finishes and lets go.
     for (let st = 0; st < 2; st += 0.05) pose('idle', st, (t += 0.05));
     expect(m.rig!.gestureNow()).toBeNull();
+    expect(m.weaponShowing).toBe(true);
     // A new Lunge, cut short by running off: it lets go at once.
     for (let st = 0; st < SKILL_SEC.end; st += 0.05) pose('skill', st, (t += 0.05));
     expect(m.rig!.gestureNow()).not.toBeNull();

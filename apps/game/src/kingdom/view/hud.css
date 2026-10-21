@@ -1489,6 +1489,7 @@
 .k-gfx-fps.k-slow b {
   color: #ff8a6a;
 }
+.k-gfx-rate,
 .k-gfx-list {
   display: grid;
   grid-template-columns: 1fr 1fr;

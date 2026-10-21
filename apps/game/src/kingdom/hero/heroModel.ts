@@ -757,8 +757,17 @@ export class HeroModel {
 
   /** Show or hide the weapon in hand (the character sheet shows the costume alone). */
   showWeapon(on: boolean): void {
+    this.weaponShown = on;
     this.weapon.visible = on;
   }
+
+  /** Is the weapon showing in his hand now? */
+  get weaponShowing(): boolean {
+    return this.weapon.visible;
+  }
+
+  /** The weapon is wanted in hand (not hidden for the character sheet). */
+  private weaponShown = true;
 
   /**
    * Pose for this frame. `s` is the hero's state, `p` its time in that state (s), `combo` the
@@ -775,6 +784,10 @@ export class HeroModel {
       skill: h.skillId,
       stateT: h.stateT,
     });
+    // D170 (PK "ok all"): both palms push the beam out, so the spear is put away while the
+    // gesture holds the body, and is back in his hand as he recovers.
+    const g = this.rig?.gestureNow();
+    this.weapon.visible = this.weaponShown && !(g && g.weight > 0.5);
   }
 
   /**

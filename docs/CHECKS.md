@@ -867,3 +867,12 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | The clip is in `spearman.glb` with its Idle, Walking, Running and Combat_Stance clips; hips sink 0.25 m at 15, lunge 0.42 m forward at 20, home at 80 | ✅ | `gesture.test.ts` (reads the file) |
 | In play: the Lunge starts it, its thrust lands with the skill (the beam), the gait and the game's pose give way, it ends by itself or at once when he runs off | ✅ | `gesture.test.ts` (rig), `energyBeam.test.ts` (beam 1.15 m ahead) |
 | Seen in play on PK's PC | ⚠️ not yet | PK |
+
+## 1.9.0-39 60 FPS switch, spear put away in the gesture (D171) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 886 unit tests in 104 files, build) | ✅ | |
+| 30 / 60 switch: URL wins, then the player's choice, then 30; at 60 a 60 Hz display renders every frame; the panel lights the rate chosen and reads red under it | ✅ | `pacing.test.ts`, `gfxPanel.test.ts` |
+| The spear is hidden while the gesture holds him and back after | ✅ | `gesture.test.ts` |
+| 60 FPS held on PK's GTX 1660 Super (PC 1660) | ⚠️ not yet | PK reads it in 🖥 |
