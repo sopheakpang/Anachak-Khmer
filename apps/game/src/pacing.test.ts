@@ -33,7 +33,24 @@ describe('frame pacing', () => {
 
   it('reads the target from the URL', () => {
     expect(targetFps('?fps=60')).toBe(60);
-    expect(targetFps('?fps=144')).toBe(30);
-    expect(targetFps('')).toBe(30);
+    expect(targetFps('?fps=144', null)).toBe(30);
+    expect(targetFps('', null)).toBe(30);
+  });
+
+  it('the player’s 60 FPS choice in 🖥 Graphics holds unless the URL says (PK “ok all”); the stream stays 30', () => {
+    expect(targetFps('', 60)).toBe(60);
+    expect(targetFps('', 30)).toBe(30);
+    expect(targetFps('?fps=30', 60)).toBe(30);
+    expect(targetFps('?fps=60', 30)).toBe(60);
+    expect(targetFps('?fps=144', 60)).toBe(60);
+    // At 60 every other 60 Hz frame is no longer skipped.
+    let last = 0;
+    let n = 0;
+    for (let t = 16.7; t < 1000; t += 1000 / 60) {
+      const r = paceFrame(t, last, 60);
+      if (r.render) n++;
+      last = r.last;
+    }
+    expect(n).toBeGreaterThanOrEqual(58);
   });
 });

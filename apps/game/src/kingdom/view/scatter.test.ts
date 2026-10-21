@@ -42,9 +42,12 @@ describe('scatter config', () => {
     if (trisOf(SC.kinds[0]!.file) === null) return; // a checkout without the PC models
     let worst = 0;
     for (const k of SC.kinds) {
+      // D167: the tall kinds are drawn with the forest (its model budget and picture cards).
+      if (k.tree) continue;
       const t = trisOf(k.file)!;
-      // No kind alone takes more than its share (a heavy scan shows fewer copies).
-      expect(t * k.maxVisible, k.id).toBeLessThanOrEqual(Math.max(t, k.rare ? 6000 : 10_000));
+      // No kind alone takes more than its share (a heavy scan shows fewer copies; D167: the
+      // small plants show more of them, fading in by distance instead of the nearest few).
+      expect(t * k.maxVisible, k.id).toBeLessThanOrEqual(Math.max(t, k.rare ? 6000 : 50_000));
       worst += t * k.maxVisible;
     }
     expect(worst).toBeLessThan(550_000);
@@ -162,5 +165,48 @@ describe('PK 2026-10-20 (D156): trees keep out of the water; the hero sees the t
     const big = SC.kinds.find((k) => k.id === 'bigTropicalTree')!;
     expect(big.file).toBe('models/real/plants/big-tropical-tree.glb');
     expect(big.dry).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe('PK 2026-10-20 (D165): the phone draws less scenery, in the same places', () => {
+  it('a nearer ring and half of each kind, at least one; the PC keeps it all', async () => {
+    const { scatterForPreset } = await import('./scatter');
+    const q = (await import('../../../../../config/quality.json')).default as unknown as Record<
+      string,
+      { kingdom: { scatterRadius?: number; scatterShare?: number } }
+    >;
+    const phone = scatterForPreset(SC.kinds, SC, q.mobile!.kingdom);
+    expect(phone.cfg.radius).toBeLessThan(SC.radius);
+    expect(phone.kinds.length).toBe(SC.kinds.length);
+    SC.kinds.forEach((k, i) => {
+      expect(phone.kinds[i]!.id).toBe(k.id);
+      expect(phone.kinds[i]!.maxVisible).toBeGreaterThanOrEqual(1);
+      expect(phone.kinds[i]!.maxVisible).toBeLessThanOrEqual(k.maxVisible);
+    });
+    const sum = (ks: readonly { maxVisible: number }[]) => ks.reduce((a, k) => a + k.maxVisible, 0);
+    expect(sum(phone.kinds)).toBeLessThan(sum(SC.kinds) * 0.75);
+    const pc = scatterForPreset(SC.kinds, SC, q.pc1660!.kingdom);
+    expect(pc.cfg).toBe(SC);
+    expect(pc.kinds).toEqual(SC.kinds);
+  });
+});
+
+describe('PK 2026-10-20 (D166): the phone draws the fan palm with a lighter palm', () => {
+  it('a swapped kind keeps its place and size; only the model changes', async () => {
+    const { scatterForPreset } = await import('./scatter');
+    const q = (await import('../../../../../config/quality.json')).default as unknown as Record<
+      string,
+      { kingdom: { scatterSwap?: Record<string, { file: string; scale: number }> } }
+    >;
+    const sw = q.mobile!.kingdom.scatterSwap!;
+    const phone = scatterForPreset(SC.kinds, SC, q.mobile!.kingdom);
+    for (const [id, to] of Object.entries(sw)) {
+      const k = phone.kinds.find((x) => x.id === id)!;
+      expect(k.file).toBe(to.file);
+      expect(k.drawScale).toBe(to.scale);
+      // The model it swaps in is one of PK's scattered models.
+      expect(SC.kinds.some((x) => x.file === to.file)).toBe(true);
+    }
+    expect(phone.kinds.filter((k) => !(k.id in sw)).every((k) => k.drawScale === undefined)).toBe(true);
   });
 });

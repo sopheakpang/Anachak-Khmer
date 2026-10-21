@@ -810,7 +810,8 @@ export const GFX_PRESETS: ReadonlyArray<{ id: string; km: string; en: string }> 
 ];
 
 /**
- * The 🖥 graphics panel (PK's plan, Sprint G, D149): the frame rate now and a preset switch.
+ * The 🖥 graphics panel (PK's plan, Sprint G, D149): the frame rate now, the 30 / 60 FPS switch
+ * (PK 2026-10-21; at once, no reload) and a preset switch.
  * Picking a preset saves the game and reloads with it (the renderer is built for one preset).
  */
 export function gfxPanelHtml(
@@ -826,6 +827,14 @@ export function gfxPanelHtml(
   return (
     `<h3><span>🖥 ក្រាហ្វិក · Graphics</span><button data-act="gfx-close" data-ui>✕</button></h3>` +
     `<div class="k-gfx-fps${ok ? ' k-ok' : ' k-slow'}"><b>${s.fps.toFixed(0)} FPS</b> · ${s.frameMs.toFixed(1)} ms · ${km(Math.round(s.triangles / 1000))}k triangles · ${s.drawCalls} draws</div>` +
+    `<div class="k-gfx-rate">` +
+    ([30, 60] as const)
+      .map(
+        (f) =>
+          `<button class="k-gfx-p${f === target ? ' k-on' : ''}" data-act="gfx-fps:${f}" data-ui><b>${f} FPS</b><small>${esc(f === 30 ? 'ផ្សាយ LIVE · the stream (steady)' : 'លេងលើ PC · smoother on a strong PC')}</small></button>`,
+      )
+      .join('') +
+    `</div>` +
     `<div class="k-gfx-list">${rows}</div>` +
     `<div class="k-gfx-hint">ពេលផ្សាយ LIVE បើ FPS ≥ ${target} នៅ PC 1660 សូមប្រើវា · While LIVE: if PC 1660 holds ${target} FPS or more, keep it. The game is saved before it reloads.</div>`
   );

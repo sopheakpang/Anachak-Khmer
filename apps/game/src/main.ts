@@ -204,7 +204,8 @@ async function start(): Promise<void> {
   let prev = performance.now();
   const errors = new Map<string, number>();
   app.renderer.setAnimationLoop((now) => {
-    const pace = paceFrame(now, last, fps);
+    // The 🖥 panel can switch 30 / 60 while the game runs (window.__temples.fps).
+    const pace = paceFrame(now, last, window.__temples.fps ?? fps);
     if (!pace.render) return;
     last = pace.last;
     // A bug in one frame must never freeze the stream: log it (once per minute) and keep going.

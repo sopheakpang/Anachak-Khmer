@@ -7,6 +7,9 @@ import type { Anachak, HeroKit, HeroSkill } from '@temples/shared';
  * only "can I stand here?".
  */
 
+/** A skill lands this long into its state, which lasts `end` s (the rig times gestures to it). */
+export const SKILL_SEC = { strike: 0.3, end: 0.9 } as const;
+
 export type HeroState = 'idle' | 'run' | 'jump' | 'attack' | 'skill' | 'dash' | 'work' | 'hurt';
 
 export interface HeroInput {
@@ -255,11 +258,11 @@ export class HeroCore {
         }
       }
     } else if (this.state === 'skill') {
-      if (!this.struck && this.stateT >= 0.3) {
+      if (!this.struck && this.stateT >= SKILL_SEC.strike) {
         this.struck = true;
         out.push({ kind: 'skill', slot: this.skillSlot });
       }
-      if (this.stateT >= 0.9) this.enter('idle');
+      if (this.stateT >= SKILL_SEC.end) this.enter('idle');
     } else if (this.state === 'work') {
       if (!this.struck && this.stateT >= 0.35) {
         this.struck = true;

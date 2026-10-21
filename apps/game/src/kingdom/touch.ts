@@ -34,6 +34,16 @@ export const TOUCH = {
   doubleSlop: 70,
 };
 
+/**
+ * PK 2026-10-20 (D166, "touching to click it late or lag response, sometimes double touch"):
+ * the time a touch event happened — its own timeStamp, not the moment a busy phone got round to
+ * it. A slow frame used to turn a quick tap into a "hold" (no tap) when the events were handled
+ * half a second late. Falls back to `now` for a missing or impossible stamp.
+ */
+export function touchTime(stamp: number | undefined, now: number): number {
+  return stamp && stamp > 0 && stamp <= now ? stamp : now;
+}
+
 type Mode = 'idle' | 'pending' | 'pan' | 'hold' | 'box' | 'pinch' | 'done';
 
 export class TouchGestures {
@@ -114,8 +124,14 @@ export class TouchGestures {
       return;
     }
     if (this.pts.size) return;
-    const mode = this.mode;
+    let mode = this.mode;
     this.mode = 'idle';
+    // D166: a finger lifted before TOUCH.holdMs is a tap, even if a slow frame already
+    // called it a hold (the hint shown for that frame is taken away).
+    if (mode === 'hold' && t - this.start.t < TOUCH.holdMs) {
+      this.on.holdEnd();
+      mode = 'pending';
+    }
     if (mode === 'pending') {
       const double =
         t - this.lastTap.t < TOUCH.doubleMs &&

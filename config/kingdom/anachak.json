@@ -241,7 +241,9 @@
       "pillars": 10,
       "petals": 36,
       "orbit": 6,
-      "maxLive": 220
+      "maxLive": 220,
+      "beamModel": "models/real/vfx/spear-beam.glb",
+      "beamAhead": 1.15
     },
     "auto": {
       "$comment": "PK decision k6 (D148): the 🤖 button lets the hero play by himself — fight a raider or a dangerous beast within fightRange m, else work what is at hand, else walk to the nearest work within searchRadius m; he rethinks every thinkSec s. Any move key, action key or click takes control back.",
@@ -318,7 +320,7 @@
             "yantra": "spiral",
             "color": "#9fd8ff",
             "sound": "spear",
-            "vfx": ["trail", "spirit"]
+            "vfx": ["energyBeam", "spirit"]
           },
           {
             "id": "javelins",
@@ -850,7 +852,19 @@
       },
       "spear": {
         "file": "models/real/people/spearman.glb",
-        "hips": 0.92
+        "hips": 0.92,
+        "gestures": {
+          "lunge": {
+            "$comment": "PK 2026-10-21 (D170): ពលលំពែង's energy-beam gesture, keyed in Blender (scripts/models/blender/make_spear_beam_anim.py) at 30 fps: charge 0–15, thrust 20 (the beam leaves), hold to 60, recovery to 80. In play the thrust lands with the skill (0.3 s in), the hold lasts sustainSec (as long as the beam), the recovery recoverSec.",
+            "clip": "Spear_EnergyBeam",
+            "fps": 30,
+            "fire": 20,
+            "hold": 60,
+            "end": 80,
+            "sustainSec": 0.9,
+            "recoverSec": 0.45
+          }
+        }
       },
       "sword": {
         "file": "models/real/people/swordsman.glb",

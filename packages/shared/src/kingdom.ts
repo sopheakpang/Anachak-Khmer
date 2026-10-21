@@ -779,7 +779,8 @@ export const GUARDIANS = ['naga', 'garuda', 'tiger', 'gaja', 'singha', 'hongsa']
  * the hero's guardian rushing out (or rising over him); pillars = columns of script rising
  * round him; shock = rings of force on the ground; dome = a bell of light over him; petals =
  * lotus petals falling; orbit = spectral weapons wheeling round him; trail = a streak of light
- * along a dash or a shot.
+ * along a dash or a shot; energyBeam = PK's Blender energy beam (D169: a glowing core, the beam,
+ * twisting flames round it, rings at its far end and streaking sparks) fired from the weapon.
  */
 export const SKILL_VFX = [
   'wave',
@@ -791,6 +792,7 @@ export const SKILL_VFX = [
   'petals',
   'orbit',
   'trail',
+  'energyBeam',
 ] as const;
 
 export const HeroSkillSchema = z.object({
@@ -1056,6 +1058,10 @@ export const AnachakSchema = z.object({
       petals: z.number().int().positive(),
       orbit: z.number().int().positive(),
       maxLive: z.number().int().positive(),
+      /** D169: the energy beam's meshes made in Blender (scripts/models/blender/make_energy_beam.py). */
+      beamModel: z.string().optional(),
+      /** D170: how far ahead of him (m) the beam's core appears — just past his palms at the thrust. */
+      beamAhead: z.number().positive().optional(),
     }),
     /** The 🤖 auto mode (PK k6). */
     auto: z.object({
@@ -1106,6 +1112,27 @@ export const AnachakSchema = z.object({
             hips: z.number().positive(),
             /** PK 1.9.0: the phone build's own file (it has no models/heroes/). */
             phone: z.string().min(1).optional(),
+            /**
+             * PK 2026-10-21 (D170): whole-body gestures keyed in Blender, by skill id: the clip
+             * in the model's file, its fps and beat frames (thrust at `fire`, held to `hold`,
+             * recovered by `end`), and how long the hold and the recovery last in play.
+             */
+            gestures: z
+              .record(
+                z.string(),
+                z
+                  .object({
+                    clip: z.string().min(1),
+                    fps: z.number().positive(),
+                    fire: z.number().positive(),
+                    hold: z.number().positive(),
+                    end: z.number().positive(),
+                    sustainSec: z.number().positive(),
+                    recoverSec: z.number().positive(),
+                  })
+                  .refine((g) => g.fire < g.hold && g.hold < g.end, 'fire < hold < end'),
+              )
+              .optional(),
           }),
         ]),
       )
@@ -1246,6 +1273,16 @@ export const ScatterKindSchema = z.object({
   rare: z.boolean().default(false),
   /** D156: keep at least this many tiles from open water (big trees never lean over the river). */
   dry: z.number().int().min(0).max(4).optional(),
+  /**
+   * D167: a tall kind drawn with the forest (view/treeModels.ts): its model near, its picture
+   * cards (`cards`, baked by scripts/models/grassCards.mjs; `card` = the picture's size for a
+   * tree 1 tall) far, every one of them kept in its place — never only "the nearest few".
+   */
+  tree: z
+    .object({ cards: z.string().min(1), card: z.number().positive(), height: z.number().positive() })
+    .optional(),
+  /** D167: drawn this near the view at most (m); otherwise from its height (scatter.fade). */
+  drawDist: z.number().positive().optional(),
 });
 export type ScatterKind = z.infer<typeof ScatterKindSchema>;
 
@@ -1320,6 +1357,20 @@ export const PropsSchema = z.object({
       /** Clear ground round the royal hall (tiles) and round every building (m). */
       clearHall: z.number().nonnegative(),
       clearBuilding: z.number().nonnegative(),
+      /**
+       * D167: the small plants and rocks fade in and out by distance instead of popping: each
+       * kind is drawn within its height × `perMetre` m (between `min` and `max`; RTS × `rts`),
+       * or nearer if its `maxVisible` runs out first, fading over `band` of that distance.
+       */
+      fade: z
+        .object({
+          perMetre: z.number().positive(),
+          min: z.number().positive(),
+          max: z.number().positive(),
+          rts: z.number().positive(),
+          band: z.number().min(0).max(0.5),
+        })
+        .optional(),
       kinds: z.array(ScatterKindSchema),
     })
     .optional(),
@@ -1428,6 +1479,19 @@ export const PropsSchema = z.object({
           $comment: z.string().optional(),
           rts: z.number().int().min(0),
           hero: z.number().int().min(0),
+        })
+        .optional(),
+      /**
+       * D167: the switch from the model to its cards by distance (m from the view's centre,
+       * crossing over `band` m; the `nearTris` budget can only bring it nearer), and the forest
+       * drawn out to the haze (`fogMargin` m past where the haze is whole) with no hard edge.
+       */
+      lod: z
+        .object({
+          rts: z.object({ near: z.number().positive(), band: z.number().min(0) }),
+          hero: z.object({ near: z.number().positive(), band: z.number().min(0) }),
+          outBand: z.number().min(0),
+          fogMargin: z.number(),
         })
         .optional(),
     })

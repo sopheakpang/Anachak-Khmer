@@ -26,13 +26,14 @@ import { templeShortfall } from './sim/decree';
 import { currentCeremony } from './sim/ceremony';
 import { KingdomHud, RES_LABEL, gfxPanelHtml, km, monumentProgressHtml, type Button } from './view/hud';
 import { PRESET_KEY } from '../engine/app';
+import { storeFps } from '../pacing';
 import type { FrameStats } from '../meter';
 import { AncientMap, mapViewOf } from './view/ancientMap';
 import './view/ancientMap.css';
 import { KingdomSound, panFor, sfxForEvent } from './view/sound';
 import { MoodTracker, anyNear } from './view/music';
 import { CAM_YAW } from './view/scene';
-import { TouchGestures } from './touch';
+import { TouchGestures, touchTime } from './touch';
 import creditsJson from '../../../../config/credits.json';
 
 /** Who made the game (config/credits.json; PK: credit the developer). */
@@ -745,13 +746,13 @@ export class Kingdom {
     window.addEventListener('pointerup', (e) => {
       if (!touchOf(e)) return;
       const p = this.toStage(e);
-      this.touch.up(e.pointerId, p.x, p.y, performance.now());
+      this.touch.up(e.pointerId, p.x, p.y, touchTime(e.timeStamp, performance.now()));
     });
     st.addEventListener('pointermove', (e) => {
       if (!this.active) return;
       if (e.pointerType === 'touch') {
         const p = this.toStage(e);
-        this.touch.move(e.pointerId, p.x, p.y, performance.now());
+        this.touch.move(e.pointerId, p.x, p.y, touchTime(e.timeStamp, performance.now()));
         return;
       }
       const p = this.toStage(e);
@@ -767,7 +768,7 @@ export class Kingdom {
       this.sound.unlock();
       if (e.pointerType === 'touch') {
         const p = this.toStage(e);
-        this.touch.down(e.pointerId, p.x, p.y, performance.now());
+        this.touch.down(e.pointerId, p.x, p.y, touchTime(e.timeStamp, performance.now()));
         return;
       }
       const p = this.toStage(e);
@@ -1043,7 +1044,15 @@ export class Kingdom {
       if (this.gfxOpen) this.keysOpen = false;
       return;
     }
-    if (kind === 'gfx-set') {
+    if (kind === 'gfx-fps') {
+      // 30 FPS (the stream, D16) or 60 on a strong PC: at once, and kept for next time.
+      const f = id === '60' ? 60 : 30;
+      storeFps(f);
+      const T = (window as { __temples?: { fps?: number } }).__temples;
+      if (T) T.fps = f;
+      return;
+    }
+        if (kind === 'gfx-set') {
       // Another preset (D149): save the game, keep the choice, and start again with it.
       this.save('quick');
       try {

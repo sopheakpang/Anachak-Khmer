@@ -823,3 +823,58 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | The files carry vertex colours and no texture; the game material keeps vertex colours, textured models unchanged | ✅ | `props.test.ts` D164 |
 | Seen in the game on the PC | ⚠️ not yet | PK |
 
+
+## 1.9.0-32 / 1.9.0-33 / 1.9.0-34 lighter phone, taps, Android 1.9.2 (D165, D166) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 859 unit tests in 101 files, build) | ✅ | |
+| A quick tap during a slow frame is a tap (not a hold); a late-handled jiggle is not a hold; a real hold still is | ✅ | `touch.test.ts` D166 |
+| Phone build: still models over 3 000 triangles simplified (9.4 MB smaller), old stump whole; Blender trees look the same, the fan palm fell apart (so it is swapped on the phone) | ✅ | Cycles/EEVEE renders PC vs phone copy |
+| Phone build, Anachak Khmer, software GL: RTS 570 388 → 344 739 triangles (draw calls 72 → 70); 3D hero 800 936 → 459 067 (91 → 81); heap 117 → 111 MB; no page errors | ✅ | probe on `vite preview` of dist-mobile vs the 1.9.1 settings |
+| Painted shade under every forest tree drawn (179 in the 3D hero view, one draw call) and the bigger plants | ✅ placed | magenta debug render |
+| How the shade looks on the phone (strength 0.55, `config/quality.json` mobile.kingdom.shade) | ⚠️ not judged | fog of war and the canopy hid the ground in the software-GL shots |
+| `gradlew assembleDebug` on PK's PC: BUILD SUCCESSFUL, `apk\KhmerKingdoms-1.9.2-debug.apk` 89.6 MB (1.9.1: 100.0 MB), new game bundle, phone-cut models inside | ✅ | Gradle 8.14.3, Java 21 |
+| Frame rate and taps on PK's phone | ⚠️ not yet | PK |
+
+## 1.9.0-35 / 1.9.0-36 trees fixed in place, broken models gone or remade (D167, D168) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 873 unit tests in 102 files, build) | ✅ | |
+| Fade rule: between the model and its cards every pixel drawn exactly once; the cards' far edge fades over its band; the budget can only bring the switch nearer; cards past the edge never handed out | ✅ | `treesFixed.test.ts` |
+| Every tall scatter tree on the Anachak map (over 5 000) is a forest tree spot, ids never clash with the forest's; the phone's stand-in palm brings its own cards | ✅ | `treesFixed.test.ts` |
+| Every scatter model rendered in Blender; 13 broken ones found: 5 removed, 8 made again in Blender (all under 6 000 triangles, painted or leaf atlas) | ✅ | contact sheet renders, `treesFixed.test.ts` D168 |
+| In the game (PC 1660 preset, Anachak Khmer, 3D hero, software GL): no shader or page errors; 27 tree models near, 715 picture trees out to 169 m (the haze edge), 640 of them PK's scattered trees (before: 1–2 of each kind); 668 547 triangles, 76 draw calls | ✅ | probe on `vite preview` |
+| Seen moving on PK's PC: no tree blinking in or out; frame rate on the GTX 1660 | ⚠️ not yet | PK |
+
+## 1.9.0-37 spearman's energy beam (D169) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 880 unit tests in 103 files, build) | ✅ | |
+| Blender script builds the 5 layers (core, beam, flames, impact wave, particles) with drivers on `BeamFX_Controls`, its own scene, in Blender 4.2 (here) and 5.2.2 (PK's PC, through the MCP); glow = compositor Glare (Bloom) | ✅ | `make_energy_beam.py`, EEVEE preview on PK's PC, Cycles here |
+| The Lunge plans the beam from the spear's point where the thrust ends, along his heading, ≥ 6 m, sparks at its end; it shoots out, holds, fades; SkillFx plays and frees it; the Blender meshes load from `spear-beam.glb` by name | ✅ | `energyBeam.test.ts` |
+| In the game: the beam plays with no shader or page errors (Lite preset, 3D hero); the effect alone with the game's bloom reads as the Blender design | ✅ | probe + standalone render |
+| Seen in play on PK's PC (the court round the hero can hide it from the chase camera) | ⚠️ not yet | PK |
+
+## 1.9.0-38 spearman's energy-beam gesture (D170) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 885 unit tests in 104 files, build) | ✅ | |
+| Blender script adds IK hands / feet, eye lock and root to the Mixamo skeleton, keys the 4 poses (Bezier, linear 15→20, Noise 21–60 on the hands' forward), bakes `Spear_EnergyBeam` (81 frames, 30 fps) and exports it alone — Blender 4.2 here and 5.2.2 on PK's PC give the same clip | ✅ | `make_spear_beam_anim.py`, Workbench sheets here, EEVEE previews on PK's PC (`game-ready/gesture/preview-f*.png`) |
+| The clip is in `spearman.glb` with its Idle, Walking, Running and Combat_Stance clips; hips sink 0.25 m at 15, lunge 0.42 m forward at 20, home at 80 | ✅ | `gesture.test.ts` (reads the file) |
+| In play: the Lunge starts it, its thrust lands with the skill (the beam), the gait and the game's pose give way, it ends by itself or at once when he runs off | ✅ | `gesture.test.ts` (rig), `energyBeam.test.ts` (beam 1.15 m ahead) |
+| Seen in play on PK's PC | ⚠️ not yet | PK |
+
+## 1.9.0-39 60 FPS switch, spear put away in the gesture (D171) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 886 unit tests in 104 files, build) | ✅ | |
+| 30 / 60 switch: URL wins, then the player's choice, then 30; at 60 a 60 Hz display renders every frame; the panel lights the rate chosen and reads red under it | ✅ | `pacing.test.ts`, `gfxPanel.test.ts` |
+| The spear is hidden while the gesture holds him and back after | ✅ | `gesture.test.ts` |
+| 60 FPS held on PK's GTX 1660 Super (PC 1660) | ⚠️ not yet | PK reads it in 🖥 |
+| APK 1.9.3 (versionCode 13) built on PK's PC: `npm run android` here, assets copied, `gradlew assembleDebug` BUILD SUCCESSFUL, `apk/KhmerKingdoms-1.9.3-debug.apk` 82 MB | ✅ | Gradle on PK's PC |
+| Merge to main | ⏳ pull request #1 open for PK | a direct push to main is blocked from here |

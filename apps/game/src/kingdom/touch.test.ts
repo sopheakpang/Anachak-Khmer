@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TOUCH, TouchGestures, type TouchHandlers } from './touch';
+import { TOUCH, TouchGestures, touchTime, type TouchHandlers } from './touch';
 
 function rec() {
   const log: string[] = [];
@@ -70,5 +70,40 @@ describe('touch gestures (Android, D72)', () => {
     g.up(1, 100, 100, 100);
     expect(log[0]).toBe('zoom 2.00');
     expect(log.some((l) => l.startsWith('tap'))).toBe(false);
+  });
+});
+
+describe('PK 2026-10-20 (D166): a tap on a busy phone still counts', () => {
+  it('a quick tap is a tap even when a slow frame already called it a hold', () => {
+    const { g, log } = rec();
+    g.down(1, 100, 100, 1000);
+    // The phone is busy: the next frame runs 600 ms later, before the lift is handled.
+    g.tick(1600);
+    // The lift happened 120 ms after the touch (the event's own time).
+    g.up(1, 101, 100, 1120);
+    expect(log).toEqual(['hold 100,100', 'holdend', 'tap 101,100']);
+  });
+
+  it('a late-handled jiggle does not turn a tap into a hold', () => {
+    const { g, log } = rec();
+    g.down(1, 100, 100, 1000);
+    g.move(1, 102, 100, 1080); // its own time, handled late
+    g.up(1, 102, 100, 1130);
+    expect(log).toEqual(['tap 102,100']);
+  });
+
+  it('a real hold is still a hold', () => {
+    const { g, log } = rec();
+    g.down(1, 100, 100, 0);
+    g.tick(TOUCH.holdMs + 10);
+    g.up(1, 100, 100, TOUCH.holdMs + 200);
+    expect(log).toEqual(['hold 100,100', 'holdend']);
+  });
+
+  it('uses the event’s own time when it has a sane one', () => {
+    expect(touchTime(1200, 1800)).toBe(1200);
+    expect(touchTime(0, 1800)).toBe(1800);
+    expect(touchTime(undefined, 1800)).toBe(1800);
+    expect(touchTime(5000, 1800)).toBe(1800);
   });
 });

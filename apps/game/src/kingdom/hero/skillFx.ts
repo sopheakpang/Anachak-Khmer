@@ -3,6 +3,7 @@ import type { Particles } from '../view/vfx';
 import { artTexture } from './yantra';
 import { TALL } from './yantraArt';
 import type { VfxPiece } from './skillVfx';
+import { EnergyBeam, beamLook, builtShapes, type BeamShapes } from './energyBeam';
 
 /**
  * PK 1.9.0 (D151): plays the skills' effects planned by `planSkillVfx` — additive light cards,
@@ -15,6 +16,8 @@ interface Live {
   obj: THREE.Object3D | null;
   mat: THREE.MeshBasicMaterial | null;
   t: number;
+  /** D169: an energy beam's own player. */
+  beam?: EnergyBeam;
 }
 
 const card = new THREE.PlaneGeometry(1, 1);
@@ -41,6 +44,8 @@ export class SkillFx {
   readonly group = new THREE.Group();
   private live: Live[] = [];
   private readonly v = new THREE.Vector3();
+  /** D169: the Blender meshes of the energy beam once loaded (else the same shapes built here). */
+  beamShapes: BeamShapes | null = null;
 
   constructor(
     private readonly particles: () => Particles,
@@ -62,6 +67,14 @@ export class SkillFx {
   private make(l: Live): void {
     const p = l.p;
     if (p.t === 'burst') return;
+    if (p.t === 'energy') {
+      const b = new EnergyBeam(this.beamShapes ?? builtShapes(), beamLook(p.color), p.length);
+      b.aim(p.x, p.y, p.z, p.heading);
+      this.group.add(b.group);
+      l.beam = b;
+      l.obj = b.group;
+      return;
+    }
     let obj: THREE.Mesh;
     if (p.t === 'sprite') {
       const mat = lightMat(p.color, artTexture(p.art));
@@ -118,6 +131,10 @@ export class SkillFx {
         continue;
       }
       if (!l.obj) this.make(l);
+      if (l.beam) {
+        l.beam.update(t, p.dur);
+        continue;
+      }
       const k = Math.min(1, t / p.dur);
       const o = l.obj!;
       const m = l.mat!;
@@ -165,6 +182,8 @@ export class SkillFx {
 
   private drop(l: Live): void {
     if (l.obj && l.obj !== this.group) this.group.remove(l.obj);
+    l.beam?.dispose();
+    l.beam = undefined;
     l.mat?.dispose();
     l.mat = null;
   }

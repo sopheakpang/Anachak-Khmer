@@ -4,6 +4,7 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import { asInk, toonGradient } from './toon';
 import type { Joints } from './body';
 import { realLook } from '../../engine/look';
+import { SKILL_SEC } from './heroCore';
 
 /**
  * Real 3D character models (PK: sculpted, rigged .glb files made from his concept sheets, the
@@ -20,6 +21,59 @@ export interface ModelSpec {
   hips: number;
   /** The phone build's own file (it has no models/heroes/). */
   phone?: string;
+  /** D170: whole-body gestures made in Blender, by skill id (a clip in the model's file). */
+  gestures?: Record<string, GestureSpec>;
+}
+
+/**
+ * PK 2026-10-21 (D170): a skill's gesture, a clip keyed in Blender in four beats — the charge
+ * (frames 0 → `fire`), the thrust at `fire`, the hold (→ `hold`) and the recovery (→ `end`).
+ * The game plays it on the skill's own clock: the thrust lands when the skill does
+ * (SKILL_SEC.strike), the hold lasts `sustainSec`, the recovery `recoverSec`.
+ */
+export interface GestureSpec {
+  clip: string;
+  fps: number;
+  fire: number;
+  hold: number;
+  end: number;
+  sustainSec: number;
+  recoverSec: number;
+}
+
+/** The gesture's whole length in game seconds. */
+export function gestureSec(g: GestureSpec): number {
+  return SKILL_SEC.strike + g.sustainSec + g.recoverSec;
+}
+
+/** Where in the clip (s) a gesture is `t` s after the skill began: each beat stretched to the game's. */
+export function gestureClock(g: GestureSpec, t: number): number {
+  const beats: Array<[number, number]> = [
+    [SKILL_SEC.strike, g.fire],
+    [g.sustainSec, g.hold - g.fire],
+    [g.recoverSec, g.end - g.hold],
+  ];
+  let frame = 0;
+  let left = Math.max(0, t);
+  for (const [sec, frames] of beats) {
+    if (left < sec) return (frame + (frames * left) / sec) / g.fps;
+    left -= sec;
+    frame += frames;
+  }
+  return g.end / g.fps;
+}
+
+/**
+ * How much the gesture holds the body `t` s in: in fast (0.08 s), all of it through the charge,
+ * thrust and hold, out over the end of the recovery (it ends in a stance near the idle).
+ */
+export function gestureWeight(g: GestureSpec, t: number): number {
+  const total = gestureSec(g);
+  const fadeFrom = total - g.recoverSec * 0.5;
+  if (t <= 0) return 0;
+  if (t < 0.08) return t / 0.08;
+  if (t < fadeFrom) return 1;
+  return Math.max(0, 1 - (t - fadeFrom) / Math.max(1e-6, total - fadeFrom));
 }
 
 /** The joints the game poses, and the bone names that may stand for them in a rig. */
@@ -189,6 +243,9 @@ export interface DriveInfo {
   mounted: boolean;
   /** Say outright which parts the game poses (the near crowd's work acts, D155); else by state. */
   own?: { arms: boolean; body: boolean };
+  /** D170: the skill playing (its id) and how long its state has run, for its gesture. */
+  skill?: string;
+  stateT?: number;
 }
 
 /**
@@ -215,6 +272,13 @@ export class HeroRig {
   /** How much the game's own pose holds the arms (upper) and the legs (lower), 0–1, eased. */
   private readonly own = { upper: 1, lower: 1 };
   private lastT = Number.NaN;
+  /** D170: the model's own clips by name, the gestures it can play, and the one playing. */
+  private readonly named = new Map<string, THREE.AnimationClip>();
+  private readonly gestures: Record<string, GestureSpec>;
+  private gest: { spec: GestureSpec; action: THREE.AnimationAction; t: number; w: number; out: boolean } | null = null;
+  private lastStateT = Number.POSITIVE_INFINITY;
+  /** The clips' own weights (eased by speed) before a gesture takes its share. */
+  private readonly gaitBase = { idle: 1, walk: 0, run: 0 };
   /** Does the model walk, run and stand with its own clips? */
   readonly clips: boolean;
   /**
@@ -345,6 +409,10 @@ export class HeroRig {
     }
     // The clips: idle, walk and run, in place (D155). Rigs without them are posed as before.
     const clips = source.animations ?? [];
+    for (const c of clips) this.named.set(c.name, c);
+    this.gestures = Object.fromEntries(
+      Object.entries(spec.gestures ?? {}).filter(([, g]) => this.named.has(g.clip)),
+    );
     const find = (re: RegExp) => clips.find((c) => re.test(c.name));
     // Soldiers' Meshy rigs stand in a combat stance in place of an idle.
     const idle = find(/idle/i) ?? find(/stance/i);
@@ -382,10 +450,8 @@ export class HeroRig {
       this.lastT = h.t;
       const gw = gaitWeights(h.speed);
       const ease = Math.min(1, dt * 10);
-      for (const k of ['idle', 'walk', 'run'] as const) {
-        const a = this.gait[k]!;
-        a.setEffectiveWeight(a.getEffectiveWeight() + (gw[k] - a.getEffectiveWeight()) * (dt ? ease : 1));
-      }
+      for (const k of ['idle', 'walk', 'run'] as const)
+        this.gaitBase[k] += (gw[k] - this.gaitBase[k]) * (dt ? ease : 1);
       // The feet keep pace with the ground (no skating).
       this.gait.walk!.timeScale = Math.min(1.6, Math.max(0.6, h.speed / GAIT.walk));
       this.gait.run!.timeScale = Math.min(1.5, Math.max(0.7, h.speed / GAIT.run));
@@ -394,9 +460,12 @@ export class HeroRig {
       const e2 = Math.min(1, dt * 12);
       this.own.upper += (up - this.own.upper) * (dt ? e2 : 1);
       this.own.lower += (low - this.own.lower) * (dt ? e2 : 1);
+      // D170: a skill's gesture takes the whole body; the clips and the game's pose give way.
+      const g = this.gesture(h, dt);
+      for (const k of ['idle', 'walk', 'run'] as const) this.gait[k]!.setEffectiveWeight(this.gaitBase[k] * (1 - g));
       this.mixer.update(dt);
-      wUp = this.own.upper;
-      wLow = this.own.lower;
+      wUp = this.own.upper * (1 - g);
+      wLow = this.own.lower * (1 - g);
     }
     j.body.updateMatrixWorld(true);
     const qj = new THREE.Quaternion();
@@ -430,6 +499,43 @@ export class HeroRig {
       const w = this.mixer && h ? wLow : 1;
       hips.position.y += (own - hips.position.y) * w;
     }
+  }
+
+  /** The gesture's weight this frame (0 when none plays); starts one when a skill begins. */
+  private gesture(h: DriveInfo, dt: number): number {
+    const st = h.stateT ?? 0;
+    const begun = h.state === 'skill' && h.skill !== undefined && st < this.lastStateT;
+    this.lastStateT = h.state === 'skill' ? st : Number.POSITIVE_INFINITY;
+    const spec = begun ? this.gestures[h.skill!] : undefined;
+    if (spec) {
+      this.gest?.action.stop();
+      const action = this.mixer!.clipAction(this.named.get(spec.clip)!);
+      action.setLoop(THREE.LoopOnce, 1);
+      action.clampWhenFinished = true;
+      action.timeScale = 0; // its time is set from the skill's clock
+      action.reset().play();
+      this.gest = { spec, action, t: st, w: 0, out: false };
+    } else if (this.gest) this.gest.t = h.state === 'skill' && !this.gest.out ? st : this.gest.t + dt;
+    const G = this.gest;
+    if (!G) return 0;
+    // Moving off after the skill: the gesture lets go at once (eased).
+    if (h.state !== 'skill' && h.speed > 0.5) G.out = true;
+    const want = gestureWeight(G.spec, G.t);
+    G.w = G.out ? Math.max(0, Math.min(want, G.w - dt * 8)) : want;
+    if (G.w <= 0 && (G.out || G.t >= gestureSec(G.spec))) {
+      G.action.stop();
+      this.gest = null;
+      return 0;
+    }
+    G.action.time = gestureClock(G.spec, G.t);
+    G.action.setEffectiveWeight(G.w);
+    return G.w;
+  }
+
+  /** The gesture playing (for the tests): its clip, clip time and weight, or null. */
+  gestureNow(): { clip: string; time: number; weight: number } | null {
+    const G = this.gest;
+    return G ? { clip: G.spec.clip, time: G.action.time, weight: G.w } : null;
   }
 
   /** The clips' weights now (for the tests). */

@@ -88,6 +88,19 @@ export interface BeamPiece {
   dur: number;
 }
 
+/** D169: PK's energy beam (hero/energyBeam.ts), fired from (x, y, z) along `heading`. */
+export interface EnergyPiece {
+  t: 'energy';
+  x: number;
+  y: number;
+  z: number;
+  heading: number;
+  length: number;
+  color: number;
+  delay: number;
+  dur: number;
+}
+
 /** A particle burst of the scene's own kinds. */
 export interface BurstPiece {
   t: 'burst';
@@ -100,7 +113,7 @@ export interface BurstPiece {
   ring?: boolean;
 }
 
-export type VfxPiece = SpritePiece | RingPiece | PillarPiece | DomePiece | BeamPiece | BurstPiece;
+export type VfxPiece = SpritePiece | RingPiece | PillarPiece | DomePiece | BeamPiece | BurstPiece | EnergyPiece;
 
 export interface VfxInput {
   skill: HeroSkill;
@@ -324,6 +337,33 @@ export function planSkillVfx(i: VfxInput): VfxPiece[] {
               orbit: { cx: tx, cz: tz, r: Math.max(1.4, r * 0.6), a0: (k / n) * Math.PI * 2, w: 9 },
             }),
           );
+        break;
+      }
+      case 'energyBeam': {
+        // D169: along his heading, as long as the skill reaches (at least 6 m), with sparks
+        // where it ends. D170: the core appears just past his palms at the thrust (beamAhead).
+        const len = Math.max(6, r * 2.6);
+        const ahead = i.cfg.beamAhead ?? 0.8;
+        out.push({
+          t: 'energy',
+          x: tx + sin * ahead,
+          y: 1.2 + i.lift,
+          z: tz + cos * ahead,
+          heading: i.heading,
+          length: len,
+          color: i.color,
+          delay: 0.04,
+          dur: 0.95,
+        });
+        out.push({
+          t: 'burst',
+          kind: 'sparks',
+          x: tx + sin * (len + ahead),
+          y: 1.2 + i.lift,
+          z: tz + cos * (len + ahead),
+          n: 14,
+          delay: 0.18,
+        });
         break;
       }
       case 'trail': {

@@ -33,5 +33,10 @@ describe('graphics presets and the 🖥 panel', () => {
     expect(ok).toMatch(/k-gfx-p k-on" data-act="gfx-set:pc1660"/);
     for (const p of PRESETS) expect(ok).toContain(`data-act="gfx-set:${p}"`);
     expect(gfxPanelHtml('low', { ...s, fps: 22 }, 30)).toContain('k-gfx-fps k-slow');
+    // PK 2026-10-21: the 30 / 60 FPS switch, the target lit; at 60 the FPS shows red under 60.
+    expect(ok).toMatch(/k-gfx-p k-on" data-act="gfx-fps:30"/);
+    const at60 = gfxPanelHtml('pc1660', { ...s, fps: 52 }, 60);
+    expect(at60).toMatch(/k-gfx-p k-on" data-act="gfx-fps:60"/);
+    expect(at60).toContain('k-gfx-fps k-slow');
   });
 });
