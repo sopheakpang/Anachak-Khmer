@@ -764,7 +764,7 @@ export class HeroModel {
    * Pose for this frame. `s` is the hero's state, `p` its time in that state (s), `combo` the
    * strike in the combo, `stride` the walk phase, `speed` m/s, `y` the jump height.
    */
-  pose(h: Parameters<HeroModel['poseJoints']>[0] & { swim?: 'crawl' | 'tread' }): void {
+  pose(h: Parameters<HeroModel['poseJoints']>[0] & { swim?: 'crawl' | 'tread'; skillId?: string }): void {
     this.poseJoints(h);
     if (h.swim) this.poseSwim(h.swim, h.t);
     this.rig?.drive({
@@ -772,6 +772,8 @@ export class HeroModel {
       speed: h.swim ? 0 : h.speed,
       t: h.t,
       mounted: !!this.beast,
+      skill: h.skillId,
+      stateT: h.stateT,
     });
   }
 

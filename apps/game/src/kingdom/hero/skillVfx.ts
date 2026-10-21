@@ -340,21 +340,30 @@ export function planSkillVfx(i: VfxInput): VfxPiece[] {
         break;
       }
       case 'energyBeam': {
-        // D169: from the weapon's point where the thrust ends, along his heading; as long as the
-        // skill reaches (at least 6 m), with sparks where it ends.
+        // D169: along his heading, as long as the skill reaches (at least 6 m), with sparks
+        // where it ends. D170: the core appears just past his palms at the thrust (beamAhead).
         const len = Math.max(6, r * 2.6);
+        const ahead = i.cfg.beamAhead ?? 0.8;
         out.push({
           t: 'energy',
-          x: tx + sin * 0.8,
+          x: tx + sin * ahead,
           y: 1.2 + i.lift,
-          z: tz + cos * 0.8,
+          z: tz + cos * ahead,
           heading: i.heading,
           length: len,
           color: i.color,
           delay: 0.04,
           dur: 0.95,
         });
-        out.push({ t: 'burst', kind: 'sparks', x: tx + sin * (len + 0.8), y: 1.2 + i.lift, z: tz + cos * (len + 0.8), n: 14, delay: 0.18 });
+        out.push({
+          t: 'burst',
+          kind: 'sparks',
+          x: tx + sin * (len + ahead),
+          y: 1.2 + i.lift,
+          z: tz + cos * (len + ahead),
+          n: 14,
+          delay: 0.18,
+        });
         break;
       }
       case 'trail': {

@@ -1060,6 +1060,8 @@ export const AnachakSchema = z.object({
       maxLive: z.number().int().positive(),
       /** D169: the energy beam's meshes made in Blender (scripts/models/blender/make_energy_beam.py). */
       beamModel: z.string().optional(),
+      /** D170: how far ahead of him (m) the beam's core appears — just past his palms at the thrust. */
+      beamAhead: z.number().positive().optional(),
     }),
     /** The 🤖 auto mode (PK k6). */
     auto: z.object({
@@ -1110,6 +1112,27 @@ export const AnachakSchema = z.object({
             hips: z.number().positive(),
             /** PK 1.9.0: the phone build's own file (it has no models/heroes/). */
             phone: z.string().min(1).optional(),
+            /**
+             * PK 2026-10-21 (D170): whole-body gestures keyed in Blender, by skill id: the clip
+             * in the model's file, its fps and beat frames (thrust at `fire`, held to `hold`,
+             * recovered by `end`), and how long the hold and the recovery last in play.
+             */
+            gestures: z
+              .record(
+                z.string(),
+                z
+                  .object({
+                    clip: z.string().min(1),
+                    fps: z.number().positive(),
+                    fire: z.number().positive(),
+                    hold: z.number().positive(),
+                    end: z.number().positive(),
+                    sustainSec: z.number().positive(),
+                    recoverSec: z.number().positive(),
+                  })
+                  .refine((g) => g.fire < g.hold && g.hold < g.end, 'fire < hold < end'),
+              )
+              .optional(),
           }),
         ]),
       )

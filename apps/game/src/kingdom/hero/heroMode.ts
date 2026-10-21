@@ -898,6 +898,7 @@ export class HeroMode {
       t: core.t,
       strikeSec: core.strikeSec(),
       skillKind: core.skillNow.kind,
+      skillId: core.skillNow.id,
       swim: this.swimming ? (crawl ? 'crawl' : 'tread') : undefined,
     });
     // Camera, with a little shake on hits.

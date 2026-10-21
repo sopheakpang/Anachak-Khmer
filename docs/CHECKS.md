@@ -857,3 +857,13 @@ PK delegated ខ១–ខ៨ ("by your decisions, what is best for me", D146); h
 | The Lunge plans the beam from the spear's point where the thrust ends, along his heading, ≥ 6 m, sparks at its end; it shoots out, holds, fades; SkillFx plays and frees it; the Blender meshes load from `spear-beam.glb` by name | ✅ | `energyBeam.test.ts` |
 | In the game: the beam plays with no shader or page errors (Lite preset, 3D hero); the effect alone with the game's bloom reads as the Blender design | ✅ | probe + standalone render |
 | Seen in play on PK's PC (the court round the hero can hide it from the chase camera) | ⚠️ not yet | PK |
+
+## 1.9.0-38 spearman's energy-beam gesture (D170) — 2026-10-21
+
+| Check | Result | How |
+| --- | --- | --- |
+| `npm run verify` (lint, types, 885 unit tests in 104 files, build) | ✅ | |
+| Blender script adds IK hands / feet, eye lock and root to the Mixamo skeleton, keys the 4 poses (Bezier, linear 15→20, Noise 21–60 on the hands' forward), bakes `Spear_EnergyBeam` (81 frames, 30 fps) and exports it alone — Blender 4.2 here and 5.2.2 on PK's PC give the same clip | ✅ | `make_spear_beam_anim.py`, Workbench sheets here, EEVEE previews on PK's PC (`game-ready/gesture/preview-f*.png`) |
+| The clip is in `spearman.glb` with its Idle, Walking, Running and Combat_Stance clips; hips sink 0.25 m at 15, lunge 0.42 m forward at 20, home at 80 | ✅ | `gesture.test.ts` (reads the file) |
+| In play: the Lunge starts it, its thrust lands with the skill (the beam), the gait and the game's pose give way, it ends by itself or at once when he runs off | ✅ | `gesture.test.ts` (rig), `energyBeam.test.ts` (beam 1.15 m ahead) |
+| Seen in play on PK's PC | ⚠️ not yet | PK |

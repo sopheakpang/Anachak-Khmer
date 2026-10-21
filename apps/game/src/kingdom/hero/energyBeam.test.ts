@@ -31,10 +31,10 @@ describe('the spearman’s energy beam', () => {
     const b = pieces.find((p): p is EnergyPiece => p.t === 'energy')!;
     expect(b).toBeTruthy();
     expect(b.x).toBeCloseTo(0);
-    expect(b.z).toBeCloseTo(3.8); // 0.8 m ahead of where he stands
+    expect(b.z).toBeCloseTo(3 + data.anachak.hero.vfx.beamAhead!); // just past his palms (D170)
     expect(b.length).toBeGreaterThanOrEqual(6);
     // Sparks where it ends.
-    expect(pieces.some((p) => p.t === 'burst' && p.kind === 'sparks' && Math.abs(p.z - (3.8 + b.length)) < 0.01)).toBe(true);
+    expect(pieces.some((p) => p.t === 'burst' && p.kind === 'sparks' && Math.abs(p.z - (b.z + b.length)) < 0.01)).toBe(true);
   });
 
   it('shoots out fast, holds, then its light fades', () => {
